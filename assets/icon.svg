@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="512" cy="512" r="480" fill="#2196F3" fill-opacity="0.1"/>
+    
+    <!-- Main Symbol -->
+    <path d="M512 256C384 256 280 360 280 488C280 616 384 720 512 720C640 720 744 616 744 488C744 360 640 256 512 256ZM512 664C416 664 336 584 336 488C336 392 416 312 512 312C608 312 688 392 688 488C688 584 608 664 512 664Z" fill="#2196F3"/>
+    
+    <!-- Inner Circle -->
+    <circle cx="512" cy="488" r="96" fill="#2196F3"/>
+</svg> 

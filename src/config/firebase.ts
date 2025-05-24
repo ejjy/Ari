@@ -3,6 +3,7 @@ import {
   initializeAuth,
   getReactNativePersistence,
   getAuth,
+  Auth,
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore } from 'firebase/firestore';
@@ -16,17 +17,30 @@ const firebaseConfig = {
   appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
-// 🔁 Prevent reinitialization
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+// Initialize Firebase app
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+} else {
+  app = getApp();
+}
+
+// Initialize Firestore
 const db = getFirestore(app);
 
-let auth;
+// Initialize Auth with persistence
+let auth: Auth;
 try {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-} catch (err) {
-  // Fallback for Hermes double-init edge case
+  // Check if auth is already initialized
+  auth = getAuth(app);
+  // If not initialized with persistence, initialize it
+  if (!auth) {
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  }
+} catch (error) {
+  // If initialization fails, get existing auth instance
   auth = getAuth(app);
 }
 

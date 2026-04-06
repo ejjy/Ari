@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '../constants/colors';
+import Icon from './ui/Icon';
 import type { Nudge } from '../types';
 
 interface Props {
@@ -11,7 +12,11 @@ export default function NudgeCard({ nudge }: Props) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.emoji}>{nudge.emoji}</Text>
+        {nudge.emoji ? (
+          <Text style={styles.emoji}>{nudge.emoji}</Text>
+        ) : (
+          <Icon name="zap" size={20} color={Colors.primary} />
+        )}
         <View style={styles.badge}>
           <Text style={styles.badgeText}>Tomo says</Text>
         </View>

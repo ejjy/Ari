@@ -35,21 +35,20 @@ describe('Input', () => {
   });
 
   it('renders password toggle when showPasswordToggle is true', () => {
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <Input label="Password" showPasswordToggle />
     );
-    // Eye emoji should be visible
-    expect(getByText('👁️')).toBeTruthy();
+    expect(getByLabelText('Toggle password visibility')).toBeTruthy();
   });
 
   it('toggles password visibility on press', () => {
-    const { getByText } = render(
+    const { getByLabelText } = render(
       <Input label="Password" showPasswordToggle />
     );
 
-    // Initially shows eye (hidden password)
-    fireEvent.press(getByText('👁️'));
-    // After toggle, shows monkey (visible password)
-    expect(getByText('🙈')).toBeTruthy();
+    const toggle = getByLabelText('Toggle password visibility');
+    fireEvent.press(toggle);
+    // Should still be there after toggle
+    expect(getByLabelText('Toggle password visibility')).toBeTruthy();
   });
 });

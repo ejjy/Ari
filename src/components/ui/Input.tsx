@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Colors } from '../../constants/colors';
 import { Layout } from '../../constants/layout';
+import Icon from './Icon';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -43,8 +44,10 @@ export default function Input({
           <TouchableOpacity
             onPress={() => setVisible((v) => !v)}
             style={styles.toggle}
+            accessibilityLabel="Toggle password visibility"
+            accessibilityRole="button"
           >
-            <Text style={styles.toggleText}>{visible ? '🙈' : '👁️'}</Text>
+            <Icon name={visible ? 'eye-off' : 'eye'} size={18} color={Colors.textSecondary} />
           </TouchableOpacity>
         )}
         {rightElement && !showPasswordToggle && (
@@ -87,9 +90,6 @@ const styles = StyleSheet.create({
   toggle: {
     paddingHorizontal: 14,
     paddingVertical: 10,
-  },
-  toggleText: {
-    fontSize: 16,
   },
   errorText: {
     fontSize: 12,

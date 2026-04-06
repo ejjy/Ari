@@ -13,11 +13,13 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
 import TransactionItem from '../components/TransactionItem';
 import DeleteConfirmSheet from '../components/DeleteConfirmSheet';
 import EmptyState from '../components/ui/EmptyState';
 import AnimatedFAB from '../components/ui/AnimatedFAB';
+import Icon from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
 import { groupTransactionsByDate } from '../utils/dateHelpers';
 import { formatCurrency } from '../utils/formatCurrency';
@@ -44,6 +46,7 @@ export default function TransactionsScreen() {
     refresh,
   } = useData();
   const haptics = useHaptics();
+  const insets = useSafeAreaInsets();
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -112,7 +115,7 @@ export default function TransactionsScreen() {
         renderSectionHeader={({ section }) => (
           <Text style={styles.dateHeader}>{section.title}</Text>
         )}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 60 + insets.bottom + 80 }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -141,7 +144,7 @@ export default function TransactionsScreen() {
 
             {/* Search */}
             <View style={styles.searchRow}>
-              <Text style={styles.searchIcon}>🔍</Text>
+              <Icon name="search" size={16} color={Colors.textMuted} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search transactions..."
@@ -149,10 +152,15 @@ export default function TransactionsScreen() {
                 value={search}
                 onChangeText={setSearch}
                 selectionColor={Colors.primary}
+                accessibilityLabel="Search transactions"
               />
               {search.length > 0 && (
-                <TouchableOpacity onPress={() => setSearch('')}>
-                  <Text style={{ color: Colors.textSecondary, fontSize: 18 }}>✕</Text>
+                <TouchableOpacity
+                  onPress={() => setSearch('')}
+                  accessibilityLabel="Clear search"
+                  accessibilityRole="button"
+                >
+                  <Icon name="x" size={18} color={Colors.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -172,7 +180,7 @@ export default function TransactionsScreen() {
                       filter === f && styles.filterTextActive,
                     ]}
                   >
-                    {f === 'all' ? 'All' : f === 'expense' ? '💸 Expenses' : '💰 Income'}
+                    {f === 'all' ? 'All' : f === 'expense' ? 'Expenses' : 'Income'}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -220,7 +228,7 @@ export default function TransactionsScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  listContent: { paddingHorizontal: 20, paddingBottom: 120 },
+  listContent: { paddingHorizontal: 20 },
   screenTitle: {
     fontSize: 26,
     fontWeight: '800',

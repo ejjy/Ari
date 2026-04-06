@@ -13,6 +13,7 @@ import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 import Button from '../components/ui/Button';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
+import Icon from '../components/ui/Icon';
 
 interface Props {
   onBack: () => void;
@@ -75,7 +76,7 @@ export default function ExportScreen({ onBack }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack}>
+        <TouchableOpacity onPress={onBack} accessibilityLabel="Go back" accessibilityRole="button">
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Export Data</Text>
@@ -85,7 +86,7 @@ export default function ExportScreen({ onBack }: Props) {
       <View style={styles.content}>
         <AnimatedEntry delay={100}>
           <View style={styles.card}>
-            <Text style={styles.cardEmoji}>📊</Text>
+            <Icon name="pie-chart" size={48} color={Colors.primary} />
             <Text style={styles.cardTitle}>Export as CSV</Text>
             <Text style={styles.cardDesc}>
               Share your transaction data via text, email, or save it. Perfect for
@@ -98,7 +99,7 @@ export default function ExportScreen({ onBack }: Props) {
         </AnimatedEntry>
 
         <AnimatedEntry delay={250}>
-          <Button onPress={handleExport} loading={exporting} fullWidth>
+          <Button onPress={handleExport} loading={exporting} fullWidth accessibilityLabel="Export and share data" accessibilityRole="button">
             Export & Share
           </Button>
         </AnimatedEntry>

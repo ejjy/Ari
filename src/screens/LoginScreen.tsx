@@ -17,6 +17,7 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { Colors } from '../constants/colors';
+import Icon from '../components/ui/Icon';
 
 type Props = StackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -62,13 +63,18 @@ export default function LoginScreen({ navigation }: Props) {
           showsVerticalScrollIndicator={false}
         >
           {/* Back */}
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.back}
+            accessibilityLabel="Go back"
+            accessibilityRole="button"
+          >
             <Text style={styles.backText}>← Back</Text>
           </TouchableOpacity>
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.emoji}>👋</Text>
+            <Icon name="user" size={48} color={Colors.primary} />
             <Text style={styles.title}>Welcome back!</Text>
             <Text style={styles.subtitle}>Sign in to continue your journey</Text>
           </View>
@@ -96,12 +102,26 @@ export default function LoginScreen({ navigation }: Props) {
               onSubmitEditing={handleLogin}
             />
 
-            <Button onPress={handleLogin} loading={loading} fullWidth>
+            <Button
+              onPress={handleLogin}
+              loading={loading}
+              fullWidth
+              accessibilityLabel="Sign In"
+              accessibilityRole="button"
+            >
               Sign In
             </Button>
 
-            <TouchableOpacity onPress={fillDemo} style={styles.demoBtn}>
-              <Text style={styles.demoText}>🎮 Try with demo account</Text>
+            <TouchableOpacity
+              onPress={fillDemo}
+              style={styles.demoBtn}
+              accessibilityLabel="Try with demo account"
+              accessibilityRole="button"
+            >
+              <View style={styles.demoContent}>
+                <Icon name="play" size={14} color={Colors.textSecondary} />
+                <Text style={styles.demoText}> Try with demo account</Text>
+              </View>
             </TouchableOpacity>
           </View>
 
@@ -109,6 +129,7 @@ export default function LoginScreen({ navigation }: Props) {
           <TouchableOpacity
             onPress={() => navigation.navigate('Register')}
             style={styles.footer}
+            accessibilityRole="button"
           >
             <Text style={styles.footerText}>
               Don't have an account?{' '}
@@ -132,7 +153,8 @@ const styles = StyleSheet.create({
   back: { marginBottom: 24, alignSelf: 'flex-start' },
   backText: { fontSize: 16, color: Colors.textSecondary },
   header: { alignItems: 'center', marginBottom: 40 },
-  emoji: { fontSize: 48, marginBottom: 12 },
+  // emoji style replaced by Icon component
+  headerIcon: { marginBottom: 12 },
   title: {
     fontSize: 28,
     fontWeight: '800',
@@ -151,6 +173,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
+  demoContent: { flexDirection: 'row' as const, alignItems: 'center' as const },
   demoText: { fontSize: 14, color: Colors.textSecondary },
   footer: { alignItems: 'center', marginTop: 32 },
   footerText: { fontSize: 14, color: Colors.textSecondary },

@@ -44,5 +44,21 @@ jest.mock('expo-constants', () => ({
   expoConfig: { extra: {} },
 }));
 
+jest.mock('expo-font', () => ({
+  isLoaded: jest.fn().mockReturnValue(true),
+  loadAsync: jest.fn().mockResolvedValue(true),
+}));
+
+jest.mock('@expo/vector-icons', () => {
+  const React = require('react');
+  const MockIcon = (props) => React.createElement('Text', props, props.name);
+  return {
+    Feather: MockIcon,
+    MaterialCommunityIcons: MockIcon,
+    Ionicons: MockIcon,
+    createIconSet: jest.fn(() => MockIcon),
+  };
+});
+
 // Silence warnings in tests
 jest.spyOn(console, 'warn').mockImplementation(() => {});

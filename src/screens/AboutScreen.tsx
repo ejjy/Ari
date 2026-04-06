@@ -10,6 +10,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
+import Icon from '../components/ui/Icon';
+import type { IconName } from '../components/ui/Icon';
 
 interface Props {
   onBack: () => void;
@@ -19,7 +21,7 @@ export default function AboutScreen({ onBack }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={onBack}>
+        <TouchableOpacity onPress={onBack} accessibilityLabel="Go back" accessibilityRole="button">
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.title}>About</Text>
@@ -33,7 +35,7 @@ export default function AboutScreen({ onBack }: Props) {
         <AnimatedEntry delay={100}>
           <View style={styles.logoSection}>
             <View style={styles.logoRing}>
-              <Text style={styles.logoEmoji}>🌱</Text>
+              <Icon name="sprout" size={40} color={Colors.primary} />
             </View>
             <Text style={styles.appName}>Ari</Text>
             <Text style={styles.version}>Version 1.0.0</Text>
@@ -54,7 +56,7 @@ export default function AboutScreen({ onBack }: Props) {
 
         <AnimatedEntry delay={300}>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Meet Tomo 🤖</Text>
+            <Text style={styles.cardTitle}>Meet Tomo</Text>
             <Text style={styles.cardText}>
               Tomo is your AI finance coach. From SIP advice to spending analysis,
               Tomo helps you build better money habits with personalized tips and
@@ -65,15 +67,15 @@ export default function AboutScreen({ onBack }: Props) {
 
         <AnimatedEntry delay={400}>
           <View style={styles.featuresCard}>
-            {[
-              { emoji: '📊', text: 'Smart expense tracking' },
-              { emoji: '🎯', text: 'Category-based budgets' },
-              { emoji: '🤖', text: 'AI-powered coaching' },
-              { emoji: '💡', text: 'Personalized insights' },
-              { emoji: '🇮🇳', text: 'Built for India' },
-            ].map((f) => (
+            {([
+              { icon: 'bar-chart' as IconName, text: 'Smart expense tracking' },
+              { icon: 'target' as IconName, text: 'Category-based budgets' },
+              { icon: 'bot' as IconName, text: 'AI-powered coaching' },
+              { icon: 'lightbulb' as IconName, text: 'Personalized insights' },
+              { icon: 'flag' as IconName, text: 'Built for India' },
+            ]).map((f) => (
               <View key={f.text} style={styles.featureRow}>
-                <Text style={styles.featureEmoji}>{f.emoji}</Text>
+                <Icon name={f.icon} size={20} color={Colors.primary} />
                 <Text style={styles.featureText}>{f.text}</Text>
               </View>
             ))}

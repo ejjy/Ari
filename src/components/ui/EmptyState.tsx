@@ -24,7 +24,7 @@ export default function EmptyState({
       <Text style={styles.title}>{title}</Text>
       {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
       {actionLabel && onAction && (
-        <Button onPress={onAction} style={styles.button}>
+        <Button onPress={onAction} style={styles.button} accessibilityLabel={actionLabel}>
           {actionLabel}
         </Button>
       )}

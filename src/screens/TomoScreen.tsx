@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useData } from '../context/DataContext';
 import ChatBubble from '../components/ChatBubble';
+import Icon from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 
@@ -51,7 +52,7 @@ function TypingIndicator() {
 
   return (
     <View style={typing.row}>
-      <View style={typing.avatar}><Text style={{ fontSize: 16 }}>🤖</Text></View>
+      <View style={typing.avatar}><Icon name="bot" size={16} color={Colors.primary} /></View>
       <View style={typing.bubble}>
         {[dot1, dot2, dot3].map((dot, i) => (
           <Animated.View
@@ -114,7 +115,7 @@ export default function TomoScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={styles.avatarBox}><Text style={{ fontSize: 22 }}>🤖</Text></View>
+            <View style={styles.avatarBox}><Icon name="bot" size={22} color={Colors.primary} /></View>
             <View>
               <Text style={styles.headerName}>Tomo</Text>
               <Text style={styles.headerSub}>Your AI Finance Coach</Text>
@@ -123,6 +124,8 @@ export default function TomoScreen() {
           <TouchableOpacity
             onPress={() => { haptics.light(); clearChat(); }}
             style={styles.clearBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Clear chat history"
           >
             <Text style={styles.clearText}>Clear</Text>
           </TouchableOpacity>
@@ -149,6 +152,8 @@ export default function TomoScreen() {
                       onPress={() => handleSend(p)}
                       style={styles.promptBtn}
                       activeOpacity={0.75}
+                      accessibilityRole="button"
+                      accessibilityLabel={p}
                     >
                       <Text style={styles.promptText}>{p}</Text>
                     </TouchableOpacity>
@@ -177,8 +182,10 @@ export default function TomoScreen() {
             disabled={!input.trim() || tomoLoading}
             style={[styles.sendBtn, (!input.trim() || tomoLoading) && styles.sendBtnDisabled]}
             activeOpacity={0.75}
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
           >
-            <Text style={styles.sendIcon}>➤</Text>
+            <Icon name="send" size={18} color={Colors.background} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -230,5 +237,4 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
   },
   sendBtnDisabled: { backgroundColor: Colors.border },
-  sendIcon: { fontSize: 18, color: Colors.background },
 });

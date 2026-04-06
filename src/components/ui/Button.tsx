@@ -21,6 +21,8 @@ interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   fullWidth?: boolean;
+  accessibilityLabel?: string;
+  accessibilityRole?: 'button' | 'link';
 }
 
 const variantStyles: Record<Variant, { container: ViewStyle; text: TextStyle }> = {
@@ -55,6 +57,8 @@ export default function Button({
   style,
   textStyle,
   fullWidth = false,
+  accessibilityLabel,
+  accessibilityRole = 'button',
 }: ButtonProps) {
   const vStyle = variantStyles[variant];
   const isDisabled = disabled || loading;
@@ -64,6 +68,8 @@ export default function Button({
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.75}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole={accessibilityRole}
       style={[
         styles.base,
         vStyle.container,

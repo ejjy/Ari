@@ -12,13 +12,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { StackScreenProps } from '@react-navigation/stack';
 import type { AuthStackParamList } from '../navigation/navigationTypes';
 import { Colors } from '../constants/colors';
+import Icon from '../components/ui/Icon';
 
 type Props = StackScreenProps<AuthStackParamList, 'Splash'>;
 
 const FEATURES = [
-  { emoji: '📊', title: 'Smart Tracking', desc: 'Auto-categorize every rupee' },
-  { emoji: '🤖', title: 'Tomo AI Coach', desc: 'Personal finance advice, anytime' },
-  { emoji: '🎯', title: 'Budget Goals', desc: 'Hit your savings targets faster' },
+  { icon: 'bar-chart' as const, title: 'Smart Tracking', desc: 'Auto-categorize every rupee' },
+  { icon: 'bot' as const, title: 'Tomo AI Coach', desc: 'Personal finance advice, anytime' },
+  { icon: 'target' as const, title: 'Budget Goals', desc: 'Hit your savings targets faster' },
 ];
 
 const { height } = Dimensions.get('window');
@@ -75,7 +76,7 @@ export default function SplashScreen({ navigation }: Props) {
           ]}
         >
           <View style={styles.logoRing}>
-            <Text style={styles.logoEmoji}>🌱</Text>
+            <Icon name="sprout" size={44} color={Colors.primary} />
           </View>
           <Text style={styles.appName}>Ari</Text>
           <Text style={styles.tagline}>Your Money, Your Future</Text>
@@ -89,7 +90,7 @@ export default function SplashScreen({ navigation }: Props) {
               style={[styles.featureRow, { opacity: featureOpacities[i] }]}
             >
               <View style={styles.featureIcon}>
-                <Text style={{ fontSize: 22 }}>{f.emoji}</Text>
+                <Icon name={f.icon} size={22} color={Colors.primary} />
               </View>
               <View style={styles.featureText}>
                 <Text style={styles.featureTitle}>{f.title}</Text>
@@ -113,13 +114,17 @@ export default function SplashScreen({ navigation }: Props) {
             style={styles.primaryBtn}
             onPress={() => navigation.navigate('Register')}
             activeOpacity={0.85}
+            accessibilityLabel="Let's Get Started"
+            accessibilityRole="button"
           >
-            <Text style={styles.primaryBtnText}>Let's Get Started 🚀</Text>
+            <Text style={styles.primaryBtnText}>Let's Get Started</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.secondaryBtn}
             onPress={() => navigation.navigate('Login')}
             activeOpacity={0.75}
+            accessibilityLabel="I already have an account"
+            accessibilityRole="button"
           >
             <Text style={styles.secondaryBtnText}>I already have an account</Text>
           </TouchableOpacity>
@@ -148,7 +153,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 16,
   },
-  logoEmoji: { fontSize: 44 },
+  // logoEmoji style no longer needed — replaced by Icon component
   appName: {
     fontSize: 48,
     fontWeight: '800',

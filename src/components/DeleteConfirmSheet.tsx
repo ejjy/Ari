@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Colors } from '../constants/colors';
+import Icon from './ui/Icon';
 import Button from './ui/Button';
 
 interface Props {
@@ -40,7 +41,9 @@ export default function DeleteConfirmSheet({
       <View style={styles.sheetWrapper}>
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <Text style={styles.emoji}>🗑️</Text>
+          <View style={styles.iconContainer}>
+            <Icon name="alert-triangle" size={40} color={Colors.danger} />
+          </View>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={styles.buttons}>
@@ -49,6 +52,7 @@ export default function DeleteConfirmSheet({
               onPress={onCancel}
               style={styles.btn}
               disabled={loading}
+              accessibilityLabel="Cancel deletion"
             >
               Cancel
             </Button>
@@ -57,6 +61,7 @@ export default function DeleteConfirmSheet({
               onPress={onConfirm}
               style={styles.btn}
               loading={loading}
+              accessibilityLabel="Confirm deletion"
             >
               Delete
             </Button>
@@ -95,7 +100,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginBottom: 20,
   },
-  emoji: { fontSize: 36, marginBottom: 12 },
+  iconContainer: { marginBottom: 12 },
   title: {
     fontSize: 18,
     fontWeight: '700',

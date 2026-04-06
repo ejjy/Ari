@@ -10,13 +10,15 @@ import {
   Switch,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 import { useBiometric } from '../hooks/useBiometric';
 import { useNotifications } from '../hooks/useNotifications';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
+import Icon from '../components/ui/Icon';
+import type { IconName } from '../components/ui/Icon';
 import ExportScreen from './ExportScreen';
 import AboutScreen from './AboutScreen';
 
@@ -38,7 +40,7 @@ const GOAL_LABELS: Record<string, string> = {
 };
 
 interface MenuItem {
-  emoji: string;
+  icon: IconName;
   label: string;
   subtitle?: string;
   onPress?: () => void;
@@ -50,6 +52,7 @@ type SubScreen = 'main' | 'export' | 'about';
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
   const haptics = useHaptics();
+  const insets = useSafeAreaInsets();
   const { isAvailable: biometricAvailable, isEnabled: biometricEnabled, toggleBiometric } = useBiometric();
   const { isEnabled: notificationsEnabled, toggleNotifications, sendTestNotification } = useNotifications();
   const [subScreen, setSubScreen] = useState<SubScreen>('main');
@@ -125,17 +128,17 @@ export default function SettingsScreen() {
   }
 
   const menuItems: MenuItem[] = [
-    { emoji: '📤', label: 'Export Data', subtitle: 'Download your transactions', onPress: () => { haptics.light(); setSubScreen('export'); } },
-    { emoji: '🔒', label: 'Privacy & Security', subtitle: 'Manage your data', onPress: handlePrivacy },
-    { emoji: '💬', label: 'Help & Support', subtitle: 'FAQs and contact us', onPress: handleHelp },
-    { emoji: '⭐', label: 'Rate Ari', subtitle: 'Share your feedback', onPress: handleRate },
-    { emoji: 'ℹ️', label: 'About', subtitle: 'Version 1.0.0', onPress: () => { haptics.light(); setSubScreen('about'); } },
+    { icon: 'upload', label: 'Export Data', subtitle: 'Download your transactions', onPress: () => { haptics.light(); setSubScreen('export'); } },
+    { icon: 'shield', label: 'Privacy & Security', subtitle: 'Manage your data', onPress: handlePrivacy },
+    { icon: 'help-circle', label: 'Help & Support', subtitle: 'FAQs and contact us', onPress: handleHelp },
+    { icon: 'star', label: 'Rate Ari', subtitle: 'Share your feedback', onPress: handleRate },
+    { icon: 'info', label: 'About', subtitle: 'Version 1.0.0', onPress: () => { haptics.light(); setSubScreen('about'); } },
   ];
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[styles.container, { paddingBottom: Math.max(insets.bottom, 20) + 20 }]}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.screenTitle}>Settings</Text>
@@ -181,7 +184,9 @@ export default function SettingsScreen() {
         <AnimatedEntry delay={140}>
           <View style={styles.menuCard}>
             <View style={styles.toggleRow}>
-              <Text style={styles.menuEmoji}>🔔</Text>
+              <View style={styles.menuIconWrap}>
+                <Icon name="bell" size={20} color={Colors.textSecondary} />
+              </View>
               <View style={styles.menuText}>
                 <Text style={styles.menuLabel}>Daily Reminders</Text>
                 <Text style={styles.menuSubtitle}>
@@ -193,13 +198,16 @@ export default function SettingsScreen() {
                 onValueChange={handleNotifications}
                 trackColor={{ false: Colors.border, true: Colors.primaryDark }}
                 thumbColor={notificationsEnabled ? Colors.primary : Colors.textMuted}
+                accessibilityLabel="Toggle daily reminders"
               />
             </View>
             {biometricAvailable && (
               <>
                 <View style={styles.separator} />
                 <View style={styles.toggleRow}>
-                  <Text style={styles.menuEmoji}>🔐</Text>
+                  <View style={styles.menuIconWrap}>
+                    <Icon name="fingerprint" size={20} color={Colors.textSecondary} />
+                  </View>
                   <View style={styles.menuText}>
                     <Text style={styles.menuLabel}>Biometric Lock</Text>
                     <Text style={styles.menuSubtitle}>
@@ -211,6 +219,7 @@ export default function SettingsScreen() {
                     onValueChange={handleBiometric}
                     trackColor={{ false: Colors.border, true: Colors.primaryDark }}
                     thumbColor={biometricEnabled ? Colors.primary : Colors.textMuted}
+                    accessibilityLabel="Toggle biometric lock"
                   />
                 </View>
               </>
@@ -227,8 +236,12 @@ export default function SettingsScreen() {
                   style={styles.menuRow}
                   onPress={item.onPress}
                   activeOpacity={0.7}
+                  accessibilityLabel={item.label}
+                  accessibilityRole="button"
                 >
-                  <Text style={styles.menuEmoji}>{item.emoji}</Text>
+                  <View style={styles.menuIconWrap}>
+                    <Icon name={item.icon} size={20} color={Colors.textSecondary} />
+                  </View>
                   <View style={styles.menuText}>
                     <Text style={[styles.menuLabel, item.destructive && { color: Colors.danger }]}>
                       {item.label}
@@ -237,7 +250,7 @@ export default function SettingsScreen() {
                       <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
                     )}
                   </View>
-                  <Text style={styles.chevron}>›</Text>
+                  <Icon name="chevron-right" size={18} color={Colors.textMuted} />
                 </TouchableOpacity>
                 {i < menuItems.length - 1 && <View style={styles.separator} />}
               </View>
@@ -248,7 +261,7 @@ export default function SettingsScreen() {
         {/* Tomo Branding */}
         <AnimatedEntry delay={240}>
           <View style={styles.brandRow}>
-            <Text style={styles.brandEmoji}>🤖</Text>
+            <Icon name="bot" size={18} color={Colors.textMuted} />
             <Text style={styles.brandText}>Powered by Tomo AI</Text>
           </View>
         </AnimatedEntry>
@@ -259,8 +272,13 @@ export default function SettingsScreen() {
             style={styles.logoutBtn}
             onPress={handleLogout}
             activeOpacity={0.8}
+            accessibilityLabel="Sign Out"
+            accessibilityRole="button"
           >
-            <Text style={styles.logoutText}>🚪 Sign Out</Text>
+            <View style={styles.logoutInner}>
+              <Icon name="log-out" size={18} color={Colors.danger} />
+              <Text style={styles.logoutText}>Sign Out</Text>
+            </View>
           </TouchableOpacity>
         </AnimatedEntry>
       </ScrollView>
@@ -310,22 +328,21 @@ const styles = StyleSheet.create({
   menuRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14,
   },
-  menuEmoji: { fontSize: 22, width: 30, textAlign: 'center' },
+  menuIconWrap: { width: 30, alignItems: 'center', justifyContent: 'center' },
   menuText: { flex: 1 },
   menuLabel: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
   menuSubtitle: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  chevron: { fontSize: 20, color: Colors.textMuted },
   separator: { height: 1, backgroundColor: Colors.border, marginLeft: 42 },
   brandRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, marginBottom: 20,
   },
-  brandEmoji: { fontSize: 20 },
   brandText: { fontSize: 13, color: Colors.textMuted },
   logoutBtn: {
     borderWidth: 1.5, borderColor: Colors.danger,
     borderRadius: 14, paddingVertical: 14,
     alignItems: 'center', backgroundColor: 'rgba(255,71,87,0.08)',
   },
+  logoutInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoutText: { fontSize: 16, fontWeight: '600', color: Colors.danger },
 });

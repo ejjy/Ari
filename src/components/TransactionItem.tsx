@@ -4,6 +4,7 @@ import { getCategoryDef } from '../constants/categories';
 import { formatCurrency } from '../utils/formatCurrency';
 import { formatDateShort } from '../utils/dateHelpers';
 import { Colors } from '../constants/colors';
+import Icon, { CATEGORY_ICONS } from './ui/Icon';
 import type { Transaction } from '../types';
 
 interface Props {
@@ -19,7 +20,15 @@ export default function TransactionItem({ transaction, onDelete, showDelete }: P
   return (
     <View style={styles.row}>
       <View style={[styles.iconBox, { backgroundColor: cat.color + '20' }]}>
-        <Text style={styles.icon}>{cat.emoji}</Text>
+        {CATEGORY_ICONS[transaction.category] ? (
+          <Icon
+            name={CATEGORY_ICONS[transaction.category].icon}
+            size={20}
+            color={CATEGORY_ICONS[transaction.category].color}
+          />
+        ) : (
+          <Text style={styles.icon}>{cat.emoji}</Text>
+        )}
       </View>
 
       <View style={styles.info}>
@@ -39,8 +48,10 @@ export default function TransactionItem({ transaction, onDelete, showDelete }: P
           <TouchableOpacity
             onPress={() => onDelete(transaction.id)}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Delete transaction"
+            accessibilityRole="button"
           >
-            <Text style={styles.deleteIcon}>🗑️</Text>
+            <Icon name="trash" size={16} color={Colors.danger} />
           </TouchableOpacity>
         )}
       </View>
@@ -98,8 +109,5 @@ const styles = StyleSheet.create({
   },
   incomeColor: {
     color: Colors.primary,
-  },
-  deleteIcon: {
-    fontSize: 14,
   },
 });

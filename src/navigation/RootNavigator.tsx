@@ -7,6 +7,7 @@ import { useBiometric } from '../hooks/useBiometric';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import Icon from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
 import type { RootStackParamList } from './navigationTypes';
 
@@ -16,7 +17,7 @@ const ONBOARDING_KEY = 'ari_onboarding_done';
 function BiometricLockScreen({ onRetry }: { onRetry: () => void }) {
   return (
     <View style={lockStyles.container}>
-      <Text style={lockStyles.emoji}>🔒</Text>
+      <Icon name="lock" size={64} color={Colors.textMuted} />
       <Text style={lockStyles.title}>Ari is Locked</Text>
       <Text style={lockStyles.subtitle}>Authenticate to continue</Text>
       <TouchableOpacity style={lockStyles.btn} onPress={onRetry} activeOpacity={0.85}>

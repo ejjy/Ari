@@ -11,33 +11,35 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
+import Icon from '../components/ui/Icon';
+import type { IconName } from '../components/ui/Icon';
 
 const { width } = Dimensions.get('window');
 
-const SLIDES = [
+const SLIDES: { icon: IconName; title: string; desc: string; gradient: readonly [string, string] }[] = [
   {
-    emoji: '📊',
+    icon: 'bar-chart',
     title: 'Track Every Rupee',
     desc: 'Add expenses in seconds with auto-categorization.\nSwiggy? Food. Uber? Transport. We get it.',
-    gradient: ['#0D2B2B', '#0A1A2A'] as const,
+    gradient: ['#0D2B2B', '#0A1A2A'],
   },
   {
-    emoji: '🤖',
+    icon: 'bot',
     title: 'Meet Tomo, Your AI Coach',
     desc: 'Ask anything about your finances.\nTomo gives personalized advice based on your spending habits.',
-    gradient: ['#1A0D2B', '#0A1A2A'] as const,
+    gradient: ['#1A0D2B', '#0A1A2A'],
   },
   {
-    emoji: '🎯',
+    icon: 'target',
     title: 'Budget Like a Pro',
     desc: 'Set spending limits per category.\nGet alerts before you overspend. Build habits that stick.',
-    gradient: ['#0D1A2B', '#0A1A2A'] as const,
+    gradient: ['#0D1A2B', '#0A1A2A'],
   },
   {
-    emoji: '💡',
+    icon: 'lightbulb',
     title: 'Smart Insights',
     desc: 'Get personalized nudges and monthly insights.\nAri learns your patterns and helps you improve.',
-    gradient: ['#0D2B1A', '#0A1A2A'] as const,
+    gradient: ['#0D2B1A', '#0A1A2A'],
   },
 ];
 
@@ -85,7 +87,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
       <View style={styles.slide}>
         <Animated.View style={[styles.emojiContainer, { transform: [{ scale }], opacity }]}>
           <View style={styles.emojiRing}>
-            <Text style={styles.emoji}>{item.emoji}</Text>
+            <Icon name={item.icon} size={56} color={Colors.primary} />
           </View>
         </Animated.View>
         <Animated.Text style={[styles.title, { opacity }]}>{item.title}</Animated.Text>
@@ -101,7 +103,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
     >
       <SafeAreaView style={styles.safe}>
         {/* Skip button */}
-        <TouchableOpacity style={styles.skipBtn} onPress={onComplete}>
+        <TouchableOpacity style={styles.skipBtn} onPress={onComplete} accessibilityLabel="Skip onboarding" accessibilityRole="button">
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
 
@@ -149,7 +151,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
             })}
           </View>
 
-          <TouchableOpacity style={styles.nextBtn} onPress={handleNext} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.nextBtn} onPress={handleNext} activeOpacity={0.85} accessibilityLabel={currentIndex === SLIDES.length - 1 ? "Let's Go" : "Next slide"} accessibilityRole="button">
             <Text style={styles.nextText}>
               {currentIndex === SLIDES.length - 1 ? "Let's Go!" : 'Next'}
             </Text>

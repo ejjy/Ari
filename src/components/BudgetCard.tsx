@@ -4,6 +4,7 @@ import ProgressBar from './ui/ProgressBar';
 import { getCategoryDef } from '../constants/categories';
 import { formatCurrency } from '../utils/formatCurrency';
 import { Colors } from '../constants/colors';
+import Icon from './ui/Icon';
 import type { Budget } from '../types';
 
 interface Props {
@@ -31,11 +32,21 @@ export default function BudgetCard({ budget, onDelete, onEdit }: Props) {
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity onPress={() => onEdit(budget)} style={styles.actionBtn}>
-            <Text style={styles.editIcon}>✏️</Text>
+          <TouchableOpacity
+            onPress={() => onEdit(budget)}
+            style={styles.actionBtn}
+            accessibilityLabel="Edit budget"
+            accessibilityRole="button"
+          >
+            <Icon name="edit" size={14} color={Colors.textSecondary} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => onDelete(budget.id)} style={styles.actionBtn}>
-            <Text style={styles.deleteIcon}>🗑️</Text>
+          <TouchableOpacity
+            onPress={() => onDelete(budget.id)}
+            style={styles.actionBtn}
+            accessibilityLabel="Delete budget"
+            accessibilityRole="button"
+          >
+            <Icon name="trash" size={14} color={Colors.danger} />
           </TouchableOpacity>
         </View>
       </View>
@@ -89,8 +100,6 @@ const styles = StyleSheet.create({
   meta: { fontSize: 12, color: Colors.textSecondary },
   actions: { flexDirection: 'row', gap: 4 },
   actionBtn: { padding: 6 },
-  editIcon: { fontSize: 14 },
-  deleteIcon: { fontSize: 14 },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',

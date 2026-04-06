@@ -18,14 +18,15 @@ import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { Colors } from '../constants/colors';
+import Icon from '../components/ui/Icon';
 
 type Props = StackScreenProps<AuthStackParamList, 'Register'>;
 
 const AGE_OPTIONS = [
-  { value: 'teen', label: 'Under 18', emoji: '🎓' },
-  { value: 'young', label: '18–35', emoji: '💼' },
-  { value: 'adult', label: '36–50', emoji: '🏡' },
-  { value: 'senior', label: '50+', emoji: '🌅' },
+  { value: 'teen', label: 'Under 18', icon: 'book-open' as const },
+  { value: 'young', label: '18–35', icon: 'briefcase' as const },
+  { value: 'adult', label: '36–50', icon: 'home' as const },
+  { value: 'senior', label: '50+', icon: 'sun' as const },
 ];
 
 const INCOME_OPTIONS = [
@@ -37,12 +38,12 @@ const INCOME_OPTIONS = [
 ];
 
 const GOAL_OPTIONS = [
-  { value: 'save_more', label: 'Save More', emoji: '🏦' },
-  { value: 'pay_debt', label: 'Pay Off Debt', emoji: '💳' },
-  { value: 'invest', label: 'Start Investing', emoji: '📈' },
-  { value: 'build_emergency', label: 'Emergency Fund', emoji: '🛡️' },
-  { value: 'buy_home', label: 'Buy a Home', emoji: '🏠' },
-  { value: 'track', label: 'Just Track', emoji: '📊' },
+  { value: 'save_more', label: 'Save More', icon: 'dollar-sign' as const },
+  { value: 'pay_debt', label: 'Pay Off Debt', icon: 'credit-card' as const },
+  { value: 'invest', label: 'Start Investing', icon: 'trending-up' as const },
+  { value: 'build_emergency', label: 'Emergency Fund', icon: 'shield' as const },
+  { value: 'buy_home', label: 'Buy a Home', icon: 'home' as const },
+  { value: 'track', label: 'Just Track', icon: 'bar-chart' as const },
 ];
 
 interface FormData {
@@ -182,7 +183,7 @@ export default function RegisterScreen({ navigation }: Props) {
                 showPasswordToggle
                 returnKeyType="done"
               />
-              <Button onPress={nextStep} fullWidth>
+              <Button onPress={nextStep} fullWidth accessibilityLabel="Continue to next step" accessibilityRole="button">
                 Continue →
               </Button>
             </View>
@@ -206,8 +207,10 @@ export default function RegisterScreen({ navigation }: Props) {
                       form.ageGroup === opt.value && styles.optionSelected,
                     ]}
                     activeOpacity={0.75}
+                    accessibilityLabel={`Age group: ${opt.label}`}
+                    accessibilityRole="button"
                   >
-                    <Text style={styles.optionEmoji}>{opt.emoji}</Text>
+                    <Icon name={opt.icon} size={22} color={Colors.primary} />
                     <Text
                       style={[
                         styles.optionLabel,
@@ -231,6 +234,8 @@ export default function RegisterScreen({ navigation }: Props) {
                       form.incomeBracket === opt.value && styles.incomeRowSelected,
                     ]}
                     activeOpacity={0.75}
+                    accessibilityLabel={`Income: ${opt.label}`}
+                    accessibilityRole="button"
                   >
                     <Text
                       style={[
@@ -247,7 +252,7 @@ export default function RegisterScreen({ navigation }: Props) {
                 ))}
               </View>
 
-              <Button onPress={nextStep} fullWidth>
+              <Button onPress={nextStep} fullWidth accessibilityLabel="Continue to next step" accessibilityRole="button">
                 Continue →
               </Button>
             </View>
@@ -270,8 +275,10 @@ export default function RegisterScreen({ navigation }: Props) {
                       form.mainGoal === opt.value && styles.goalSelected,
                     ]}
                     activeOpacity={0.75}
+                    accessibilityLabel={`Goal: ${opt.label}`}
+                    accessibilityRole="button"
                   >
-                    <Text style={styles.goalEmoji}>{opt.emoji}</Text>
+                    <Icon name={opt.icon} size={24} color={Colors.primary} />
                     <Text
                       style={[
                         styles.goalLabel,
@@ -284,8 +291,8 @@ export default function RegisterScreen({ navigation }: Props) {
                 ))}
               </View>
 
-              <Button onPress={handleSubmit} loading={loading} fullWidth style={{ marginTop: 8 }}>
-                Start My Journey 🚀
+              <Button onPress={handleSubmit} loading={loading} fullWidth style={{ marginTop: 8 }} accessibilityLabel="Start my journey" accessibilityRole="button">
+                Start My Journey
               </Button>
             </View>
           )}
@@ -340,7 +347,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   optionSelected: { borderColor: Colors.primary, backgroundColor: 'rgba(0,200,150,0.1)' },
-  optionEmoji: { fontSize: 24 },
+  // optionEmoji style replaced by Icon component
   optionLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '500' },
   optionLabelSelected: { color: Colors.primary, fontWeight: '600' },
   incomeList: { gap: 8, marginBottom: 24 },
@@ -369,7 +376,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   goalSelected: { borderColor: Colors.primary, backgroundColor: 'rgba(0,200,150,0.1)' },
-  goalEmoji: { fontSize: 28 },
+  // goalEmoji style replaced by Icon component
   goalLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '500', textAlign: 'center' },
   goalLabelSelected: { color: Colors.primary, fontWeight: '600' },
   loginLink: { alignItems: 'center', marginTop: 28 },

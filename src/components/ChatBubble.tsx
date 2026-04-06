@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Icon from './ui/Icon';
 import { Colors } from '../constants/colors';
 import type { ChatMessage } from '../types';
 
@@ -14,7 +15,7 @@ export default function ChatBubble({ message }: Props) {
     <View style={[styles.row, isUser && styles.rowUser]}>
       {!isUser && (
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>🤖</Text>
+          <Icon name="bot" size={16} color={Colors.primary} />
         </View>
       )}
       <View
@@ -52,7 +53,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
   },
-  avatarText: { fontSize: 16 },
   bubble: {
     maxWidth: '75%',
     borderRadius: 18,

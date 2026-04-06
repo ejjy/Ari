@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Animated, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Icon from './Icon';
 import { Colors } from '../../constants/colors';
 
 interface Props {
@@ -7,8 +9,8 @@ interface Props {
 }
 
 export default function AnimatedFAB({ onPress }: Props) {
+  const insets = useSafeAreaInsets();
   const scale = useRef(new Animated.Value(0)).current;
-  const pulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.spring(scale, {
@@ -17,33 +19,19 @@ export default function AnimatedFAB({ onPress }: Props) {
       useNativeDriver: true,
       tension: 60,
       friction: 7,
-    }).start(() => {
-      // Subtle breathing pulse
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulse, {
-            toValue: 1.05,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulse, {
-            toValue: 1,
-            duration: 1500,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    });
+    }).start();
   }, []);
+
+  // Position above tab bar: 60px tab + insets.bottom + 16px gap
+  const bottomPosition = 60 + insets.bottom + 16;
 
   return (
     <Animated.View
       style={[
         styles.fab,
         {
-          transform: [
-            { scale: Animated.multiply(scale, pulse) },
-          ],
+          bottom: bottomPosition,
+          transform: [{ scale }],
         },
       ]}
     >
@@ -51,8 +39,10 @@ export default function AnimatedFAB({ onPress }: Props) {
         onPress={onPress}
         activeOpacity={0.85}
         style={styles.touchable}
+        accessibilityLabel="Add new transaction"
+        accessibilityRole="button"
       >
-        <Text style={styles.fabText}>+</Text>
+        <Icon name="plus" size={26} color={Colors.background} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -62,7 +52,6 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 90,
     width: 56,
     height: 56,
     borderRadius: 28,
@@ -78,11 +67,5 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  fabText: {
-    fontSize: 28,
-    color: Colors.background,
-    fontWeight: '400',
-    lineHeight: 32,
   },
 });

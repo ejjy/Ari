@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   RefreshControl,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { CompositeNavigationProp } from '@react-navigation/native';
@@ -21,6 +21,8 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import AnimatedFAB from '../components/ui/AnimatedFAB';
+import Icon from '../components/ui/Icon';
+import type { IconName } from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 import type { TabParamList, MainStackParamList } from '../navigation/navigationTypes';
@@ -37,9 +39,29 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
+const QUICK_ACTIONS: {
+  icon: IconName;
+  iconColor: string;
+  label: string;
+  type?: 'expense' | 'income';
+  tab?: string;
+}[] = [
+  { icon: 'trending-down', iconColor: Colors.danger, label: 'Add Expense', type: 'expense' },
+  { icon: 'trending-up', iconColor: Colors.primary, label: 'Add Income', type: 'income' },
+  { icon: 'target', iconColor: Colors.accent, label: 'Budgets', tab: 'Budget' },
+  { icon: 'bot', iconColor: Colors.teal, label: 'Ask Tomo', tab: 'Tomo' },
+];
+
+const INSIGHT_COLORS: Record<string, string> = {
+  warning: Colors.danger,
+  tip: Colors.accent,
+  positive: Colors.primary,
+};
+
 export default function DashboardScreen() {
   const navigation = useNavigation<Nav>();
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const {
     transactions,
     summary,
@@ -55,7 +77,7 @@ export default function DashboardScreen() {
   const haptics = useHaptics();
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchAll();
       fetchNudge();
       fetchInsights();
@@ -66,18 +88,41 @@ export default function DashboardScreen() {
   const expenses = summary?.expenses ?? 0;
   const balance = summary?.balance ?? income - expenses;
   const savingsRate = income > 0 ? Math.round(((income - expenses) / income) * 100) : 0;
-  const recentTxns = transactions.slice(0, 5);
+  const recentTxns = useMemo(() => transactions.slice(0, 5), [transactions]);
 
-  const insightColors: Record<string, string> = {
-    warning: Colors.danger,
-    tip: Colors.accent,
-    positive: Colors.primary,
-  };
+  const handleQuickAction = useCallback(
+    (action: typeof QUICK_ACTIONS[0]) => {
+      haptics.light();
+      if (action.type) {
+        navigation.navigate('AddTransaction', { type: action.type });
+      } else if (action.tab) {
+        navigation.navigate('Tabs', { screen: action.tab as keyof TabParamList });
+      }
+    },
+    [haptics, navigation]
+  );
+
+  const handleFAB = useCallback(() => {
+    haptics.medium();
+    navigation.navigate('AddTransaction', { type: 'expense' });
+  }, [haptics, navigation]);
+
+  const handleSeeAll = useCallback(() => {
+    navigation.navigate('Tabs', { screen: 'Transactions' });
+  }, [navigation]);
+
+  const handleAddFirst = useCallback(() => {
+    haptics.light();
+    navigation.navigate('AddTransaction', { type: 'expense' });
+  }, [haptics, navigation]);
+
+  // Ensure content doesn't hide behind tab bar
+  const bottomPad = 60 + insets.bottom + 80;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerStyle={[styles.container, { paddingBottom: bottomPad }]}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -94,10 +139,14 @@ export default function DashboardScreen() {
             <View>
               <Text style={styles.greeting}>{getGreeting()},</Text>
               <Text style={styles.userName}>
-                {user?.name?.split(' ')[0] ?? 'there'} 👋
+                {user?.name?.split(' ')[0] || 'there'}
               </Text>
             </View>
-            <View style={styles.avatarCircle}>
+            <View
+              style={styles.avatarCircle}
+              accessible
+              accessibilityLabel={`Profile: ${user?.name ?? 'User'}`}
+            >
               <Text style={styles.avatarText}>
                 {(user?.name ?? 'U')[0].toUpperCase()}
               </Text>
@@ -118,26 +167,18 @@ export default function DashboardScreen() {
         {/* Quick Actions */}
         <AnimatedEntry delay={160}>
           <View style={styles.quickActions}>
-            {[
-              { emoji: '💸', label: 'Add Expense', type: 'expense' as const },
-              { emoji: '💰', label: 'Add Income', type: 'income' as const },
-              { emoji: '🎯', label: 'Budgets', tab: 'Budget' },
-              { emoji: '🤖', label: 'Ask Tomo', tab: 'Tomo' },
-            ].map((action) => (
+            {QUICK_ACTIONS.map((action) => (
               <TouchableOpacity
                 key={action.label}
                 style={styles.quickBtn}
                 activeOpacity={0.75}
-                onPress={() => {
-                  haptics.light();
-                  if ('type' in action) {
-                    navigation.navigate('AddTransaction', { type: action.type });
-                  } else {
-                    navigation.navigate('Tabs', { screen: action.tab as keyof TabParamList });
-                  }
-                }}
+                onPress={() => handleQuickAction(action)}
+                accessibilityLabel={action.label}
+                accessibilityRole="button"
               >
-                <Text style={styles.quickEmoji}>{action.emoji}</Text>
+                <View style={[styles.quickIconWrap, { backgroundColor: `${action.iconColor}18` }]}>
+                  <Icon name={action.icon} size={20} color={action.iconColor} />
+                </View>
                 <Text style={styles.quickLabel}>{action.label}</Text>
               </TouchableOpacity>
             ))}
@@ -155,15 +196,20 @@ export default function DashboardScreen() {
         {insights.length > 0 && (
           <AnimatedEntry delay={320}>
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>💡 Monthly Insights</Text>
+              <View style={styles.sectionHeader}>
+                <Icon name="lightbulb" size={16} color={Colors.accent} />
+                <Text style={styles.sectionTitle}> Monthly Insights</Text>
+              </View>
               <View style={styles.insightsList}>
                 {insights.slice(0, 3).map((insight, i) => (
                   <View
                     key={i}
                     style={[
                       styles.insightRow,
-                      { borderLeftColor: insightColors[insight.type] ?? Colors.primary },
+                      { borderLeftColor: INSIGHT_COLORS[insight.type] ?? Colors.primary },
                     ]}
+                    accessible
+                    accessibilityLabel={`${insight.type} insight: ${insight.text}`}
                   >
                     <Text style={styles.insightText}>{insight.text}</Text>
                   </View>
@@ -179,11 +225,11 @@ export default function DashboardScreen() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent Transactions</Text>
               <TouchableOpacity
-                onPress={() =>
-                  navigation.navigate('Tabs', { screen: 'Transactions' })
-                }
+                onPress={handleSeeAll}
+                accessibilityLabel="See all transactions"
+                accessibilityRole="link"
               >
-                <Text style={styles.seeAll}>See all →</Text>
+                <Text style={styles.seeAll}>See all</Text>
               </TouchableOpacity>
             </View>
 
@@ -195,10 +241,7 @@ export default function DashboardScreen() {
                 title="No transactions yet"
                 subtitle="Add your first expense or income"
                 actionLabel="Add Transaction"
-                onAction={() => {
-                  haptics.light();
-                  navigation.navigate('AddTransaction', { type: 'expense' });
-                }}
+                onAction={handleAddFirst}
               />
             ) : (
               recentTxns.map((txn, i) => (
@@ -211,20 +254,14 @@ export default function DashboardScreen() {
         </AnimatedEntry>
       </ScrollView>
 
-      {/* Animated FAB */}
-      <AnimatedFAB
-        onPress={() => {
-          haptics.medium();
-          navigation.navigate('AddTransaction', { type: 'expense' });
-        }}
-      />
+      <AnimatedFAB onPress={handleFAB} />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: Colors.background },
-  container: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 120 },
+  container: { paddingHorizontal: 20, paddingTop: 8 },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -256,9 +293,15 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
-  quickEmoji: { fontSize: 24 },
+  quickIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   quickLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
   section: { marginBottom: 20 },
   sectionHeader: {

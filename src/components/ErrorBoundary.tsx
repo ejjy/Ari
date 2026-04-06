@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { captureError } from '../config/sentry';
 import { Colors } from '../constants/colors';
+import Icon from './ui/Icon';
 
 interface Props {
   children: React.ReactNode;
@@ -33,7 +34,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Text style={styles.emoji}>😵</Text>
+          <Icon name="alert-triangle" size={64} color={Colors.danger} />
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
             Don't worry, your data is safe. The error has been reported and we'll fix it soon.

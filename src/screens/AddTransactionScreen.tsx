@@ -25,6 +25,7 @@ import { Colors } from '../constants/colors';
 import { autoDetectCategory } from '../utils/autoDetectCategory';
 import { todayISO } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
+import Icon from '../components/ui/Icon';
 
 type Props = StackScreenProps<MainStackParamList, 'AddTransaction'>;
 
@@ -124,7 +125,7 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
             { opacity: successOpacity, transform: [{ scale: successScale }] },
           ]}
         >
-          <Text style={styles.successEmoji}>✅</Text>
+          <Icon name="check-circle" size={72} color={Colors.primary} />
           <Text style={styles.successText}>Saved!</Text>
         </Animated.View>
       </View>
@@ -213,7 +214,10 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
               onPress={() => setShowDatePicker(true)}
               activeOpacity={0.75}
             >
-              <Text style={styles.dateText}>📅 {formattedDate}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Icon name="calendar" size={16} color={Colors.textSecondary} />
+                <Text style={styles.dateText}>{formattedDate}</Text>
+              </View>
               <Text style={styles.dateEdit}>Change</Text>
             </TouchableOpacity>
           </View>

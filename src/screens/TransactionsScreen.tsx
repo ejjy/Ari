@@ -17,6 +17,7 @@ import { useData } from '../context/DataContext';
 import TransactionItem from '../components/TransactionItem';
 import DeleteConfirmSheet from '../components/DeleteConfirmSheet';
 import EmptyState from '../components/ui/EmptyState';
+import AnimatedFAB from '../components/ui/AnimatedFAB';
 import { Colors } from '../constants/colors';
 import { groupTransactionsByDate } from '../utils/dateHelpers';
 import { formatCurrency } from '../utils/formatCurrency';
@@ -193,17 +194,13 @@ export default function TransactionsScreen() {
         }
       />
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={styles.fab}
+      {/* Animated FAB */}
+      <AnimatedFAB
         onPress={() => {
           haptics.medium();
           navigation.navigate('AddTransaction', { type: 'expense' });
         }}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+      />
 
       <DeleteConfirmSheet
         visible={!!toDelete}
@@ -279,21 +276,4 @@ const styles = StyleSheet.create({
     marginTop: 4,
     textTransform: 'uppercase',
   },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 90,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  fabText: { fontSize: 28, color: Colors.background, fontWeight: '400', lineHeight: 32 },
 });

@@ -19,6 +19,8 @@ import NudgeCard from '../components/NudgeCard';
 import TransactionItem from '../components/TransactionItem';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
+import AnimatedEntry from '../components/ui/AnimatedEntry';
+import AnimatedFAB from '../components/ui/AnimatedFAB';
 import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 import type { TabParamList, MainStackParamList } from '../navigation/navigationTypes';
@@ -87,123 +89,135 @@ export default function DashboardScreen() {
         }
       >
         {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>{getGreeting()},</Text>
-            <Text style={styles.userName}>
-              {user?.name?.split(' ')[0] ?? 'there'} 👋
-            </Text>
+        <AnimatedEntry delay={0}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.greeting}>{getGreeting()},</Text>
+              <Text style={styles.userName}>
+                {user?.name?.split(' ')[0] ?? 'there'} 👋
+              </Text>
+            </View>
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarText}>
+                {(user?.name ?? 'U')[0].toUpperCase()}
+              </Text>
+            </View>
           </View>
-          <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>
-              {(user?.name ?? 'U')[0].toUpperCase()}
-            </Text>
-          </View>
-        </View>
+        </AnimatedEntry>
 
         {/* Balance Card */}
-        <BalanceCard
-          income={income}
-          expenses={expenses}
-          balance={balance}
-          savingsRate={savingsRate}
-        />
+        <AnimatedEntry delay={80}>
+          <BalanceCard
+            income={income}
+            expenses={expenses}
+            balance={balance}
+            savingsRate={savingsRate}
+          />
+        </AnimatedEntry>
 
         {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          {[
-            { emoji: '💸', label: 'Add Expense', type: 'expense' as const },
-            { emoji: '💰', label: 'Add Income', type: 'income' as const },
-            { emoji: '🎯', label: 'Budgets', tab: 'Budget' },
-            { emoji: '🤖', label: 'Ask Tomo', tab: 'Tomo' },
-          ].map((action) => (
-            <TouchableOpacity
-              key={action.label}
-              style={styles.quickBtn}
-              activeOpacity={0.75}
-              onPress={() => {
-                haptics.light();
-                if ('type' in action) {
-                  navigation.navigate('AddTransaction', { type: action.type });
-                } else {
-                  navigation.navigate('Tabs', { screen: action.tab as keyof TabParamList });
-                }
-              }}
-            >
-              <Text style={styles.quickEmoji}>{action.emoji}</Text>
-              <Text style={styles.quickLabel}>{action.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <AnimatedEntry delay={160}>
+          <View style={styles.quickActions}>
+            {[
+              { emoji: '💸', label: 'Add Expense', type: 'expense' as const },
+              { emoji: '💰', label: 'Add Income', type: 'income' as const },
+              { emoji: '🎯', label: 'Budgets', tab: 'Budget' },
+              { emoji: '🤖', label: 'Ask Tomo', tab: 'Tomo' },
+            ].map((action) => (
+              <TouchableOpacity
+                key={action.label}
+                style={styles.quickBtn}
+                activeOpacity={0.75}
+                onPress={() => {
+                  haptics.light();
+                  if ('type' in action) {
+                    navigation.navigate('AddTransaction', { type: action.type });
+                  } else {
+                    navigation.navigate('Tabs', { screen: action.tab as keyof TabParamList });
+                  }
+                }}
+              >
+                <Text style={styles.quickEmoji}>{action.emoji}</Text>
+                <Text style={styles.quickLabel}>{action.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </AnimatedEntry>
 
         {/* Nudge */}
-        {nudge && <NudgeCard nudge={nudge} />}
+        {nudge && (
+          <AnimatedEntry delay={240}>
+            <NudgeCard nudge={nudge} />
+          </AnimatedEntry>
+        )}
 
         {/* Insights */}
         {insights.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>💡 Monthly Insights</Text>
-            <View style={styles.insightsList}>
-              {insights.slice(0, 3).map((insight, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.insightRow,
-                    { borderLeftColor: insightColors[insight.type] ?? Colors.primary },
-                  ]}
-                >
-                  <Text style={styles.insightText}>{insight.text}</Text>
-                </View>
-              ))}
+          <AnimatedEntry delay={320}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>💡 Monthly Insights</Text>
+              <View style={styles.insightsList}>
+                {insights.slice(0, 3).map((insight, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.insightRow,
+                      { borderLeftColor: insightColors[insight.type] ?? Colors.primary },
+                    ]}
+                  >
+                    <Text style={styles.insightText}>{insight.text}</Text>
+                  </View>
+                ))}
+              </View>
             </View>
-          </View>
+          </AnimatedEntry>
         )}
 
         {/* Recent Transactions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('Tabs', { screen: 'Transactions' })
-              }
-            >
-              <Text style={styles.seeAll}>See all →</Text>
-            </TouchableOpacity>
-          </View>
+        <AnimatedEntry delay={400}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recent Transactions</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('Tabs', { screen: 'Transactions' })
+                }
+              >
+                <Text style={styles.seeAll}>See all →</Text>
+              </TouchableOpacity>
+            </View>
 
-          {loadingData ? (
-            <LoadingSpinner />
-          ) : recentTxns.length === 0 ? (
-            <EmptyState
-              emoji="💳"
-              title="No transactions yet"
-              subtitle="Add your first expense or income"
-              actionLabel="Add Transaction"
-              onAction={() => {
-                haptics.light();
-                navigation.navigate('AddTransaction', { type: 'expense' });
-              }}
-            />
-          ) : (
-            recentTxns.map((txn) => (
-              <TransactionItem key={txn.id} transaction={txn} showDelete={false} />
-            ))
-          )}
-        </View>
+            {loadingData ? (
+              <LoadingSpinner />
+            ) : recentTxns.length === 0 ? (
+              <EmptyState
+                emoji="💳"
+                title="No transactions yet"
+                subtitle="Add your first expense or income"
+                actionLabel="Add Transaction"
+                onAction={() => {
+                  haptics.light();
+                  navigation.navigate('AddTransaction', { type: 'expense' });
+                }}
+              />
+            ) : (
+              recentTxns.map((txn, i) => (
+                <AnimatedEntry key={txn.id} delay={420 + i * 60}>
+                  <TransactionItem transaction={txn} showDelete={false} />
+                </AnimatedEntry>
+              ))
+            )}
+          </View>
+        </AnimatedEntry>
       </ScrollView>
 
-      {/* FAB */}
-      <TouchableOpacity
-        style={styles.fab}
+      {/* Animated FAB */}
+      <AnimatedFAB
         onPress={() => {
           haptics.medium();
           navigation.navigate('AddTransaction', { type: 'expense' });
         }}
-        activeOpacity={0.85}
-      >
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
+      />
     </SafeAreaView>
   );
 }
@@ -265,21 +279,4 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   insightText: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18 },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 90,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 6,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-  },
-  fabText: { fontSize: 28, color: Colors.background, fontWeight: '400', lineHeight: 32 },
 });

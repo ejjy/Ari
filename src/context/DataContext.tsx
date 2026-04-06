@@ -10,6 +10,7 @@ import * as budgetApi from '../api/budgets';
 import * as tomoApi from '../api/tomo';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useAuth } from './AuthContext';
+import { useOfflineCache } from '../hooks/useOfflineCache';
 import type {
   Transaction,
   Summary,
@@ -61,6 +62,7 @@ const INITIAL_TOMO_MESSAGE: ChatMessage = {
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const { logout } = useAuth();
+  const { fetchWithCache } = useOfflineCache();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -86,50 +88,56 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const fetchTransactions = useCallback(async () => {
     try {
       const month = getCurrentMonth();
-      const data = await txnApi.getTransactions(month);
+      const data = await fetchWithCache(`txns_${month}`, () =>
+        txnApi.getTransactions(month)
+      );
       setTransactions(data);
     } catch (err) {
       handleError(err);
     }
-  }, [handleError]);
+  }, [handleError, fetchWithCache]);
 
   const fetchSummary = useCallback(async () => {
     try {
       const month = getCurrentMonth();
-      const data = await txnApi.getSummary(month);
+      const data = await fetchWithCache(`summary_${month}`, () =>
+        txnApi.getSummary(month)
+      );
       setSummary(data);
     } catch (err) {
       handleError(err);
     }
-  }, [handleError]);
+  }, [handleError, fetchWithCache]);
 
   const fetchBudgets = useCallback(async () => {
     try {
       const month = getCurrentMonth();
-      const data = await budgetApi.getBudgets(month);
+      const data = await fetchWithCache(`budgets_${month}`, () =>
+        budgetApi.getBudgets(month)
+      );
       setBudgets(data);
     } catch (err) {
       handleError(err);
     }
-  }, [handleError]);
+  }, [handleError, fetchWithCache]);
 
   const fetchNudge = useCallback(async () => {
     try {
-      const data = await tomoApi.getNudge();
+      const data = await fetchWithCache('nudge', () => tomoApi.getNudge());
       setNudge(data);
     } catch (err) {
       handleError(err);
     }
-  }, [handleError]);
+  }, [handleError, fetchWithCache]);
 
   const fetchInsights = useCallback(async () => {
     try {
-      const data = await tomoApi.getInsights();
+      const data = await fetchWithCache('insights', () => tomoApi.getInsights());
       setInsights(data.insights ?? []);
     } catch (err) {
       handleError(err);
     }
-  }, [handleError]);
+  }, [handleError, fetchWithCache]);
 
   const fetchAll = useCallback(async () => {
     setLoadingData(true);
@@ -166,9 +174,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTransaction = useCallback(
     async (id: string) => {
-      await txnApi.deleteTransaction(id);
-      setTransactions((prev) => prev.filter((t) => t.id !== id));
-      await fetchSummary();
+      // Optimistic delete: remove from UI immediately
+      setTransactions((prev) => {
+        const txn = prev.find((t) => t.id === id);
+        if (txn) {
+          // Store for rollback
+          (deleteTransaction as any).__rollback = { id, txn, prev };
+        }
+        return prev.filter((t) => t.id !== id);
+      });
+
+      try {
+        await txnApi.deleteTransaction(id);
+        await fetchSummary();
+      } catch (err) {
+        // Rollback on failure
+        const rb = (deleteTransaction as any).__rollback;
+        if (rb?.id === id) {
+          setTransactions(rb.prev);
+        }
+        throw err;
+      }
     },
     [fetchSummary]
   );

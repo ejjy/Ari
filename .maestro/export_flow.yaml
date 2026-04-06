@@ -1,0 +1,21 @@
+appId: com.ari.app
+name: Export Data Flow
+tags:
+  - requires_auth
+---
+# Navigate to Settings
+- tapOn: "Settings"
+- assertVisible: "Settings"
+
+# Tap Export
+- tapOn: "Export Data"
+
+# Export screen
+- assertVisible: "Export Data"
+- assertVisible: "Export as CSV"
+- assertVisible: "transaction"
+- assertVisible: "Export & Share"
+
+# Go back
+- tapOn: "← Back"
+- assertVisible: "Settings"

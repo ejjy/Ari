@@ -1,0 +1,23 @@
+appId: com.ari.app
+name: Tomo Chat Flow
+tags:
+  - requires_auth
+---
+# Navigate to Tomo tab
+- tapOn: "Tomo"
+
+# Tomo chat screen
+- assertVisible: "Tomo"
+- assertVisible: "Your AI Finance Coach"
+- assertVisible: "Namaste!"
+
+# Try a quick prompt
+- tapOn: "How much did I spend this month?"
+
+# Should show user message in chat
+- assertVisible: "How much did I spend this month?"
+
+# Wait for response (Tomo is typing)
+- extendedWaitUntil:
+    visible: ".*"
+    timeout: 15000

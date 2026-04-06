@@ -1,0 +1,34 @@
+appId: com.ari.app
+name: Full Navigation Flow
+tags:
+  - requires_auth
+---
+# Dashboard
+- assertVisible: "Home"
+- assertVisible: "Expenses"
+- assertVisible: "Budget"
+- assertVisible: "Tomo"
+- assertVisible: "Settings"
+
+# Navigate through all tabs
+- tapOn: "Expenses"
+- assertVisible: "Transactions"
+
+- tapOn: "Budget"
+- assertVisible: "Budget"
+
+- tapOn: "Tomo"
+- assertVisible: "Your AI Finance Coach"
+
+- tapOn: "Settings"
+- assertVisible: "Settings"
+- assertVisible: "Daily Reminders"
+- assertVisible: "Export Data"
+- assertVisible: "About"
+- assertVisible: "Sign Out"
+
+# Go back to Home
+- tapOn: "Home"
+- assertVisible:
+    text: "Good.*"
+    regex: true

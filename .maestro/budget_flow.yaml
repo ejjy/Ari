@@ -1,0 +1,27 @@
+appId: com.ari.app
+name: Budget Flow
+tags:
+  - requires_auth
+---
+# Navigate to Budget tab
+- tapOn: "Budget"
+
+# Budget screen
+- assertVisible: "Budget"
+- tapOn: "+ Add"
+
+# Budget modal
+- assertVisible: "New Budget"
+- assertVisible: "Category"
+- assertVisible: "Monthly Limit"
+
+# Select category and enter limit
+- tapOn: "🍜"
+- tapOn:
+    id: "limit-input"
+    optional: true
+- inputText: "5000"
+- tapOn: "Set Budget"
+
+# Verify budget appears
+- assertVisible: "Food"

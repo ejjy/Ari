@@ -1,0 +1,58 @@
+name: E2E Tests (Maestro)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Run E2E nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  e2e:
+    name: Maestro E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Expo & EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - run: npm ci --legacy-peer-deps
+
+      - name: Install Maestro
+        run: |
+          curl -Ls "https://get.maestro.mobile.dev" | bash
+          echo "$HOME/.maestro/bin" >> $GITHUB_PATH
+
+      - name: Setup Android Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          profile: pixel_6
+          script: |
+            # Build the dev APK
+            eas build --platform android --profile development --local --output ./app.apk
+
+            # Install on emulator
+            adb install ./app.apk
+
+            # Run Maestro flows
+            maestro test .maestro/login_flow.yaml
+            maestro test .maestro/navigation_flow.yaml
+            maestro test .maestro/export_flow.yaml
+
+      - name: Upload E2E results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: maestro-results
+          path: ~/.maestro/tests/
+          retention-days: 7

@@ -1,0 +1,24 @@
+appId: com.ari.app
+name: Login Flow
+---
+# Splash screen → Login
+- assertVisible: "Ari"
+- assertVisible: "Your Money, Your Future"
+- tapOn: "I already have an account"
+
+# Login screen
+- assertVisible: "Welcome back!"
+- tapOn: "🎮 Try with demo account"
+
+# Should fill demo credentials
+- assertVisible: "demo@ari.app"
+- tapOn: "Sign In"
+
+# Should navigate to Dashboard
+- assertVisible:
+    text: "Good.*"
+    regex: true
+- assertVisible: "Add Expense"
+- assertVisible: "Add Income"
+- assertVisible: "Budgets"
+- assertVisible: "Ask Tomo"

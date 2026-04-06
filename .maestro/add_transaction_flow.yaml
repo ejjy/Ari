@@ -1,0 +1,27 @@
+appId: com.ari.app
+name: Add Transaction Flow
+tags:
+  - requires_auth
+---
+# Assumes user is logged in on Dashboard
+- tapOn: "Add Expense"
+
+# Add Transaction screen
+- assertVisible: "Add Transaction"
+- assertVisible: "₹"
+
+# Enter amount
+- tapOn:
+    id: "amount-input"
+    optional: true
+- inputText: "500"
+
+# Enter description (should auto-detect category)
+- tapOn: "What was this for?"
+- inputText: "Zomato order"
+
+# Save
+- tapOn: "Save Transaction"
+
+# Should show success
+- assertVisible: "Saved!"

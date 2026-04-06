@@ -7,7 +7,7 @@
       "@/*": ["src/*"]
     },
     "jsx": "react-jsx",
-    "types": ["react-native"]
+    "types": ["react-native", "jest"]
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "coverage"]
 }

@@ -192,6 +192,31 @@ export default function DashboardScreen() {
           </AnimatedEntry>
         )}
 
+        {/* Accountant Banner */}
+        <AnimatedEntry delay={280}>
+          <TouchableOpacity
+            style={styles.accountantBanner}
+            activeOpacity={0.75}
+            onPress={() => {
+              haptics.light();
+              navigation.navigate('Accountant');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Open Ari Accountant"
+          >
+            <View style={styles.accountantIcon}>
+              <Icon name="briefcase" size={22} color={Colors.purple} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.accountantTitle}>Ari Accountant</Text>
+              <Text style={styles.accountantSub}>
+                Ledger, goals, tax planner & reports
+              </Text>
+            </View>
+            <Icon name="chevron-right" size={18} color={Colors.textMuted} />
+          </TouchableOpacity>
+        </AnimatedEntry>
+
         {/* Insights */}
         {insights.length > 0 && (
           <AnimatedEntry delay={320}>
@@ -322,4 +347,26 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   insightText: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18 },
+  // Accountant banner
+  accountantBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.purple + '40',
+    padding: 14,
+    gap: 12,
+    marginTop: 16,
+  },
+  accountantIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.purple + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  accountantTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
+  accountantSub: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
 });

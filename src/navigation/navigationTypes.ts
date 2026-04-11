@@ -17,6 +17,13 @@ export type TabParamList = {
 export type MainStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList>;
   AddTransaction: { type?: 'expense' | 'income' } | undefined;
+  // Accountant feature
+  Accountant: undefined;
+  SmartLedger: undefined;
+  BudgetPlanner: undefined;
+  SavingsGoals: undefined;
+  TaxEstimator: undefined;
+  PnlReport: undefined;
 };
 
 export type RootStackParamList = {

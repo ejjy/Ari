@@ -8,6 +8,7 @@ export type ExpenseCategory =
   | 'health'
   | 'housing'
   | 'education'
+  | 'savings'
   | 'other';
 
 export type IncomeCategory =
@@ -30,6 +31,12 @@ export interface Transaction {
   date: string;
   month: string;
   createdAt: string;
+  // Accountant: Smart Ledger fields
+  isRecurring?: boolean;
+  recurrenceRule?: 'monthly' | 'weekly' | 'biweekly' | 'quarterly' | 'yearly';
+  tags?: string[];
+  incomeSource?: string;
+  parentRecurringId?: string;
 }
 
 export interface Summary {
@@ -93,4 +100,84 @@ export interface RegisterPayload {
   incomeBracket: string;
   mainGoal: string;
   role?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Accountant Feature Types
+// ---------------------------------------------------------------------------
+
+export interface SavingsGoal {
+  id: string;
+  userId: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string | null;
+  icon: string;
+  color: string;
+  isCompleted: boolean;
+  percentage: number;
+  remainingAmount: number;
+  monthlyRequired: number;
+  createdAt: string;
+}
+
+export interface TaxProfile {
+  id?: string;
+  financialYear: string;
+  regime: 'old' | 'new';
+  annualSalary: number;
+  freelanceIncome: number;
+  otherIncome: number;
+  hraReceived: number;
+  rentPaid: number;
+  metroCity: boolean;
+  section80c: number;
+  section80d: number;
+  homeLoanInterest: number;
+  otherDeductions: number;
+  gstRegistered: boolean;
+}
+
+export interface TaxEstimate {
+  grossIncome: number;
+  totalDeductions: number;
+  taxableIncome: number;
+  taxAmount: number;
+  cess: number;
+  totalTax: number;
+  monthlyTax: number;
+  effectiveTaxRate: number;
+  hraExemption: number;
+}
+
+export interface TaxComparison {
+  old: TaxEstimate;
+  new: TaxEstimate;
+  recommendedRegime: 'old' | 'new';
+  savings: number;
+}
+
+export interface PnlMonth {
+  month: string;
+  income: number;
+  expenses: number;
+  net: number;
+  savingsRate: number;
+}
+
+export interface PnlReport {
+  months: PnlMonth[];
+  categories: Record<string, number>;
+  incomeBreakdown: Record<string, number>;
+  totals: {
+    income: number;
+    expenses: number;
+    net: number;
+    avgSavingsRate: number;
+  };
+  trends: {
+    expenseChange: number;
+    incomeChange: number;
+  };
 }

@@ -8,6 +8,7 @@ import { ApiError } from '../api/client';
 import * as txnApi from '../api/transactions';
 import * as budgetApi from '../api/budgets';
 import * as tomoApi from '../api/tomo';
+import * as goalsApi from '../api/savingsGoals';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useAuth } from './AuthContext';
 import { useOfflineCache } from '../hooks/useOfflineCache';
@@ -18,6 +19,7 @@ import type {
   Nudge,
   Insight,
   ChatMessage,
+  SavingsGoal,
 } from '../types';
 
 interface DataContextValue {
@@ -27,6 +29,7 @@ interface DataContextValue {
   nudge: Nudge | null;
   insights: Insight[];
   chatHistory: ChatMessage[];
+  savingsGoals: SavingsGoal[];
   loadingData: boolean;
   refreshing: boolean;
   tomoLoading: boolean;
@@ -36,6 +39,7 @@ interface DataContextValue {
   fetchBudgets: () => Promise<void>;
   fetchNudge: () => Promise<void>;
   fetchInsights: () => Promise<void>;
+  fetchSavingsGoals: () => Promise<void>;
   addTransaction: (data: {
     type: string;
     amount: number;
@@ -47,6 +51,17 @@ interface DataContextValue {
   deleteTransaction: (id: string) => Promise<void>;
   saveBudget: (data: { category: string; limit: number; month: string }) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
+  createSavingsGoal: (data: {
+    name: string;
+    targetAmount: number;
+    currentAmount?: number;
+    targetDate?: string;
+    icon?: string;
+    color?: string;
+  }) => Promise<SavingsGoal>;
+  updateSavingsGoal: (id: string, data: Partial<SavingsGoal>) => Promise<SavingsGoal>;
+  contributeToGoal: (id: string, amount: number) => Promise<SavingsGoal>;
+  deleteSavingsGoal: (id: string) => Promise<void>;
   askTomo: (message: string) => Promise<void>;
   clearChat: () => void;
   refresh: () => Promise<void>;
@@ -69,6 +84,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [nudge, setNudge] = useState<Nudge | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     INITIAL_TOMO_MESSAGE,
   ]);
@@ -220,6 +236,62 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setBudgets((prev) => prev.filter((b) => b.id !== id));
   }, []);
 
+  // ── Savings Goals ────────────────────────────────────────────────────
+
+  const fetchSavingsGoals = useCallback(async () => {
+    try {
+      const data = await fetchWithCache('savings_goals', () =>
+        goalsApi.getSavingsGoals()
+      );
+      setSavingsGoals(data);
+    } catch (err) {
+      handleError(err);
+    }
+  }, [handleError, fetchWithCache]);
+
+  const createSavingsGoal = useCallback(
+    async (data: {
+      name: string;
+      targetAmount: number;
+      currentAmount?: number;
+      targetDate?: string;
+      icon?: string;
+      color?: string;
+    }) => {
+      const goal = await goalsApi.createSavingsGoal(data);
+      setSavingsGoals((prev) => [goal, ...prev]);
+      return goal;
+    },
+    []
+  );
+
+  const updateSavingsGoal = useCallback(
+    async (id: string, data: Partial<SavingsGoal>) => {
+      const goal = await goalsApi.updateSavingsGoal(id, data);
+      setSavingsGoals((prev) =>
+        prev.map((g) => (g.id === id ? goal : g))
+      );
+      return goal;
+    },
+    []
+  );
+
+  const contributeToGoal = useCallback(
+    async (id: string, amount: number) => {
+      const goal = await goalsApi.contributeToGoal(id, amount);
+      setSavingsGoals((prev) =>
+        prev.map((g) => (g.id === id ? goal : g))
+      );
+      return goal;
+    },
+    []
+  );
+
+  const deleteSavingsGoal = useCallback(async (id: string) => {
+    await goalsApi.deleteSavingsGoal(id);
+    setSavingsGoals((prev) => prev.filter((g) => g.id !== id));
+  }, []);
+
   const askTomo = useCallback(
     async (message: string) => {
       const userMsg: ChatMessage = { role: 'user', content: message };
@@ -262,6 +334,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         nudge,
         insights,
         chatHistory,
+        savingsGoals,
         loadingData,
         refreshing,
         tomoLoading,
@@ -271,10 +344,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         fetchBudgets,
         fetchNudge,
         fetchInsights,
+        fetchSavingsGoals,
         addTransaction,
         deleteTransaction,
         saveBudget,
         deleteBudget,
+        createSavingsGoal,
+        updateSavingsGoal,
+        contributeToGoal,
+        deleteSavingsGoal,
         askTomo,
         clearChat,
         refresh,

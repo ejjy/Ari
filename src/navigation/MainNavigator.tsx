@@ -9,6 +9,13 @@ import AddTransactionScreen from '../screens/AddTransactionScreen';
 import BudgetScreen from '../screens/BudgetScreen';
 import TomoScreen from '../screens/TomoScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+// Accountant screens
+import AccountantScreen from '../screens/AccountantScreen';
+import SmartLedgerScreen from '../screens/accountant/SmartLedgerScreen';
+import BudgetPlannerScreen from '../screens/accountant/BudgetPlannerScreen';
+import SavingsGoalsScreen from '../screens/accountant/SavingsGoalsScreen';
+import TaxEstimatorScreen from '../screens/accountant/TaxEstimatorScreen';
+import PnlReportScreen from '../screens/accountant/PnlReportScreen';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
@@ -86,6 +93,13 @@ export default function MainNavigator() {
           cardStyle: { backgroundColor: 'transparent' },
         }}
       />
+      {/* Accountant screens */}
+      <Stack.Screen name="Accountant" component={AccountantScreen} />
+      <Stack.Screen name="SmartLedger" component={SmartLedgerScreen} />
+      <Stack.Screen name="BudgetPlanner" component={BudgetPlannerScreen} />
+      <Stack.Screen name="SavingsGoals" component={SavingsGoalsScreen} />
+      <Stack.Screen name="TaxEstimator" component={TaxEstimatorScreen} />
+      <Stack.Screen name="PnlReport" component={PnlReportScreen} />
     </Stack.Navigator>
   );
 }

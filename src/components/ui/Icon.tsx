@@ -128,4 +128,5 @@ export const CATEGORY_ICONS: Record<string, { icon: IconName; color: string }> =
   freelance: { icon: 'code', color: Colors.accent },
   investment: { icon: 'trending-up', color: Colors.purple },
   gift: { icon: 'gift', color: '#FF6B9D' },
+  savings: { icon: 'target', color: Colors.primary },
 };

@@ -9,6 +9,10 @@ import {
   Platform,
   Switch,
   StyleSheet,
+  Modal,
+  TextInput,
+  ActivityIndicator,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +25,9 @@ import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import ExportScreen from './ExportScreen';
 import AboutScreen from './AboutScreen';
+import ManageCategoriesScreen from './ManageCategoriesScreen';
+import { submitFeedback } from '../api/feedback';
+import { deleteAccount } from '../api/account';
 
 const AGE_LABELS: Record<string, string> = {
   'under-18': 'Under 18', '18-24': '18–24', '25-35': '25–35',
@@ -47,7 +54,7 @@ interface MenuItem {
   destructive?: boolean;
 }
 
-type SubScreen = 'main' | 'export' | 'about';
+type SubScreen = 'main' | 'export' | 'about' | 'categories';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
@@ -56,6 +63,18 @@ export default function SettingsScreen() {
   const { isAvailable: biometricAvailable, isEnabled: biometricEnabled, toggleBiometric } = useBiometric();
   const { isEnabled: notificationsEnabled, toggleNotifications, sendTestNotification } = useNotifications();
   const [subScreen, setSubScreen] = useState<SubScreen>('main');
+
+  // Feedback state
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  // Delete Account state
+  const [deleteVisible, setDeleteVisible] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -119,6 +138,78 @@ export default function SettingsScreen() {
     );
   };
 
+  // ── Feedback ──────────────────────────────────────────────────────
+
+  const handleOpenFeedback = () => {
+    haptics.light();
+    setFeedbackMessage('');
+    setFeedbackRating(0);
+    setFeedbackVisible(true);
+  };
+
+  const handleSubmitFeedback = async () => {
+    if (!feedbackMessage.trim()) {
+      Alert.alert('Oops', 'Please write your feedback before submitting.');
+      return;
+    }
+    setFeedbackLoading(true);
+    try {
+      await submitFeedback({
+        message: feedbackMessage.trim(),
+        rating: feedbackRating > 0 ? feedbackRating : undefined,
+      });
+      haptics.success();
+      setFeedbackVisible(false);
+      Alert.alert('Thank You! 💚', 'Your feedback helps us make Ari better for everyone.');
+    } catch {
+      Alert.alert('Error', 'Could not submit feedback. Please try again.');
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
+  // ── Delete Account ────────────────────────────────────────────────
+
+  const handleOpenDeleteAccount = () => {
+    haptics.medium();
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and all your financial data. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Continue',
+          style: 'destructive',
+          onPress: () => {
+            setDeletePassword('');
+            setShowDeletePassword(false);
+            setDeleteVisible(true);
+          },
+        },
+      ]
+    );
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deletePassword.trim()) {
+      Alert.alert('Required', 'Please enter your password to confirm.');
+      return;
+    }
+    setDeleteLoading(true);
+    try {
+      await deleteAccount(deletePassword);
+      haptics.medium();
+      setDeleteVisible(false);
+      Alert.alert('Account Deleted', 'Your account has been permanently deleted. We are sorry to see you go.');
+      await logout();
+    } catch (err: any) {
+      const msg = err?.message ?? 'Could not delete account. Please check your password and try again.';
+      Alert.alert('Error', msg);
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   if (subScreen === 'export') {
     return <ExportScreen onBack={() => setSubScreen('main')} />;
   }
@@ -127,11 +218,17 @@ export default function SettingsScreen() {
     return <AboutScreen onBack={() => setSubScreen('main')} />;
   }
 
+  if (subScreen === 'categories') {
+    return <ManageCategoriesScreen onBack={() => setSubScreen('main')} />;
+  }
+
   const menuItems: MenuItem[] = [
+    { icon: 'list', label: 'Manage Categories', subtitle: 'Add custom expense & income types', onPress: () => { haptics.light(); setSubScreen('categories'); } },
     { icon: 'upload', label: 'Export Data', subtitle: 'Download your transactions', onPress: () => { haptics.light(); setSubScreen('export'); } },
+    { icon: 'message-circle', label: 'Send Feedback', subtitle: 'Help us improve Ari', onPress: handleOpenFeedback },
     { icon: 'shield', label: 'Privacy & Security', subtitle: 'Manage your data', onPress: handlePrivacy },
     { icon: 'help-circle', label: 'Help & Support', subtitle: 'FAQs and contact us', onPress: handleHelp },
-    { icon: 'star', label: 'Rate Ari', subtitle: 'Share your feedback', onPress: handleRate },
+    { icon: 'star', label: 'Rate Ari', subtitle: 'Love Ari? Let us know!', onPress: handleRate },
     { icon: 'info', label: 'About', subtitle: 'Version 1.0.0', onPress: () => { haptics.light(); setSubScreen('about'); } },
   ];
 
@@ -266,22 +363,160 @@ export default function SettingsScreen() {
           </View>
         </AnimatedEntry>
 
-        {/* Logout */}
+        {/* Danger Zone */}
         <AnimatedEntry delay={300}>
-          <TouchableOpacity
-            style={styles.logoutBtn}
-            onPress={handleLogout}
-            activeOpacity={0.8}
-            accessibilityLabel="Sign Out"
-            accessibilityRole="button"
-          >
-            <View style={styles.logoutInner}>
-              <Icon name="log-out" size={18} color={Colors.danger} />
-              <Text style={styles.logoutText}>Sign Out</Text>
-            </View>
-          </TouchableOpacity>
+          <View style={{ gap: 12 }}>
+            <TouchableOpacity
+              style={styles.logoutBtn}
+              onPress={handleLogout}
+              activeOpacity={0.8}
+              accessibilityLabel="Sign Out"
+              accessibilityRole="button"
+            >
+              <View style={styles.logoutInner}>
+                <Icon name="log-out" size={18} color={Colors.danger} />
+                <Text style={styles.logoutText}>Sign Out</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={handleOpenDeleteAccount}
+              activeOpacity={0.8}
+              accessibilityLabel="Delete Account"
+              accessibilityRole="button"
+            >
+              <View style={styles.logoutInner}>
+                <Icon name="trash" size={18} color={Colors.textMuted} />
+                <Text style={styles.deleteText}>Delete Account</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </AnimatedEntry>
       </ScrollView>
+
+      {/* ── Feedback Modal ─────────────────────────────────────────── */}
+      <Modal visible={feedbackVisible} transparent animationType="slide">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Send Feedback</Text>
+              <TouchableOpacity onPress={() => setFeedbackVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Icon name="x" size={22} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              We'd love to hear from you! Tell us what you like, what could be better, or any feature ideas.
+            </Text>
+
+            {/* Star Rating */}
+            <View style={styles.ratingRow}>
+              <Text style={styles.ratingLabel}>How's your experience?</Text>
+              <View style={styles.starsRow}>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <TouchableOpacity
+                    key={s}
+                    onPress={() => { haptics.light(); setFeedbackRating(s); }}
+                    hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}
+                  >
+                    <Text style={[styles.starIcon, feedbackRating >= s && styles.starActive]}>
+                      {feedbackRating >= s ? '★' : '☆'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <TextInput
+              style={styles.feedbackInput}
+              placeholder="Write your feedback..."
+              placeholderTextColor={Colors.textMuted}
+              value={feedbackMessage}
+              onChangeText={setFeedbackMessage}
+              multiline
+              numberOfLines={5}
+              maxLength={1000}
+              textAlignVertical="top"
+            />
+
+            <Text style={styles.charCount}>{feedbackMessage.length}/1000</Text>
+
+            <TouchableOpacity
+              style={[styles.submitBtn, (!feedbackMessage.trim() || feedbackLoading) && styles.submitBtnDisabled]}
+              onPress={handleSubmitFeedback}
+              disabled={!feedbackMessage.trim() || feedbackLoading}
+              activeOpacity={0.8}
+            >
+              {feedbackLoading ? (
+                <ActivityIndicator color={Colors.background} size="small" />
+              ) : (
+                <Text style={styles.submitBtnText}>Submit Feedback</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* ── Delete Account Modal ───────────────────────────────────── */}
+      <Modal visible={deleteVisible} transparent animationType="slide">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: Colors.danger }]}>Delete Account</Text>
+              <TouchableOpacity onPress={() => setDeleteVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                <Icon name="x" size={22} color={Colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.warningBox}>
+              <Icon name="alert-triangle" size={20} color={Colors.danger} />
+              <Text style={styles.warningText}>
+                This will permanently delete your account, all transactions, budgets, savings goals, and financial data. This cannot be undone.
+              </Text>
+            </View>
+
+            <Text style={styles.fieldLabel}>Enter your password to confirm</Text>
+            <View style={styles.passwordRow}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder="Password"
+                placeholderTextColor={Colors.textMuted}
+                value={deletePassword}
+                onChangeText={setDeletePassword}
+                secureTextEntry={!showDeletePassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                onPress={() => setShowDeletePassword(!showDeletePassword)}
+                style={styles.eyeBtn}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon name={showDeletePassword ? 'eye-off' : 'eye'} size={20} color={Colors.textMuted} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.deleteBtnConfirm, (!deletePassword.trim() || deleteLoading) && styles.submitBtnDisabled]}
+              onPress={handleConfirmDelete}
+              disabled={!deletePassword.trim() || deleteLoading}
+              activeOpacity={0.8}
+            >
+              {deleteLoading ? (
+                <ActivityIndicator color={Colors.white} size="small" />
+              ) : (
+                <Text style={styles.deleteBtnConfirmText}>Permanently Delete My Account</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -345,4 +580,79 @@ const styles = StyleSheet.create({
   },
   logoutInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   logoutText: { fontSize: 16, fontWeight: '600', color: Colors.danger },
+  deleteBtn: {
+    borderWidth: 1, borderColor: Colors.border,
+    borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+  },
+  deleteText: { fontSize: 14, fontWeight: '500', color: Colors.textMuted },
+
+  // ── Modal styles ──────────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1, backgroundColor: Colors.overlay,
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.card, borderTopLeftRadius: 24,
+    borderTopRightRadius: 24, padding: 24, paddingBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 12,
+  },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
+  modalSubtitle: {
+    fontSize: 14, color: Colors.textSecondary, lineHeight: 20, marginBottom: 20,
+  },
+
+  // Feedback
+  ratingRow: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 16,
+  },
+  ratingLabel: { fontSize: 14, color: Colors.textSecondary },
+  starsRow: { flexDirection: 'row', gap: 6 },
+  starIcon: { fontSize: 28, color: Colors.textMuted },
+  starActive: { color: Colors.accent },
+  feedbackInput: {
+    backgroundColor: Colors.input, borderRadius: 12,
+    borderWidth: 1, borderColor: Colors.border,
+    padding: 16, fontSize: 15, color: Colors.textPrimary,
+    minHeight: 120, textAlignVertical: 'top',
+  },
+  charCount: {
+    fontSize: 12, color: Colors.textMuted, textAlign: 'right', marginTop: 6, marginBottom: 16,
+  },
+  submitBtn: {
+    backgroundColor: Colors.primary, borderRadius: 14,
+    paddingVertical: 16, alignItems: 'center',
+  },
+  submitBtnDisabled: { opacity: 0.4 },
+  submitBtnText: { fontSize: 16, fontWeight: '700', color: Colors.background },
+
+  // Delete Account
+  warningBox: {
+    flexDirection: 'row', gap: 12, backgroundColor: 'rgba(255,71,87,0.1)',
+    borderRadius: 12, padding: 14, marginBottom: 20, alignItems: 'flex-start',
+  },
+  warningText: {
+    flex: 1, fontSize: 13, color: Colors.danger, lineHeight: 19,
+  },
+  fieldLabel: {
+    fontSize: 13, color: Colors.textSecondary, marginBottom: 8,
+  },
+  passwordRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: Colors.input, borderRadius: 12,
+    borderWidth: 1, borderColor: Colors.border,
+    marginBottom: 20,
+  },
+  passwordInput: {
+    flex: 1, padding: 16, fontSize: 15, color: Colors.textPrimary,
+  },
+  eyeBtn: { paddingHorizontal: 14 },
+  deleteBtnConfirm: {
+    backgroundColor: Colors.danger, borderRadius: 14,
+    paddingVertical: 16, alignItems: 'center',
+  },
+  deleteBtnConfirmText: { fontSize: 15, fontWeight: '700', color: Colors.white },
 });

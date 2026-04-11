@@ -2,6 +2,7 @@
   "expo": {
     "name": "Ari",
     "slug": "ari",
+    "owner": "pinegrass-tech",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -35,7 +36,18 @@
           "imageWidth": 200
         }
       ],
-      "@sentry/react-native"
-    ]
+      [
+        "@sentry/react-native",
+        {
+          "organization": "pinegrass",
+          "project": "ari"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ae18eabf-124f-4b0a-a09e-a2a40dfb473b"
+      }
+    }
   }
 }

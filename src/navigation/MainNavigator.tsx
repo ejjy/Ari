@@ -16,6 +16,7 @@ import BudgetPlannerScreen from '../screens/accountant/BudgetPlannerScreen';
 import SavingsGoalsScreen from '../screens/accountant/SavingsGoalsScreen';
 import TaxEstimatorScreen from '../screens/accountant/TaxEstimatorScreen';
 import PnlReportScreen from '../screens/accountant/PnlReportScreen';
+import TodoNotesScreen from '../screens/TodoNotesScreen';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
@@ -100,6 +101,7 @@ export default function MainNavigator() {
       <Stack.Screen name="SavingsGoals" component={SavingsGoalsScreen} />
       <Stack.Screen name="TaxEstimator" component={TaxEstimatorScreen} />
       <Stack.Screen name="PnlReport" component={PnlReportScreen} />
+      <Stack.Screen name="TodoNotes" component={TodoNotesScreen} />
     </Stack.Navigator>
   );
 }

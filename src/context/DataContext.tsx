@@ -9,6 +9,8 @@ import * as txnApi from '../api/transactions';
 import * as budgetApi from '../api/budgets';
 import * as tomoApi from '../api/tomo';
 import * as goalsApi from '../api/savingsGoals';
+import * as catApi from '../api/categories';
+import type { UserCategoryData } from '../api/categories';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useAuth } from './AuthContext';
 import { useOfflineCache } from '../hooks/useOfflineCache';
@@ -30,6 +32,7 @@ interface DataContextValue {
   insights: Insight[];
   chatHistory: ChatMessage[];
   savingsGoals: SavingsGoal[];
+  userCategories: UserCategoryData[];
   loadingData: boolean;
   refreshing: boolean;
   tomoLoading: boolean;
@@ -40,6 +43,7 @@ interface DataContextValue {
   fetchNudge: () => Promise<void>;
   fetchInsights: () => Promise<void>;
   fetchSavingsGoals: () => Promise<void>;
+  fetchUserCategories: () => Promise<void>;
   addTransaction: (data: {
     type: string;
     amount: number;
@@ -85,6 +89,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [nudge, setNudge] = useState<Nudge | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [userCategories, setUserCategories] = useState<UserCategoryData[]>([]);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     INITIAL_TOMO_MESSAGE,
   ]);
@@ -155,11 +160,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [handleError, fetchWithCache]);
 
+  const fetchUserCategories = useCallback(async () => {
+    try {
+      const data = await fetchWithCache('user_categories', () =>
+        catApi.getCategories()
+      );
+      setUserCategories(data);
+    } catch (err) {
+      handleError(err);
+    }
+  }, [handleError, fetchWithCache]);
+
   const fetchAll = useCallback(async () => {
     setLoadingData(true);
-    await Promise.all([fetchTransactions(), fetchSummary()]);
+    await Promise.all([fetchTransactions(), fetchSummary(), fetchUserCategories()]);
     setLoadingData(false);
-  }, [fetchTransactions, fetchSummary]);
+  }, [fetchTransactions, fetchSummary, fetchUserCategories]);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -335,6 +351,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         insights,
         chatHistory,
         savingsGoals,
+        userCategories,
         loadingData,
         refreshing,
         tomoLoading,
@@ -345,6 +362,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         fetchNudge,
         fetchInsights,
         fetchSavingsGoals,
+        fetchUserCategories,
         addTransaction,
         deleteTransaction,
         saveBudget,

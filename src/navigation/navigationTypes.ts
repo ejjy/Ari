@@ -24,6 +24,7 @@ export type MainStackParamList = {
   SavingsGoals: undefined;
   TaxEstimator: undefined;
   PnlReport: undefined;
+  TodoNotes: undefined;
 };
 
 export type RootStackParamList = {

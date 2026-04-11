@@ -217,9 +217,34 @@ export default function DashboardScreen() {
           </TouchableOpacity>
         </AnimatedEntry>
 
+        {/* To-Do Notes Banner */}
+        <AnimatedEntry delay={300}>
+          <TouchableOpacity
+            style={styles.todoBanner}
+            activeOpacity={0.75}
+            onPress={() => {
+              haptics.light();
+              navigation.navigate('TodoNotes');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Open Notes and To-Do"
+          >
+            <View style={[styles.accountantIcon, { backgroundColor: Colors.accent + '20' }]}>
+              <Icon name="check-circle" size={22} color={Colors.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.accountantTitle}>Notes & To-Do</Text>
+              <Text style={styles.accountantSub}>
+                Tasks, reminders & quick notes
+              </Text>
+            </View>
+            <Icon name="chevron-right" size={18} color={Colors.textMuted} />
+          </TouchableOpacity>
+        </AnimatedEntry>
+
         {/* Insights */}
         {insights.length > 0 && (
-          <AnimatedEntry delay={320}>
+          <AnimatedEntry delay={340}>
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Icon name="lightbulb" size={16} color={Colors.accent} />
@@ -369,4 +394,15 @@ const styles = StyleSheet.create({
   },
   accountantTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
   accountantSub: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
+  todoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.accent + '40',
+    padding: 14,
+    gap: 12,
+    marginTop: 10,
+  },
 });

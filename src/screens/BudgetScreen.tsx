@@ -28,7 +28,7 @@ import { useHaptics } from '../hooks/useHaptics';
 import type { Budget } from '../types';
 
 export default function BudgetScreen() {
-  const { budgets, loadingData, refreshing, fetchBudgets, saveBudget, deleteBudget, refresh } =
+  const { budgets, loadingData, refreshing, fetchBudgets, saveBudget, deleteBudget, refresh, userCategories, fetchUserCategories } =
     useData();
   const haptics = useHaptics();
 
@@ -44,7 +44,8 @@ export default function BudgetScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchBudgets();
-    }, [fetchBudgets])
+      if (userCategories.length === 0) fetchUserCategories();
+    }, [fetchBudgets, userCategories.length, fetchUserCategories])
   );
 
   const totalBudget = budgets.reduce((s, b) => s + b.limit, 0);
@@ -204,6 +205,7 @@ export default function BudgetScreen() {
               selected={category}
               type="expense"
               onSelect={setCategory}
+              customCategories={userCategories}
             />
 
             <Text style={[styles.sectionLabel, { marginTop: 20 }]}>Monthly Limit (₹)</Text>

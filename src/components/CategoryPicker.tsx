@@ -3,19 +3,26 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
+  buildCategoryList,
   CategoryDef,
 } from '../constants/categories';
 import { Colors } from '../constants/colors';
+import type { UserCategoryData } from '../api/categories';
 
 interface Props {
   selected: string;
   type: 'expense' | 'income';
   onSelect: (value: string) => void;
+  /** Server-fetched custom categories — merges with defaults */
+  customCategories?: UserCategoryData[];
 }
 
-export default function CategoryPicker({ selected, type, onSelect }: Props) {
-  const cats: CategoryDef[] =
-    type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+export default function CategoryPicker({ selected, type, onSelect, customCategories }: Props) {
+  const cats: CategoryDef[] = customCategories
+    ? buildCategoryList(type, customCategories)
+    : type === 'expense'
+      ? EXPENSE_CATEGORIES
+      : INCOME_CATEGORIES;
 
   return (
     <View style={styles.grid}>

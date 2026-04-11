@@ -31,8 +31,13 @@ type Props = StackScreenProps<MainStackParamList, 'AddTransaction'>;
 
 export default function AddTransactionScreen({ navigation, route }: Props) {
   const initialType = route.params?.type ?? 'expense';
-  const { addTransaction } = useData();
+  const { addTransaction, userCategories, fetchUserCategories } = useData();
   const haptics = useHaptics();
+
+  // Fetch custom categories on mount if not loaded
+  React.useEffect(() => {
+    if (userCategories.length === 0) fetchUserCategories();
+  }, [userCategories.length, fetchUserCategories]);
 
   const [type, setType] = useState<'expense' | 'income'>(initialType);
   const [amount, setAmount] = useState('');
@@ -203,6 +208,7 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
               selected={category}
               type={type}
               onSelect={setCategory}
+              customCategories={userCategories}
             />
           </View>
 

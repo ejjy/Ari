@@ -23,6 +23,7 @@ import ErrorBanner from '../components/ui/ErrorBanner';
 import Button from '../components/ui/Button';
 import { Colors } from '../constants/colors';
 import { autoDetectCategory } from '../utils/autoDetectCategory';
+import { parseMerchant } from '../utils/merchantParser';
 import { todayISO } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
 import Icon from '../components/ui/Icon';
@@ -62,6 +63,14 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
 
   const handleDescriptionChange = (text: string) => {
     setDescription(text);
+    // Spec §3 fast-path: MerchantDB first (80% case). Fall back to the
+    // keyword detector for free-form terms like "coffee" / "movie".
+    const merchant = parseMerchant(text);
+    if (merchant) {
+      setCategory(merchant.category);
+      if (merchant.type !== type) setType(merchant.type);
+      return;
+    }
     const detected = autoDetectCategory(text, type);
     if (detected) {
       setCategory(detected.category);

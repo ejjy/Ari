@@ -19,6 +19,7 @@ import { ApiError } from '../api/client';
 import TypeToggle from '../components/TypeToggle';
 import CategoryPicker from '../components/CategoryPicker';
 import QuickAmounts from '../components/QuickAmounts';
+import QuickAddTemplates, { type Template } from '../components/QuickAddTemplates';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import Button from '../components/ui/Button';
 import { Colors } from '../constants/colors';
@@ -291,6 +292,22 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
             <QuickAmounts onSelect={(a) => setAmount(String(a))} />
           </View>
 
+          {/* Quick Add Templates — top 10 recurring spends (spec Sprint 1) */}
+          <View style={styles.templatesRow}>
+            <QuickAddTemplates
+              onSelect={(t: Template) => {
+                haptics.light();
+                setType(t.type);
+                setCategory(t.category);
+                setMerchantName(t.merchant);
+                setDescription(t.description);
+                setParseSource('local');
+                setConfidence(1.0);
+                setRawInput(undefined);
+              }}
+            />
+          </View>
+
           {/* Description */}
           <View style={styles.inputBlock}>
             <Text style={styles.inputLabel}>Description</Text>
@@ -439,7 +456,8 @@ const styles = StyleSheet.create({
     fontSize: 52, fontWeight: '800', color: Colors.textPrimary,
     minWidth: 100, textAlign: 'center',
   },
-  quickRow: { marginBottom: 24 },
+  quickRow: { marginBottom: 12 },
+  templatesRow: { marginBottom: 20 },
   inputBlock: { marginBottom: 20 },
   inputLabel: {
     fontSize: 13, color: Colors.textSecondary, fontWeight: '600', marginBottom: 10,

@@ -7,6 +7,8 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as authApi from '../api/auth';
+import { registerPushToken, clearPushToken } from '../api/push';
+import { getExpoPushToken } from '../lib/push';
 import type { User, RegisterPayload } from '../types';
 
 interface AuthContextValue {
@@ -15,6 +17,9 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterFormData) => Promise<void>;
   logout: () => Promise<void>;
+  /** Hydrate the context from an already-persisted session (e.g. after
+   * Google OAuth or phone-OTP stash the access_token themselves). */
+  refreshFromSession: (user: User) => Promise<void>;
 }
 
 export interface RegisterFormData {
@@ -90,10 +95,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { cancelled = true; };
   }, []);
 
+  // Register the device's Expo push token with the backend. Silent
+  // failure is fine — push notifications are an opportunistic channel.
+  const attemptPushRegister = async () => {
+    try {
+      const token = await getExpoPushToken();
+      if (token) await registerPushToken(token);
+    } catch {
+      /* noop */
+    }
+  };
+
   const login = useCallback(async (email: string, password: string) => {
     const { token, user: u } = await authApi.login(email, password);
     await AsyncStorage.setItem('ari_token', token);
     setUser(u);
+    attemptPushRegister();
   }, []);
 
   const register = useCallback(async (formData: RegisterFormData) => {
@@ -101,15 +118,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { token, user: u } = await authApi.register(payload);
     await AsyncStorage.setItem('ari_token', token);
     setUser(u);
+    attemptPushRegister();
   }, []);
 
   const logout = useCallback(async () => {
+    // Best-effort detach the token so the backend stops pushing to this
+    // device. If the network is offline we just wipe local state.
+    try {
+      await clearPushToken();
+    } catch {
+      /* noop */
+    }
     await AsyncStorage.multiRemove(['ari_token', 'ari_user']);
     setUser(null);
   }, []);
 
+  const refreshFromSession = useCallback(async (u: User) => {
+    setUser(u);
+    attemptPushRegister();
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshFromSession }}>
       {children}
     </AuthContext.Provider>
   );

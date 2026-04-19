@@ -9,7 +9,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from '../../components/ui/Icon';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import { Colors } from '../../constants/colors';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import * as taxApi from '../../api/taxProfile';
 import type { TaxProfile, TaxComparison } from '../../types';
@@ -35,6 +35,7 @@ type Section = 'income' | 'deductions' | 'housing' | 'result';
 export default function TaxEstimatorScreen() {
   const navigation = useNavigation();
   const haptics = useHaptics();
+  const { formatAmount } = usePrivacy();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -246,14 +247,14 @@ export default function TaxEstimatorScreen() {
                   <View style={styles.resultCol}>
                     <Text style={styles.resultLabel}>Total Tax</Text>
                     <Text style={styles.resultAmount}>
-                      {formatCurrency(result.totalTax)}
+                      {formatAmount(result.totalTax)}
                     </Text>
                   </View>
                   <View style={styles.resultDivider} />
                   <View style={styles.resultCol}>
                     <Text style={styles.resultLabel}>Monthly TDS</Text>
                     <Text style={styles.resultAmount}>
-                      {formatCurrency(result.monthlyTax)}
+                      {formatAmount(result.monthlyTax)}
                     </Text>
                   </View>
                   <View style={styles.resultDivider} />
@@ -272,11 +273,11 @@ export default function TaxEstimatorScreen() {
                 <View style={styles.legendRow}>
                   <View style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: Colors.primary }]} />
-                    <Text style={styles.legendText}>Deductions {formatCurrency(result.totalDeductions)}</Text>
+                    <Text style={styles.legendText}>Deductions {formatAmount(result.totalDeductions)}</Text>
                   </View>
                   <View style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: Colors.danger }]} />
-                    <Text style={styles.legendText}>Tax {formatCurrency(result.totalTax)}</Text>
+                    <Text style={styles.legendText}>Tax {formatAmount(result.totalTax)}</Text>
                   </View>
                   <View style={styles.legendItem}>
                     <View style={[styles.legendDot, { backgroundColor: Colors.accent }]} />
@@ -296,7 +297,7 @@ export default function TaxEstimatorScreen() {
                   <View style={styles.compareCol}>
                     <Text style={styles.compareLabel}>Old Regime</Text>
                     <Text style={[styles.compareAmount, recommended === 'old' && styles.compareWinner]}>
-                      {formatCurrency(comparison.old.totalTax)}
+                      {formatAmount(comparison.old.totalTax)}
                     </Text>
                     <Text style={styles.compareRate}>{comparison.old.effectiveTaxRate}% rate</Text>
                   </View>
@@ -306,7 +307,7 @@ export default function TaxEstimatorScreen() {
                   <View style={styles.compareCol}>
                     <Text style={styles.compareLabel}>New Regime</Text>
                     <Text style={[styles.compareAmount, recommended === 'new' && styles.compareWinner]}>
-                      {formatCurrency(comparison.new.totalTax)}
+                      {formatAmount(comparison.new.totalTax)}
                     </Text>
                     <Text style={styles.compareRate}>{comparison.new.effectiveTaxRate}% rate</Text>
                   </View>
@@ -315,7 +316,7 @@ export default function TaxEstimatorScreen() {
                   <View style={styles.savingsBanner}>
                     <Icon name="trending-down" size={16} color={Colors.primary} />
                     <Text style={styles.savingsText}>
-                      You save {formatCurrency(comparison.savings)}/year with{' '}
+                      You save {formatAmount(comparison.savings)}/year with{' '}
                       {recommended === 'old' ? 'Old' : 'New'} Regime
                     </Text>
                   </View>
@@ -377,7 +378,7 @@ export default function TaxEstimatorScreen() {
                 <View style={styles.hraResult}>
                   <Icon name="check-circle" size={16} color={Colors.primary} />
                   <Text style={styles.hraResultText}>
-                    HRA Exemption: {formatCurrency(comparison.old.hraExemption)}
+                    HRA Exemption: {formatAmount(comparison.old.hraExemption)}
                   </Text>
                 </View>
               )}
@@ -404,7 +405,7 @@ export default function TaxEstimatorScreen() {
                       {gst.gstLiability > 0 ? 'Estimated GST Liability' : 'Below GST Threshold'}
                     </Text>
                     <Text style={styles.gstResultAmount}>
-                      {gst.gstLiability > 0 ? formatCurrency(gst.gstLiability) : 'No GST required'}
+                      {gst.gstLiability > 0 ? formatAmount(gst.gstLiability) : 'No GST required'}
                     </Text>
                     {gst.threshold && (
                       <Text style={styles.gstNote}>

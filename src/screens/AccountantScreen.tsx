@@ -61,6 +61,13 @@ const MODULES: ModuleItem[] = [
     title: 'P&L Reports',
     subtitle: 'Income vs expense trends & insights',
   },
+  {
+    key: 'DailyHeatmap',
+    icon: 'calendar',
+    iconColor: Colors.primary,
+    title: 'Daily Heatmap',
+    subtitle: 'Which days of the month you spend the most',
+  },
 ];
 
 export default function AccountantScreen() {

@@ -22,7 +22,7 @@ import AnimatedFAB from '../components/ui/AnimatedFAB';
 import Icon from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
 import { groupTransactionsByDate } from '../utils/dateHelpers';
-import { formatCurrency } from '../utils/formatCurrency';
+import { usePrivacy } from '../context/PrivacyContext';
 import { useHaptics } from '../hooks/useHaptics';
 import type { Transaction } from '../types';
 import type { TabParamList, MainStackParamList } from '../navigation/navigationTypes';
@@ -47,6 +47,7 @@ export default function TransactionsScreen() {
   } = useData();
   const haptics = useHaptics();
   const insets = useSafeAreaInsets();
+  const { formatAmount } = usePrivacy();
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<FilterType>('all');
@@ -134,11 +135,11 @@ export default function TransactionsScreen() {
             <View style={styles.pills}>
               <View style={[styles.pill, styles.incomePill]}>
                 <Text style={styles.pillLabel}>↑ Income</Text>
-                <Text style={styles.pillIncome}>{formatCurrency(income)}</Text>
+                <Text style={styles.pillIncome}>{formatAmount(income)}</Text>
               </View>
               <View style={[styles.pill, styles.expensePill]}>
                 <Text style={styles.pillLabel}>↓ Expenses</Text>
-                <Text style={styles.pillExpense}>{formatCurrency(expenses)}</Text>
+                <Text style={styles.pillExpense}>{formatAmount(expenses)}</Text>
               </View>
             </View>
 
@@ -215,7 +216,7 @@ export default function TransactionsScreen() {
         title="Delete Transaction?"
         message={
           toDelete
-            ? `Delete "${toDelete.description || toDelete.category}" of ${formatCurrency(toDelete.amount)}?`
+            ? `Delete "${toDelete.description || toDelete.category}" of ${formatAmount(toDelete.amount)}?`
             : ''
         }
         onConfirm={handleDeleteConfirm}

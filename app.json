@@ -49,7 +49,8 @@
           "microphonePermission": "Ari needs your microphone to log expenses by voice.",
           "speechRecognitionPermission": "Ari needs speech recognition to turn your voice into transactions."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "updates": {
       "url": "https://u.expo.dev/ae18eabf-124f-4b0a-a09e-a2a40dfb473b"

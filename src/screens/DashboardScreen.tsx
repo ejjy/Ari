@@ -15,6 +15,7 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import BalanceCard from '../components/BalanceCard';
+import CoachingBriefCard from '../components/CoachingBriefCard';
 import NudgeCard from '../components/NudgeCard';
 import TransactionItem from '../components/TransactionItem';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -183,6 +184,11 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        </AnimatedEntry>
+
+        {/* Weekly / monthly coaching brief — self-hides when cache is empty */}
+        <AnimatedEntry delay={220}>
+          <CoachingBriefCard />
         </AnimatedEntry>
 
         {/* Nudge */}

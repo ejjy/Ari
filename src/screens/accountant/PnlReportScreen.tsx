@@ -9,7 +9,7 @@ import Icon from '../../components/ui/Icon';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import EmptyState from '../../components/ui/EmptyState';
 import { Colors } from '../../constants/colors';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import * as reportsApi from '../../api/reports';
 import type { PnlReport, PnlMonth } from '../../types';
@@ -35,6 +35,7 @@ function monthLabel(m: string): string {
 export default function PnlReportScreen() {
   const navigation = useNavigation();
   const haptics = useHaptics();
+  const { formatAmount } = usePrivacy();
 
   const [report, setReport] = useState<PnlReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -250,7 +251,7 @@ export default function PnlReportScreen() {
                       }]} />
                     </View>
                     <Text style={styles.catPct}>{pct}%</Text>
-                    <Text style={styles.catAmount}>{formatCurrency(amount)}</Text>
+                    <Text style={styles.catAmount}>{formatAmount(amount)}</Text>
                   </View>
                 );
               })}
@@ -279,7 +280,7 @@ export default function PnlReportScreen() {
                       }]} />
                     </View>
                     <Text style={styles.catPct}>{pct}%</Text>
-                    <Text style={styles.catAmount}>{formatCurrency(amount)}</Text>
+                    <Text style={styles.catAmount}>{formatAmount(amount)}</Text>
                   </View>
                 );
               })}
@@ -300,10 +301,10 @@ export default function PnlReportScreen() {
             {pnlMonths.map((m, i) => (
               <View key={m.month} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
                 <Text style={[styles.tableCell, { flex: 1.2, fontWeight: '600' }]}>{monthLabel(m.month)}</Text>
-                <Text style={[styles.tableCell, { color: Colors.primary }]}>{formatCurrency(m.income)}</Text>
-                <Text style={[styles.tableCell, { color: Colors.danger }]}>{formatCurrency(m.expenses)}</Text>
+                <Text style={[styles.tableCell, { color: Colors.primary }]}>{formatAmount(m.income)}</Text>
+                <Text style={[styles.tableCell, { color: Colors.danger }]}>{formatAmount(m.expenses)}</Text>
                 <Text style={[styles.tableCell, { color: m.net >= 0 ? Colors.primary : Colors.danger, fontWeight: '700' }]}>
-                  {m.net >= 0 ? '+' : ''}{formatCurrency(m.net)}
+                  {m.net >= 0 ? '+' : ''}{formatAmount(m.net)}
                 </Text>
               </View>
             ))}
@@ -335,11 +336,12 @@ function SummaryCard({
 }: {
   label: string; amount: number; color: string; isSuffix?: string;
 }) {
+  const { formatAmount } = usePrivacy();
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryLabel}>{label}</Text>
       <Text style={[styles.summaryAmount, { color }]}>
-        {isSuffix ? `${Math.round(amount)}${isSuffix}` : formatCurrency(amount)}
+        {isSuffix ? `${Math.round(amount)}${isSuffix}` : formatAmount(amount)}
       </Text>
     </View>
   );

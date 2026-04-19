@@ -18,15 +18,36 @@ import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { Colors } from '../constants/colors';
 import Icon from '../components/ui/Icon';
+import { signInWithGoogle } from '../lib/socialAuth';
+import * as authApi from '../api/auth';
 
 type Props = StackScreenProps<AuthStackParamList, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
-  const { login } = useAuth();
+  const { login, refreshFromSession } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState<'google' | null>(null);
   const [error, setError] = useState('');
+
+  const handleGoogle = async () => {
+    setError('');
+    setSocialLoading('google');
+    try {
+      const res = await signInWithGoogle();
+      if (!res.ok) {
+        if (res.error !== 'cancelled') setError(res.error ?? 'Google sign-in failed');
+        return;
+      }
+      const me = await authApi.getMe();
+      await refreshFromSession(me);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Google sign-in error');
+    } finally {
+      setSocialLoading(null);
+    }
+  };
 
   const handleLogin = async () => {
     setError('');
@@ -112,6 +133,35 @@ export default function LoginScreen({ navigation }: Props) {
               Sign In
             </Button>
 
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <TouchableOpacity
+              onPress={handleGoogle}
+              style={styles.socialBtn}
+              disabled={socialLoading !== null}
+              accessibilityRole="button"
+              accessibilityLabel="Continue with Google"
+            >
+              <Icon name="user" size={16} color={Colors.textPrimary} />
+              <Text style={styles.socialText}>
+                {socialLoading === 'google' ? 'Signing in…' : 'Continue with Google'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('PhoneOtp')}
+              style={styles.socialBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Continue with phone"
+            >
+              <Icon name="send" size={16} color={Colors.textPrimary} />
+              <Text style={styles.socialText}>Continue with phone</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity
               onPress={fillDemo}
               style={styles.demoBtn}
@@ -164,6 +214,20 @@ const styles = StyleSheet.create({
   },
   subtitle: { fontSize: 15, color: Colors.textSecondary, textAlign: 'center' },
   form: { flex: 1 },
+  divider: {
+    flexDirection: 'row', alignItems: 'center',
+    marginVertical: 20, gap: 12,
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { fontSize: 12, color: Colors.textMuted, letterSpacing: 0.5 },
+  socialBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 14, borderRadius: 10,
+    backgroundColor: Colors.input,
+    borderWidth: 1, borderColor: Colors.border,
+    marginBottom: 10,
+  },
+  socialText: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
   demoBtn: {
     marginTop: 16,
     alignItems: 'center',

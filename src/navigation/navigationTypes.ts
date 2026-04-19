@@ -4,6 +4,7 @@ export type AuthStackParamList = {
   Splash: undefined;
   Login: undefined;
   Register: undefined;
+  PhoneOtp: undefined;
 };
 
 export type TabParamList = {
@@ -25,6 +26,7 @@ export type MainStackParamList = {
   TaxEstimator: undefined;
   PnlReport: undefined;
   TodoNotes: undefined;
+  DailyHeatmap: undefined;
 };
 
 export type RootStackParamList = {

@@ -10,7 +10,7 @@ import type { IconName } from '../../components/ui/Icon';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import EmptyState from '../../components/ui/EmptyState';
 import { Colors } from '../../constants/colors';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import { CATEGORY_ICONS } from '../../components/ui/Icon';
 import * as txnApi from '../../api/transactions';
@@ -57,6 +57,7 @@ type SortBy = 'date' | 'amount';
 export default function SmartLedgerScreen() {
   const navigation = useNavigation();
   const haptics = useHaptics();
+  const { formatAmount } = usePrivacy();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,7 +161,7 @@ export default function SmartLedgerScreen() {
     haptics.medium();
     Alert.alert(
       'Delete Transaction',
-      `Delete "${txn.description}" (${formatCurrency(txn.amount)})?`,
+      `Delete "${txn.description}" (${formatAmount(txn.amount)})?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -306,14 +307,14 @@ export default function SmartLedgerScreen() {
           <Text style={styles.statLabel}>{stats.count} txns</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statVal, { color: Colors.primary }]}>↑ {formatCurrency(stats.income)}</Text>
+          <Text style={[styles.statVal, { color: Colors.primary }]}>↑ {formatAmount(stats.income)}</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statVal, { color: Colors.danger }]}>↓ {formatCurrency(stats.expense)}</Text>
+          <Text style={[styles.statVal, { color: Colors.danger }]}>↓ {formatAmount(stats.expense)}</Text>
         </View>
         <View style={styles.statItem}>
           <Text style={[styles.statVal, { color: stats.net >= 0 ? Colors.primary : Colors.danger, fontWeight: '700' }]}>
-            = {formatCurrency(stats.net)}
+            = {formatAmount(stats.net)}
           </Text>
         </View>
       </View>
@@ -396,7 +397,7 @@ export default function SmartLedgerScreen() {
 
                   {/* Right amount */}
                   <Text style={[styles.txnAmount, { color: isIncome ? Colors.primary : Colors.danger }]}>
-                    {isIncome ? '+' : '-'}{formatCurrency(txn.amount)}
+                    {isIncome ? '+' : '-'}{formatAmount(txn.amount)}
                   </Text>
                 </TouchableOpacity>
               </AnimatedEntry>

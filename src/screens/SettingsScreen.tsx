@@ -21,6 +21,9 @@ import { useHaptics } from '../hooks/useHaptics';
 import { useBiometric } from '../hooks/useBiometric';
 import { useNotifications } from '../hooks/useNotifications';
 import { usePrivacy } from '../context/PrivacyContext';
+import { useNavigation } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { MainStackParamList } from '../navigation/navigationTypes';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
@@ -64,6 +67,7 @@ export default function SettingsScreen() {
   const { isAvailable: biometricAvailable, isEnabled: biometricEnabled, toggleBiometric } = useBiometric();
   const { isEnabled: notificationsEnabled, toggleNotifications, sendTestNotification } = useNotifications();
   const { isPrivate, togglePrivate } = usePrivacy();
+  const navigation = useNavigation<StackNavigationProp<MainStackParamList>>();
   const [subScreen, setSubScreen] = useState<SubScreen>('main');
 
   // Feedback state
@@ -224,7 +228,18 @@ export default function SettingsScreen() {
     return <ManageCategoriesScreen onBack={() => setSubScreen('main')} />;
   }
 
+  const tier = user?.tier ?? 'free';
+  const isSubscribed = tier !== 'free';
+
   const menuItems: MenuItem[] = [
+    {
+      icon: 'sparkles',
+      label: isSubscribed ? `Ari ${tier[0].toUpperCase() + tier.slice(1)}` : 'Upgrade to Ari Pro',
+      subtitle: isSubscribed
+        ? 'Manage your subscription'
+        : 'Unlock the weekly brief, AA sync, and more',
+      onPress: () => { haptics.light(); navigation.navigate('Paywall'); },
+    },
     { icon: 'list', label: 'Manage Categories', subtitle: 'Add custom expense & income types', onPress: () => { haptics.light(); setSubScreen('categories'); } },
     { icon: 'upload', label: 'Export Data', subtitle: 'Download your transactions', onPress: () => { haptics.light(); setSubScreen('export'); } },
     { icon: 'message-circle', label: 'Send Feedback', subtitle: 'Help us improve Ari', onPress: handleOpenFeedback },

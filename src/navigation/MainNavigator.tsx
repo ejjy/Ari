@@ -18,6 +18,7 @@ import TaxEstimatorScreen from '../screens/accountant/TaxEstimatorScreen';
 import PnlReportScreen from '../screens/accountant/PnlReportScreen';
 import TodoNotesScreen from '../screens/TodoNotesScreen';
 import DailyHeatmapScreen from '../screens/DailyHeatmapScreen';
+import PaywallScreen from '../screens/PaywallScreen';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
@@ -104,6 +105,11 @@ export default function MainNavigator() {
       <Stack.Screen name="PnlReport" component={PnlReportScreen} />
       <Stack.Screen name="TodoNotes" component={TodoNotesScreen} />
       <Stack.Screen name="DailyHeatmap" component={DailyHeatmapScreen} />
+      <Stack.Screen
+        name="Paywall"
+        component={PaywallScreen}
+        options={{ presentation: 'modal', cardStyle: { backgroundColor: 'transparent' } }}
+      />
     </Stack.Navigator>
   );
 }

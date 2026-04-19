@@ -27,6 +27,7 @@ export type MainStackParamList = {
   PnlReport: undefined;
   TodoNotes: undefined;
   DailyHeatmap: undefined;
+  Paywall: undefined;
 };
 
 export type RootStackParamList = {

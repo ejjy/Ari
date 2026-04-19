@@ -8,6 +8,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "scheme": "ari",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",

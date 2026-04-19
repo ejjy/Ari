@@ -84,6 +84,13 @@ export interface User {
   mainGoal: string;
   role: string;
   currency?: string;
+  // Sprint 3 — Razorpay subscription tier
+  tier?: 'free' | 'pilot' | 'pro' | 'family';
+  subscriptionStatus?: string;
+  tierValidUntil?: string | null;
+  monthlyIncome?: number | null;
+  pushNotificationsEnabled?: boolean;
+  hasPushToken?: boolean;
 }
 
 export interface ChatMessage {

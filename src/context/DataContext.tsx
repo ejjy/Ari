@@ -55,6 +55,7 @@ interface DataContextValue {
     confidence?: number;
     merchant?: string | null;
     rawInput?: string;
+    entryType?: 'manual' | 'voice' | 'aa_sync';
   }) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   saveBudget: (data: { category: string; limit: number; month: string }) => Promise<void>;

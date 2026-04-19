@@ -23,6 +23,7 @@ export const addTransaction = (data: {
   confidence?: number;
   merchant?: string | null;
   rawInput?: string;
+  entryType?: 'manual' | 'voice' | 'aa_sync';
 }) =>
   apiRequest<Transaction>('/transactions', {
     method: 'POST',

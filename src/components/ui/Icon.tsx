@@ -20,7 +20,7 @@ export type IconName =
   | 'book-open' | 'package' | 'briefcase' | 'code' | 'gift' | 'refresh-cw'
   // App-specific
   | 'sprout' | 'fingerprint' | 'sparkles' | 'lightbulb' | 'message-circle'
-  | 'user' | 'moon' | 'sun' | 'play' | 'flag';
+  | 'user' | 'moon' | 'sun' | 'play' | 'flag' | 'mic' | 'mic-off';
 
 interface IconProps {
   name: IconName;
@@ -98,6 +98,8 @@ const ICON_MAP: Record<IconName, { lib: 'feather' | 'mci' | 'ion'; icon: string 
   sun: { lib: 'feather', icon: 'sun' },
   play: { lib: 'feather', icon: 'play' },
   flag: { lib: 'feather', icon: 'flag' },
+  mic: { lib: 'feather', icon: 'mic' },
+  'mic-off': { lib: 'feather', icon: 'mic-off' },
 };
 
 export default function Icon({ name, size = 20, color = Colors.textPrimary }: IconProps) {

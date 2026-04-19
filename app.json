@@ -42,8 +42,21 @@
           "organization": "pinegrass",
           "project": "ari"
         }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Ari needs your microphone to log expenses by voice.",
+          "speechRecognitionPermission": "Ari needs speech recognition to turn your voice into transactions."
+        }
       ]
     ],
+    "updates": {
+      "url": "https://u.expo.dev/ae18eabf-124f-4b0a-a09e-a2a40dfb473b"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "extra": {
       "eas": {
         "projectId": "ae18eabf-124f-4b0a-a09e-a2a40dfb473b"

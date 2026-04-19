@@ -28,6 +28,7 @@ import { parseExpenseAI, type AiParseResult } from '../api/parse';
 import ConfidenceConfirmSheet from '../components/ConfidenceConfirmSheet';
 import { todayISO } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
+import { useVoiceInput } from '../hooks/useVoiceInput';
 import Icon from '../components/ui/Icon';
 import type { Category, TransactionType } from '../types';
 
@@ -69,6 +70,18 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
   const [aiConfirmVisible, setAiConfirmVisible] = useState(false);
   const aiDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latestTextRef = useRef('');
+  const [entryType, setEntryType] = useState<'manual' | 'voice'>('manual');
+
+  // Voice input (spec §1 core differentiator). Stream transcript into the
+  // description field while the user speaks — MerchantDB / AI fallback fires
+  // automatically via handleDescriptionChange.
+  const voice = useVoiceInput();
+  useEffect(() => {
+    if (!voice.transcript) return;
+    handleDescriptionChange(voice.transcript);
+    setEntryType('voice');
+  // eslint-disable-next-line react-hooks/exhaustive-deps — handleDescriptionChange is stable enough
+  }, [voice.transcript]);
 
   useEffect(() => {
     return () => {
@@ -189,6 +202,7 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
         confidence,
         merchant: merchantName,
         rawInput,
+        entryType,
       });
 
       // Success animation
@@ -280,17 +294,43 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
           {/* Description */}
           <View style={styles.inputBlock}>
             <Text style={styles.inputLabel}>Description</Text>
-            <View style={styles.textInputBox}>
+            <View style={[styles.textInputBox, styles.descriptionRow]}>
               <TextInput
-                style={styles.textInput}
+                style={[styles.textInput, { flex: 1 }]}
                 value={description}
-                onChangeText={handleDescriptionChange}
-                placeholder="What was this for? (auto-detects category)"
+                onChangeText={(t) => {
+                  setEntryType('manual');
+                  handleDescriptionChange(t);
+                }}
+                placeholder={voice.isListening ? 'Listening…' : 'What was this for? Tap the mic to speak.'}
                 placeholderTextColor={Colors.textMuted}
                 returnKeyType="next"
                 selectionColor={Colors.primary}
+                editable={!voice.isListening}
               />
+              {voice.isAvailable && (
+                <TouchableOpacity
+                  style={[styles.micButton, voice.isListening && styles.micButtonActive]}
+                  onPress={() => {
+                    haptics.light();
+                    if (voice.isListening) voice.stop();
+                    else voice.start();
+                  }}
+                  accessibilityLabel={voice.isListening ? 'Stop voice input' : 'Start voice input'}
+                  accessibilityRole="button"
+                  hitSlop={8}
+                >
+                  <Icon
+                    name={voice.isListening ? 'mic-off' : 'mic'}
+                    size={18}
+                    color={voice.isListening ? Colors.card : Colors.primary}
+                  />
+                </TouchableOpacity>
+              )}
             </View>
+            {voice.error && (
+              <Text style={styles.voiceError}>{voice.error}</Text>
+            )}
           </View>
 
           {/* Category */}
@@ -409,6 +449,16 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 14,
   },
   textInput: { fontSize: 14, color: Colors.textPrimary, paddingVertical: 12 },
+  descriptionRow: { flexDirection: 'row', alignItems: 'center', paddingRight: 8 },
+  micButton: {
+    width: 32, height: 32, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.input, borderWidth: 1, borderColor: Colors.border,
+  },
+  micButtonActive: {
+    backgroundColor: Colors.primary, borderColor: Colors.primary,
+  },
+  voiceError: { marginTop: 6, fontSize: 12, color: Colors.danger },
   dateRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     backgroundColor: Colors.input, borderRadius: 12,

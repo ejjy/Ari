@@ -9,6 +9,7 @@ import { initSentry } from './src/config/sentry';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { AuthProvider } from './src/context/AuthContext';
 import { DataProvider } from './src/context/DataContext';
+import { PrivacyProvider } from './src/context/PrivacyContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
 // Initialize Sentry early
@@ -22,8 +23,10 @@ function App() {
           <NavigationContainer>
             <AuthProvider>
               <DataProvider>
-                <StatusBar style="light" />
-                <RootNavigator />
+                <PrivacyProvider>
+                  <StatusBar style="light" />
+                  <RootNavigator />
+                </PrivacyProvider>
               </DataProvider>
             </AuthProvider>
           </NavigationContainer>

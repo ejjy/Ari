@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import ProgressBar from './ui/ProgressBar';
 import { getCategoryDef } from '../constants/categories';
-import { formatCurrency } from '../utils/formatCurrency';
+import { usePrivacy } from '../context/PrivacyContext';
 import { Colors } from '../constants/colors';
 import Icon from './ui/Icon';
 import type { Budget } from '../types';
@@ -16,6 +16,7 @@ interface Props {
 export default function BudgetCard({ budget, onDelete, onEdit }: Props) {
   const cat = getCategoryDef(budget.category);
   const isOver = budget.percentage > 100;
+  const { formatAmount } = usePrivacy();
 
   return (
     <View style={styles.card}>
@@ -27,7 +28,7 @@ export default function BudgetCard({ budget, onDelete, onEdit }: Props) {
         <View style={styles.info}>
           <Text style={styles.catName}>{cat.label}</Text>
           <Text style={styles.meta}>
-            {formatCurrency(budget.spent)} of {formatCurrency(budget.limit)}
+            {formatAmount(budget.spent)} of {formatAmount(budget.limit)}
           </Text>
         </View>
 
@@ -59,8 +60,8 @@ export default function BudgetCard({ budget, onDelete, onEdit }: Props) {
         </Text>
         <Text style={[styles.remaining, isOver ? styles.over : null]}>
           {isOver
-            ? `${formatCurrency(Math.abs(budget.remaining))} over`
-            : `${formatCurrency(budget.remaining)} left`}
+            ? `${formatAmount(Math.abs(budget.remaining))} over`
+            : `${formatAmount(budget.remaining)} left`}
         </Text>
       </View>
     </View>

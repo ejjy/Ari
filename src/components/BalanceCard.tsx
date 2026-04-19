@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
-import { formatCurrency } from '../utils/formatCurrency';
+import { usePrivacy } from '../context/PrivacyContext';
 
 interface Props {
   income: number;
@@ -12,6 +12,7 @@ interface Props {
 }
 
 export default function BalanceCard({ income, expenses, balance, savingsRate }: Props) {
+  const { formatAmount, isPrivate } = usePrivacy();
   return (
     <LinearGradient
       colors={['#1A3A3A', '#0D2B2B', '#0A1E1E']}
@@ -22,21 +23,21 @@ export default function BalanceCard({ income, expenses, balance, savingsRate }: 
       <View style={styles.header}>
         <Text style={styles.label}>Total Balance</Text>
         <View style={styles.savingsBadge}>
-          <Text style={styles.savingsText}>💰 {savingsRate}% saved</Text>
+          <Text style={styles.savingsText}>💰 {isPrivate ? '•• %' : `${savingsRate}%`} saved</Text>
         </View>
       </View>
 
-      <Text style={styles.balance}>{formatCurrency(balance)}</Text>
+      <Text style={styles.balance}>{formatAmount(balance)}</Text>
 
       <View style={styles.row}>
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>↑ Income</Text>
-          <Text style={styles.statIncome}>{formatCurrency(income)}</Text>
+          <Text style={styles.statIncome}>{formatAmount(income)}</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.statBox}>
           <Text style={styles.statLabel}>↓ Expenses</Text>
-          <Text style={styles.statExpense}>{formatCurrency(expenses)}</Text>
+          <Text style={styles.statExpense}>{formatAmount(expenses)}</Text>
         </View>
       </View>
     </LinearGradient>

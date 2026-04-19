@@ -20,6 +20,7 @@ import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 import { useBiometric } from '../hooks/useBiometric';
 import { useNotifications } from '../hooks/useNotifications';
+import { usePrivacy } from '../context/PrivacyContext';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
@@ -62,6 +63,7 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { isAvailable: biometricAvailable, isEnabled: biometricEnabled, toggleBiometric } = useBiometric();
   const { isEnabled: notificationsEnabled, toggleNotifications, sendTestNotification } = useNotifications();
+  const { isPrivate, togglePrivate } = usePrivacy();
   const [subScreen, setSubScreen] = useState<SubScreen>('main');
 
   // Feedback state
@@ -321,6 +323,28 @@ export default function SettingsScreen() {
                 </View>
               </>
             )}
+            <View style={styles.separator} />
+            <View style={styles.toggleRow}>
+              <View style={styles.menuIconWrap}>
+                <Icon name={isPrivate ? 'eye-off' : 'eye'} size={20} color={Colors.textSecondary} />
+              </View>
+              <View style={styles.menuText}>
+                <Text style={styles.menuLabel}>Private Mode</Text>
+                <Text style={styles.menuSubtitle}>
+                  {isPrivate ? 'Amounts hidden across the app' : 'Hide balances in public'}
+                </Text>
+              </View>
+              <Switch
+                value={isPrivate}
+                onValueChange={() => {
+                  haptics.light();
+                  togglePrivate();
+                }}
+                trackColor={{ false: Colors.border, true: Colors.primaryDark }}
+                thumbColor={isPrivate ? Colors.primary : Colors.textMuted}
+                accessibilityLabel="Toggle private mode"
+              />
+            </View>
           </View>
         </AnimatedEntry>
 
@@ -401,7 +425,7 @@ export default function SettingsScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Send Feedback</Text>
               <TouchableOpacity onPress={() => setFeedbackVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
@@ -467,7 +491,7 @@ export default function SettingsScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: Colors.danger }]}>Delete Account</Text>
               <TouchableOpacity onPress={() => setDeleteVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getCategoryDef } from '../constants/categories';
-import { formatCurrency } from '../utils/formatCurrency';
+import { usePrivacy } from '../context/PrivacyContext';
 import { formatDateShort } from '../utils/dateHelpers';
 import { Colors } from '../constants/colors';
 import Icon, { CATEGORY_ICONS } from './ui/Icon';
@@ -16,6 +16,7 @@ interface Props {
 export default function TransactionItem({ transaction, onDelete, showDelete }: Props) {
   const cat = getCategoryDef(transaction.category);
   const isExpense = transaction.type === 'expense';
+  const { formatAmount } = usePrivacy();
 
   return (
     <View style={styles.row}>
@@ -42,7 +43,7 @@ export default function TransactionItem({ transaction, onDelete, showDelete }: P
 
       <View style={styles.right}>
         <Text style={[styles.amount, isExpense ? styles.expenseColor : styles.incomeColor]}>
-          {isExpense ? '-' : '+'}{formatCurrency(transaction.amount)}
+          {isExpense ? '-' : '+'}{formatAmount(transaction.amount)}
         </Text>
         {showDelete && onDelete && (
           <TouchableOpacity

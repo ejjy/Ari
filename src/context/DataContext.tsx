@@ -51,6 +51,10 @@ interface DataContextValue {
     description: string;
     note: string;
     date: string;
+    parseSource?: 'local' | 'fuzzy' | 'ai';
+    confidence?: number;
+    merchant?: string | null;
+    rawInput?: string;
   }) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   saveBudget: (data: { category: string; limit: number; month: string }) => Promise<void>;
@@ -196,6 +200,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       description: string;
       note: string;
       date: string;
+      parseSource?: 'local' | 'fuzzy' | 'ai';
+      confidence?: number;
+      merchant?: string | null;
+      rawInput?: string;
     }) => {
       const txn = await txnApi.addTransaction(data);
       setTransactions((prev) => [txn, ...prev]);

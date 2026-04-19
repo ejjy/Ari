@@ -18,6 +18,11 @@ export const addTransaction = (data: {
   description: string;
   note: string;
   date: string;
+  // Spec §4 parse provenance — optional; backend defaults to 'manual' / 'local'.
+  parseSource?: 'local' | 'fuzzy' | 'ai';
+  confidence?: number;
+  merchant?: string | null;
+  rawInput?: string;
 }) =>
   apiRequest<Transaction>('/transactions', {
     method: 'POST',

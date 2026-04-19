@@ -24,9 +24,12 @@ import Button from '../components/ui/Button';
 import { Colors } from '../constants/colors';
 import { autoDetectCategory } from '../utils/autoDetectCategory';
 import { parseMerchant } from '../utils/merchantParser';
+import { parseExpenseAI, type AiParseResult } from '../api/parse';
+import ConfidenceConfirmSheet from '../components/ConfidenceConfirmSheet';
 import { todayISO } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
 import Icon from '../components/ui/Icon';
+import type { Category, TransactionType } from '../types';
 
 type Props = StackScreenProps<MainStackParamList, 'AddTransaction'>;
 
@@ -56,26 +59,102 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
   const successScale = useRef(new Animated.Value(0)).current;
   const successOpacity = useRef(new Animated.Value(0)).current;
 
+  // Spec §5.1 AI fallback parser state. Kept in refs so rapid keystrokes
+  // don't fight each other via stale closures.
+  const [parseSource, setParseSource] = useState<'local' | 'fuzzy' | 'ai' | undefined>();
+  const [confidence, setConfidence] = useState<number | undefined>();
+  const [merchantName, setMerchantName] = useState<string | null>(null);
+  const [rawInput, setRawInput] = useState<string | undefined>();
+  const [pendingAi, setPendingAi] = useState<AiParseResult | null>(null);
+  const [aiConfirmVisible, setAiConfirmVisible] = useState(false);
+  const aiDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestTextRef = useRef('');
+
+  useEffect(() => {
+    return () => {
+      if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
+    };
+  }, []);
+
   const handleTypeChange = (newType: 'expense' | 'income') => {
     setType(newType);
     setCategory(newType === 'expense' ? 'food' : 'salary');
   };
 
+  const applyAiResult = (r: AiParseResult) => {
+    setCategory(r.category);
+    if (r.type !== type) setType(r.type);
+    if (r.merchant) setMerchantName(r.merchant);
+    if (!amount && r.amount > 0) setAmount(String(Math.round(r.amount)));
+    setParseSource('ai');
+    setConfidence(r.confidence);
+    setRawInput(r.rawInput);
+  };
+
   const handleDescriptionChange = (text: string) => {
     setDescription(text);
-    // Spec §3 fast-path: MerchantDB first (80% case). Fall back to the
-    // keyword detector for free-form terms like "coffee" / "movie".
+    latestTextRef.current = text;
+
+    // 1. Spec §3 fast-path: MerchantDB first (80% case). Free — sync, no network.
     const merchant = parseMerchant(text);
     if (merchant) {
       setCategory(merchant.category);
       if (merchant.type !== type) setType(merchant.type);
+      setMerchantName(merchant.merchant);
+      setParseSource(merchant.source);
+      setConfidence(merchant.confidence);
+      setRawInput(undefined);
+      if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
       return;
     }
+
+    // 2. Fall back to legacy keyword detector for free-form terms
+    //    ("coffee" / "movie" / "lunch") that aren't branded merchants.
     const detected = autoDetectCategory(text, type);
     if (detected) {
       setCategory(detected.category);
       if (detected.type !== type) setType(detected.type);
+      setMerchantName(null);
+      setParseSource('local');
+      setConfidence(1.0);
+      setRawInput(undefined);
+      if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
+      return;
     }
+
+    // 3. Nothing matched locally. Debounce 600ms then ask Gemini (spec §5.1).
+    //    Require at least 4 chars so we don't fire on "a", "abc" etc.
+    if (aiDebounceRef.current) clearTimeout(aiDebounceRef.current);
+    if (text.trim().length < 4) return;
+
+    aiDebounceRef.current = setTimeout(async () => {
+      // Bail if the user kept typing while we waited.
+      if (latestTextRef.current !== text) return;
+      try {
+        const r = await parseExpenseAI(text);
+        // Bail again — another keystroke may have fired during the roundtrip.
+        if (latestTextRef.current !== text) return;
+        if (r.confidence >= 0.70) {
+          applyAiResult(r);
+        } else {
+          setPendingAi(r);
+          setAiConfirmVisible(true);
+        }
+      } catch {
+        // Silent — AI parsing is opportunistic. User can still fill the form.
+      }
+    }, 600);
+  };
+
+  const handleAiConfirm = () => {
+    if (pendingAi) applyAiResult(pendingAi);
+    setAiConfirmVisible(false);
+    setPendingAi(null);
+  };
+
+  const handleAiCancel = () => {
+    setAiConfirmVisible(false);
+    setPendingAi(null);
   };
 
   const handleDateChange = (_: unknown, selected?: Date) => {
@@ -106,6 +185,10 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
         description: description.trim(),
         note: note.trim(),
         date,
+        parseSource,
+        confidence,
+        merchant: merchantName,
+        rawInput,
       });
 
       // Success animation
@@ -276,6 +359,19 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
           </Button>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {pendingAi && (
+        <ConfidenceConfirmSheet
+          visible={aiConfirmVisible}
+          confidence={pendingAi.confidence}
+          amount={pendingAi.amount}
+          category={pendingAi.category as Category}
+          type={pendingAi.type as TransactionType}
+          merchant={pendingAi.merchant}
+          onConfirm={handleAiConfirm}
+          onCancel={handleAiCancel}
+        />
+      )}
     </SafeAreaView>
   );
 }

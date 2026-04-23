@@ -91,6 +91,8 @@ export interface User {
   monthlyIncome?: number | null;
   pushNotificationsEnabled?: boolean;
   hasPushToken?: boolean;
+  // Sprint 3 — UPI VPA for shared-expense settlements
+  upiVpa?: string | null;
 }
 
 export interface ChatMessage {

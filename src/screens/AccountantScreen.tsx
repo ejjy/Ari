@@ -68,6 +68,13 @@ const MODULES: ModuleItem[] = [
     title: 'Daily Heatmap',
     subtitle: 'Which days of the month you spend the most',
   },
+  {
+    key: 'Groups',
+    icon: 'user',
+    iconColor: Colors.teal,
+    title: 'Shared Expenses',
+    subtitle: 'Split with friends, settle via UPI',
+  },
 ];
 
 export default function AccountantScreen() {

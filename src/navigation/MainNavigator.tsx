@@ -19,6 +19,9 @@ import PnlReportScreen from '../screens/accountant/PnlReportScreen';
 import TodoNotesScreen from '../screens/TodoNotesScreen';
 import DailyHeatmapScreen from '../screens/DailyHeatmapScreen';
 import PaywallScreen from '../screens/PaywallScreen';
+import GroupsListScreen from '../screens/GroupsListScreen';
+import GroupDetailScreen from '../screens/GroupDetailScreen';
+import AddSharedExpenseScreen from '../screens/AddSharedExpenseScreen';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
@@ -108,6 +111,13 @@ export default function MainNavigator() {
       <Stack.Screen
         name="Paywall"
         component={PaywallScreen}
+        options={{ presentation: 'modal', cardStyle: { backgroundColor: 'transparent' } }}
+      />
+      <Stack.Screen name="Groups" component={GroupsListScreen} />
+      <Stack.Screen name="GroupDetail" component={GroupDetailScreen} />
+      <Stack.Screen
+        name="AddSharedExpense"
+        component={AddSharedExpenseScreen}
         options={{ presentation: 'modal', cardStyle: { backgroundColor: 'transparent' } }}
       />
     </Stack.Navigator>

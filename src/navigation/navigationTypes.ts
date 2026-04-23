@@ -28,6 +28,9 @@ export type MainStackParamList = {
   TodoNotes: undefined;
   DailyHeatmap: undefined;
   Paywall: undefined;
+  Groups: undefined;
+  GroupDetail: { groupId: string };
+  AddSharedExpense: { groupId: string };
 };
 
 export type RootStackParamList = {

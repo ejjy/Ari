@@ -24,6 +24,7 @@ import { usePrivacy } from '../context/PrivacyContext';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { MainStackParamList } from '../navigation/navigationTypes';
+import UpiVpaEditor from '../components/UpiVpaEditor';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
@@ -58,7 +59,7 @@ interface MenuItem {
   destructive?: boolean;
 }
 
-type SubScreen = 'main' | 'export' | 'about' | 'categories';
+type SubScreen = 'main' | 'export' | 'about' | 'categories' | 'upi';
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
@@ -228,6 +229,10 @@ export default function SettingsScreen() {
     return <ManageCategoriesScreen onBack={() => setSubScreen('main')} />;
   }
 
+  if (subScreen === 'upi') {
+    return <UpiVpaEditor onBack={() => setSubScreen('main')} />;
+  }
+
   const tier = user?.tier ?? 'free';
   const isSubscribed = tier !== 'free';
 
@@ -239,6 +244,18 @@ export default function SettingsScreen() {
         ? 'Manage your subscription'
         : 'Unlock the weekly brief, AA sync, and more',
       onPress: () => { haptics.light(); navigation.navigate('Paywall'); },
+    },
+    {
+      icon: 'send',
+      label: user?.upiVpa ? `UPI: ${user.upiVpa}` : 'Set UPI VPA',
+      subtitle: 'Receive shared-expense settlements via UPI',
+      onPress: () => { haptics.light(); setSubScreen('upi'); },
+    },
+    {
+      icon: 'user',
+      label: 'Shared expenses',
+      subtitle: 'Split with friends, settle via UPI',
+      onPress: () => { haptics.light(); navigation.navigate('Groups'); },
     },
     { icon: 'list', label: 'Manage Categories', subtitle: 'Add custom expense & income types', onPress: () => { haptics.light(); setSubScreen('categories'); } },
     { icon: 'upload', label: 'Export Data', subtitle: 'Download your transactions', onPress: () => { haptics.light(); setSubScreen('export'); } },

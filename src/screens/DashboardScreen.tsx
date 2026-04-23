@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import BalanceCard from '../components/BalanceCard';
 import CoachingBriefCard from '../components/CoachingBriefCard';
+import GroupBalanceCard from '../components/GroupBalanceCard';
 import NudgeCard from '../components/NudgeCard';
 import TransactionItem from '../components/TransactionItem';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -189,6 +190,11 @@ export default function DashboardScreen() {
         {/* Weekly / monthly coaching brief — self-hides when cache is empty */}
         <AnimatedEntry delay={220}>
           <CoachingBriefCard />
+        </AnimatedEntry>
+
+        {/* Shared-expense net balance — self-hides when no groups / zero net */}
+        <AnimatedEntry delay={230}>
+          <GroupBalanceCard />
         </AnimatedEntry>
 
         {/* Nudge */}

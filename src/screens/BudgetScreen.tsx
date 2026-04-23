@@ -11,7 +11,7 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useData } from '../context/DataContext';
 import BudgetCard from '../components/BudgetCard';
@@ -22,7 +22,7 @@ import EmptyState from '../components/ui/EmptyState';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import Button from '../components/ui/Button';
 import { Colors } from '../constants/colors';
-import { formatCurrency } from '../utils/formatCurrency';
+import { usePrivacy } from '../context/PrivacyContext';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
 import type { Budget } from '../types';
@@ -31,6 +31,8 @@ export default function BudgetScreen() {
   const { budgets, loadingData, refreshing, fetchBudgets, saveBudget, deleteBudget, refresh, userCategories, fetchUserCategories } =
     useData();
   const haptics = useHaptics();
+  const insets = useSafeAreaInsets();
+  const { formatAmount } = usePrivacy();
 
   const [showModal, setShowModal] = useState(false);
   const [editBudget, setEditBudget] = useState<Budget | null>(null);
@@ -129,7 +131,7 @@ export default function BudgetScreen() {
             <View style={styles.summaryRow}>
               <View style={styles.summaryItem}>
                 <Text style={styles.summaryLabel}>Total Budgeted</Text>
-                <Text style={styles.summaryValue}>{formatCurrency(totalBudget)}</Text>
+                <Text style={styles.summaryValue}>{formatAmount(totalBudget)}</Text>
               </View>
               <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}>
@@ -140,7 +142,7 @@ export default function BudgetScreen() {
                     totalSpent > totalBudget ? styles.danger : null,
                   ]}
                 >
-                  {formatCurrency(totalSpent)}
+                  {formatAmount(totalSpent)}
                 </Text>
               </View>
             </View>
@@ -192,7 +194,7 @@ export default function BudgetScreen() {
             onPress={() => setShowModal(false)}
             activeOpacity={1}
           />
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>
               {editBudget ? 'Edit Budget' : 'New Budget'}

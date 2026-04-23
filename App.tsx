@@ -6,14 +6,16 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Sentry from '@sentry/react-native';
 import { initSentry } from './src/config/sentry';
+import { initAnalytics, track } from './src/lib/analytics';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { AuthProvider } from './src/context/AuthContext';
 import { DataProvider } from './src/context/DataContext';
 import { PrivacyProvider } from './src/context/PrivacyContext';
 import RootNavigator from './src/navigation/RootNavigator';
 
-// Initialize Sentry early
+// Initialize Sentry + PostHog early so the very first render can fire events.
 initSentry();
+initAnalytics().then(() => track('app_opened'));
 
 function App() {
   return (

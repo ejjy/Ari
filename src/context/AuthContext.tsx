@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as authApi from '../api/auth';
 import { registerPushToken, clearPushToken } from '../api/push';
 import { getExpoPushToken } from '../lib/push';
+import { identifyUser, resetAnalytics, track } from '../lib/analytics';
 import type { User, RegisterPayload } from '../types';
 
 interface AuthContextValue {
@@ -110,6 +111,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { token, user: u } = await authApi.login(email, password);
     await AsyncStorage.setItem('ari_token', token);
     setUser(u);
+    identifyUser(u.id, { tier: u.tier ?? 'free', age_group: u.ageGroup });
+    track('login_success');
     attemptPushRegister();
   }, []);
 
@@ -118,6 +121,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { token, user: u } = await authApi.register(payload);
     await AsyncStorage.setItem('ari_token', token);
     setUser(u);
+    identifyUser(u.id, { tier: u.tier ?? 'free', age_group: u.ageGroup });
+    track('register_success');
     attemptPushRegister();
   }, []);
 
@@ -131,10 +136,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     await AsyncStorage.multiRemove(['ari_token', 'ari_user']);
     setUser(null);
+    resetAnalytics();
   }, []);
 
   const refreshFromSession = useCallback(async (u: User) => {
     setUser(u);
+    identifyUser(u.id, { tier: u.tier ?? 'free', age_group: u.ageGroup });
     attemptPushRegister();
   }, []);
 

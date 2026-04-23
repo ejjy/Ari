@@ -4,7 +4,7 @@ import {
   RefreshControl, KeyboardAvoidingView, Platform, Alert, StyleSheet,
   Animated,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from '../../components/ui/Icon';
 import type { IconName } from '../../components/ui/Icon';
@@ -15,7 +15,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import DeleteConfirmSheet from '../../components/DeleteConfirmSheet';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import { Colors } from '../../constants/colors';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import * as goalsApi from '../../api/savingsGoals';
 import type { SavingsGoal } from '../../types';
@@ -34,6 +34,8 @@ const GOAL_ICONS: { icon: IconName; label: string; color: string }[] = [
 export default function SavingsGoalsScreen() {
   const navigation = useNavigation();
   const haptics = useHaptics();
+  const insets = useSafeAreaInsets();
+  const { formatAmount } = usePrivacy();
 
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -228,13 +230,13 @@ export default function SavingsGoalsScreen() {
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Total Saved</Text>
                       <Text style={[styles.summaryValue, { color: Colors.primary }]}>
-                        {formatCurrency(totalSaved)}
+                        {formatAmount(totalSaved)}
                       </Text>
                     </View>
                     <View style={styles.summaryDivider} />
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Total Target</Text>
-                      <Text style={styles.summaryValue}>{formatCurrency(totalTarget)}</Text>
+                      <Text style={styles.summaryValue}>{formatAmount(totalTarget)}</Text>
                     </View>
                     <View style={styles.summaryDivider} />
                     <View style={styles.summaryItem}>
@@ -304,62 +306,64 @@ export default function SavingsGoalsScreen() {
       <Modal visible={showAddModal} transparent animationType="slide" onRequestClose={() => setShowAddModal(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowAddModal(false)} activeOpacity={1} />
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>{editGoal ? 'Edit Goal' : 'New Savings Goal'}</Text>
-            <ErrorBanner message={formError} />
+            <ScrollView showsVerticalScrollIndicator={false} bounces={false} keyboardShouldPersistTaps="handled">
+              <ErrorBanner message={formError} />
 
-            <Text style={styles.fieldLabel}>Goal Name</Text>
-            <TextInput
-              style={styles.textInput}
-              value={goalName}
-              onChangeText={setGoalName}
-              placeholder="e.g., Dream Car, Emergency Fund"
-              placeholderTextColor={Colors.textMuted}
-              selectionColor={Colors.primary}
-            />
-
-            <Text style={styles.fieldLabel}>Target Amount</Text>
-            <View style={styles.amountRow}>
-              <Text style={styles.rupee}>₹</Text>
+              <Text style={styles.fieldLabel}>Goal Name</Text>
               <TextInput
-                style={styles.amountInput}
-                value={targetAmount}
-                onChangeText={setTargetAmount}
-                placeholder="5,00,000"
+                style={styles.textInput}
+                value={goalName}
+                onChangeText={setGoalName}
+                placeholder="e.g., Dream Car, Emergency Fund"
                 placeholderTextColor={Colors.textMuted}
-                keyboardType="numeric"
                 selectionColor={Colors.primary}
               />
-            </View>
 
-            <Text style={styles.fieldLabel}>Target Date (Optional)</Text>
-            <TextInput
-              style={styles.textInput}
-              value={targetDate}
-              onChangeText={setTargetDate}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={Colors.textMuted}
-              selectionColor={Colors.primary}
-            />
+              <Text style={styles.fieldLabel}>Target Amount</Text>
+              <View style={styles.amountRow}>
+                <Text style={styles.rupee}>₹</Text>
+                <TextInput
+                  style={styles.amountInput}
+                  value={targetAmount}
+                  onChangeText={setTargetAmount}
+                  placeholder="5,00,000"
+                  placeholderTextColor={Colors.textMuted}
+                  keyboardType="numeric"
+                  selectionColor={Colors.primary}
+                />
+              </View>
 
-            <Text style={styles.fieldLabel}>Icon</Text>
-            <View style={styles.iconGrid}>
-              {GOAL_ICONS.map((item, i) => (
-                <TouchableOpacity
-                  key={item.icon}
-                  style={[styles.iconOption, selectedIcon === i && { borderColor: item.color, backgroundColor: `${item.color}20` }]}
-                  onPress={() => setSelectedIcon(i)}
-                >
-                  <Icon name={item.icon} size={22} color={selectedIcon === i ? item.color : Colors.textMuted} />
-                  <Text style={[styles.iconLabel, selectedIcon === i && { color: item.color }]}>{item.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+              <Text style={styles.fieldLabel}>Target Date (Optional)</Text>
+              <TextInput
+                style={styles.textInput}
+                value={targetDate}
+                onChangeText={setTargetDate}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={Colors.textMuted}
+                selectionColor={Colors.primary}
+              />
 
-            <Button onPress={handleSaveGoal} loading={saving} fullWidth style={{ marginTop: 20 }}>
-              {editGoal ? 'Update Goal' : 'Create Goal'}
-            </Button>
+              <Text style={styles.fieldLabel}>Icon</Text>
+              <View style={styles.iconGrid}>
+                {GOAL_ICONS.map((item, i) => (
+                  <TouchableOpacity
+                    key={item.icon}
+                    style={[styles.iconOption, selectedIcon === i && { borderColor: item.color, backgroundColor: `${item.color}20` }]}
+                    onPress={() => setSelectedIcon(i)}
+                  >
+                    <Icon name={item.icon} size={22} color={selectedIcon === i ? item.color : Colors.textMuted} />
+                    <Text style={[styles.iconLabel, selectedIcon === i && { color: item.color }]}>{item.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Button onPress={handleSaveGoal} loading={saving} fullWidth style={{ marginTop: 20, marginBottom: 20 }}>
+                {editGoal ? 'Update Goal' : 'Create Goal'}
+              </Button>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -368,12 +372,12 @@ export default function SavingsGoalsScreen() {
       <Modal visible={!!contributeGoal} transparent animationType="slide" onRequestClose={() => setContributeGoal(null)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={styles.modalOverlay} onPress={() => setContributeGoal(null)} activeOpacity={1} />
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>Add to "{contributeGoal?.name}"</Text>
             {contributeGoal && (
               <Text style={styles.contributeStatus}>
-                {formatCurrency(contributeGoal.currentAmount)} of {formatCurrency(contributeGoal.targetAmount)} saved
+                {formatAmount(contributeGoal.currentAmount)} of {formatAmount(contributeGoal.targetAmount)} saved
               </Text>
             )}
 
@@ -400,7 +404,7 @@ export default function SavingsGoalsScreen() {
                   onPress={() => setContributeAmount(String(amt))}
                 >
                   <Text style={[styles.quickBtnText, contributeAmount === String(amt) && styles.quickBtnTextActive]}>
-                    {formatCurrency(amt)}
+                    {formatAmount(amt)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -438,6 +442,7 @@ function GoalCard({
   onDelete: () => void;
   completed?: boolean;
 }) {
+  const { formatAmount } = usePrivacy();
   const progressColor = completed
     ? Colors.primary
     : goal.percentage >= 75 ? Colors.primary
@@ -480,8 +485,8 @@ function GoalCard({
 
       {/* Amount display */}
       <View style={styles.goalAmountRow}>
-        <Text style={styles.goalCurrentAmt}>{formatCurrency(goal.currentAmount)}</Text>
-        <Text style={styles.goalTargetAmt}> / {formatCurrency(goal.targetAmount)}</Text>
+        <Text style={styles.goalCurrentAmt}>{formatAmount(goal.currentAmount)}</Text>
+        <Text style={styles.goalTargetAmt}> / {formatAmount(goal.targetAmount)}</Text>
         <Text style={[styles.goalPct, { color: progressColor }]}>{goal.percentage}%</Text>
       </View>
 
@@ -496,11 +501,11 @@ function GoalCard({
           <View>
             {goal.monthlyRequired > 0 && (
               <Text style={styles.goalMonthly}>
-                {formatCurrency(goal.monthlyRequired)}/mo needed
+                {formatAmount(goal.monthlyRequired)}/mo needed
               </Text>
             )}
             {goal.remainingAmount > 0 && (
-              <Text style={styles.goalRemaining}>{formatCurrency(goal.remainingAmount)} to go</Text>
+              <Text style={styles.goalRemaining}>{formatAmount(goal.remainingAmount)} to go</Text>
             )}
           </View>
           <TouchableOpacity style={styles.contributeBtn} onPress={onContribute} activeOpacity={0.8}>
@@ -601,9 +606,9 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: Colors.overlay },
   modalSheet: {
     backgroundColor: Colors.card, borderTopLeftRadius: 24,
-    borderTopRightRadius: 24, padding: 24, paddingBottom: 40,
+    borderTopRightRadius: 24, padding: 24,
     borderTopWidth: 1, borderColor: Colors.border,
-    maxHeight: '85%',
+    maxHeight: '90%',
   },
   modalHandle: {
     width: 40, height: 4, backgroundColor: Colors.border,

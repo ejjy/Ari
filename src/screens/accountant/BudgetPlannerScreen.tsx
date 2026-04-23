@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity, Modal, TextInput,
   RefreshControl, KeyboardAvoidingView, Platform, StyleSheet,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from '../../components/ui/Icon';
 import Button from '../../components/ui/Button';
@@ -15,7 +15,7 @@ import DeleteConfirmSheet from '../../components/DeleteConfirmSheet';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import ProgressBar from '../../components/ui/ProgressBar';
 import { Colors } from '../../constants/colors';
-import { formatCurrency } from '../../utils/formatCurrency';
+import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import { useData } from '../../context/DataContext';
 import * as budgetApi from '../../api/budgets';
@@ -25,7 +25,9 @@ import { CATEGORY_ICONS } from '../../components/ui/Icon';
 export default function BudgetPlannerScreen() {
   const navigation = useNavigation();
   const haptics = useHaptics();
+  const insets = useSafeAreaInsets();
   const { saveBudget, deleteBudget } = useData();
+  const { formatAmount } = usePrivacy();
 
   const [month, setMonth] = useState(getCurrentMonth());
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -188,20 +190,20 @@ export default function BudgetPlannerScreen() {
                   <View style={styles.summaryRow}>
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Budgeted</Text>
-                      <Text style={styles.summaryValue}>{formatCurrency(totalBudget)}</Text>
+                      <Text style={styles.summaryValue}>{formatAmount(totalBudget)}</Text>
                     </View>
                     <View style={styles.summaryDivider} />
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Spent</Text>
                       <Text style={[styles.summaryValue, totalSpent > totalBudget && { color: Colors.danger }]}>
-                        {formatCurrency(totalSpent)}
+                        {formatAmount(totalSpent)}
                       </Text>
                     </View>
                     <View style={styles.summaryDivider} />
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Remaining</Text>
                       <Text style={[styles.summaryValue, { color: totalRemaining >= 0 ? Colors.primary : Colors.danger }]}>
-                        {formatCurrency(Math.abs(totalRemaining))}
+                        {formatAmount(Math.abs(totalRemaining))}
                       </Text>
                     </View>
                   </View>
@@ -254,7 +256,7 @@ export default function BudgetPlannerScreen() {
       <Modal visible={showModal} transparent animationType="slide" onRequestClose={() => setShowModal(false)}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <TouchableOpacity style={styles.modalOverlay} onPress={() => setShowModal(false)} activeOpacity={1} />
-          <View style={styles.modalSheet}>
+          <View style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>{editBudget ? 'Edit Budget' : 'New Budget'}</Text>
             <ErrorBanner message={formError} />
@@ -301,6 +303,7 @@ export default function BudgetPlannerScreen() {
 // BudgetCard Component
 // ---------------------------------------------------------------------------
 function BudgetCard({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () => void; onDelete: () => void }) {
+  const { formatAmount } = usePrivacy();
   const catInfo = CATEGORY_ICONS[budget.category] || { icon: 'package' as const, color: Colors.textMuted };
   const isOver = budget.percentage > 100;
   const isWarning = budget.percentage > 80 && budget.percentage <= 100;
@@ -314,7 +317,7 @@ function BudgetCard({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.catName}>{budget.category.charAt(0).toUpperCase() + budget.category.slice(1)}</Text>
-          <Text style={styles.budgetLimit}>Limit: {formatCurrency(budget.limit)}</Text>
+          <Text style={styles.budgetLimit}>Limit: {formatAmount(budget.limit)}</Text>
         </View>
         <View style={styles.budgetActions}>
           <TouchableOpacity onPress={onEdit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -328,7 +331,7 @@ function BudgetCard({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
 
       {/* Spending progress */}
       <View style={styles.budgetProgressRow}>
-        <Text style={styles.budgetSpent}>{formatCurrency(budget.spent)} spent</Text>
+        <Text style={styles.budgetSpent}>{formatAmount(budget.spent)} spent</Text>
         <Text style={[styles.budgetPct, { color: barColor }]}>{budget.percentage}%</Text>
       </View>
 
@@ -338,8 +341,8 @@ function BudgetCard({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
 
       <Text style={[styles.budgetRemaining, isOver && { color: Colors.danger }]}>
         {isOver
-          ? `Over by ${formatCurrency(Math.abs(budget.remaining))}`
-          : `${formatCurrency(budget.remaining)} remaining`}
+          ? `Over by ${formatAmount(Math.abs(budget.remaining))}`
+          : `${formatAmount(budget.remaining)} remaining`}
       </Text>
     </View>
   );

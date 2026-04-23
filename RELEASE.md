@@ -70,15 +70,32 @@ For Android, drop your Google Play service-account JSON at
 Walk [DEVICE_TEST.md](DEVICE_TEST.md). 24 steps cover every shipped
 feature. Stop at any red flag and ping me.
 
-## 9. Stuff still TODO (post-launch polish)
+## 9. PostHog (mobile retention)
+
+Spec §2 calls for Day-1/7/30 + NL-log-count tracking. Wired but no-ops
+until you set the project key.
+
+```bash
+# In Ari/.env (then rebuild + ship)
+EXPO_PUBLIC_POSTHOG_KEY=phc_...
+EXPO_PUBLIC_POSTHOG_HOST=https://app.posthog.com   # or your self-host
+```
+
+Events fired by the app: `app_opened`, `login_success`, `register_success`,
+`expense_logged`, `expense_logged_voice`, `expense_parsed_local`,
+`expense_parsed_ai`, `budget_created`, `goal_created`, `paywall_viewed`,
+`subscription_started`, `group_created`, `group_joined`,
+`group_expense_added`, `split_settled_upi`, `split_settled_cash`,
+`brief_opened`, `brief_dismissed`, `private_mode_toggled`,
+`aa_consent_started`, `aa_consent_completed`. Identify is keyed by
+`ari_users.id` with `tier` + `age_group` traits. Session replay is
+intentionally OFF (spec §7 PII).
+
+## 10. Stuff still TODO (post-launch polish)
 
 - Doppler for unified secrets (currently `.env` + Railway dashboard)
-- PostHog retention tracking (Day-1 / 7 / 30 — spec §2)
-- BudgetPlanner + SavingsGoals + BudgetScreen `usePrivacy()` sweep —
-  blocked by pending uncommitted edits in those files; unblock when your
-  WIP lands.
 - Phase 4b (AuthContext full Supabase session swap) — dual-path tokens
   work fine, low priority.
-- Shared-expense integration with personal ledger (currently
-  shared expenses live in their own tables; could surface "your share of
-  group spend last month" on Dashboard).
+- Production webhook signature on Setu (we use HMAC-SHA256 in sandbox;
+  prod uses RSA-JWS detached, swap noted in `jobs/setu_client.py`).
+- Sentry DSN on Railway (`SENTRY_DSN=...`) once you've created a project.

@@ -44,26 +44,44 @@ fallback."
 | `SETU_WEBHOOK_SECRET` | *(secret)* | Validates inbound webhook requests. |
 | `SETU_PURPOSE_CODE` | `101` | Personal finance management — this is the AA-framework purpose code for spending insights. |
 
-## What's already in place
+## What's already in place (commit `17a14b7`)
 
-- `backend/routes/aa.py` with all four endpoints, gated behind the flag.
+- `backend/routes/aa.py` — six real endpoints, gated behind `SETU_ENABLED=1`.
+- `backend/jobs/setu_client.py` — typed wrapper around Setu's `/consents`
+  + `/sessions` endpoints, HMAC-SHA256 webhook verifier.
+- `backend/jobs/aa_processor.py` — turns FI payloads into `expenses` rows
+  with `entry_type='aa_sync'` and `parse_source='aa'`. Idempotent on
+  bank txnId so re-running an FI session is a no-op.
+- `aa_consents` table (Supabase migration 20260423000001) — tracks
+  consent state PENDING → ACTIVE → REVOKED across deploys.
 - `ari_users.aa_consent` BOOLEAN + `ari_users.aa_linked_at` TIMESTAMPTZ
-  columns from the initial schema migration.
-- `accounts` table (spec §4) with `aa_account_id` for the per-account
-  consent handle.
+  flip on first ACTIVE webhook.
 - `expenses.entry_type` CHECK constraint already allows `'aa_sync'`.
 
-## Next concrete steps (post-scaffold)
+## Concrete steps to go live
 
 1. Sign up for a Setu FIU sandbox account (https://docs.setu.co/data).
-2. Store the `SETU_CLIENT_ID` / `_SECRET` / `_WEBHOOK_SECRET` in Railway.
-3. Replace the stub responses in `routes/aa.py` with real `httpx` calls
-   against the Setu sandbox. Respect their rate limits (10 rps per IP).
-4. Add the webhook signature verifier — Setu docs have the JWS sample.
-5. Build the mobile "Link bank" flow: three screens (explainer, bank
-   pick, redirect to Setu's consent UI via in-app browser).
-6. Test with the Setu sandbox bank ("SRCB"). End-to-end until a fetched
-   transaction lands in `expenses` with `entry_type='aa_sync'`.
+2. Set the env vars on Railway (one command):
+   ```bash
+   cd backend
+   railway variables \
+     --set "SETU_ENABLED=1" \
+     --set "SETU_CLIENT_ID=..." \
+     --set "SETU_CLIENT_SECRET=..." \
+     --set "SETU_WEBHOOK_SECRET=..." \
+     --set "SETU_BASE_URL=https://fiu-sandbox.setu.co" \
+     --set "SETU_PRODUCT_INSTANCE_ID=..." \
+     --set "SETU_REDIRECT_URL=ari://aa-callback"
+   ```
+3. Test against Setu sandbox bank ("SRCB"). End-to-end:
+   - `POST /api/aa/consent {vua: "9876543210@onemoney"}` → `redirectUrl`
+   - Open redirect in webview → user approves on Setu's UI
+   - Setu fires `consent.notification` → our webhook stamps ACTIVE
+   - `POST /api/aa/sync/<handle>` → `imported: N` rows in expenses
+4. Build the mobile "Link bank" flow (3 screens — TODO; backend is ready).
+5. Production cutover: KYC with Setu, swap `SETU_BASE_URL` to prod,
+   replace HMAC verifier in `setu_client.verify_jws_signature` with
+   their RSA-JWKS verifier.
 
 ## Why the scaffold ships before the real integration
 

@@ -91,41 +91,6 @@ export function useGoogleSignIn(): {
 }
 
 
-// Phone OTP
-// ---------------------------------------------------------------------------
-// Two-step flow: requestPhoneOtp() sends the SMS; verifyPhoneOtp() exchanges
-// the 6-digit code for a Supabase session. Supabase handles SMS delivery
-// via Twilio (configured in the project dashboard).
-
-export async function requestPhoneOtp(phone: string): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const { error } = await supabase.auth.signInWithOtp({
-      phone,
-      options: { channel: 'sms' },
-    });
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'Could not send OTP' };
-  }
-}
-
-
-export async function verifyPhoneOtp(
-  phone: string,
-  code: string,
-): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone,
-      token: code,
-      type: 'sms',
-    });
-    if (error || !data.session) return { ok: false, error: error?.message ?? 'Could not verify the code' };
-
-    await AsyncStorage.setItem('ari_token', data.session.access_token);
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'Verify failed' };
-  }
-}
+// Phone OTP was here. Removed for v1 launch — email + Google cover the
+// signup paths. Bring back via supabase.auth.signInWithOtp + verifyOtp
+// when Twilio is provisioned and we're ready for the SMS cost model.

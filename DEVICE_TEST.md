@@ -25,12 +25,11 @@ All steps with **demo@ari.app / demo123** unless noted.
 
 ### Auth (1–6)
 
-1. Login screen renders with three buttons: Sign In, Continue with Google, Continue with phone.
+1. Login screen renders with two buttons: Sign In, Continue with Google.
 2. Email + password → Dashboard in ≤2 s. `ari_token` is now a Supabase ES256 JWT (`alg=ES256, kid=81ec7230`).
 3. Logout returns to Login; `ari_token` cleared from AsyncStorage.
-4. **Continue with Google** (skip if `EXPO_PUBLIC_GOOGLE_CLIENT_ID` unset). Opens system browser, returns a session, Dashboard loads with a brand-new user row in `ari_users`.
-5. **Continue with phone** → +91 prefix present; enter a real phone number in E.164 format. Supabase sends an SMS (needs Twilio configured in dashboard). 6-digit code → Dashboard.
-6. Back to Login, sign in as demo again.
+4. **Continue with Google** opens the system account picker (Google Play Services native flow), returns a session, Dashboard loads with a brand-new user row in `ari_users`.
+5. Back to Login, sign in as demo again.
 
 ### Add transaction (7–14)
 

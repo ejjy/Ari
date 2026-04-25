@@ -4,7 +4,6 @@ export type AuthStackParamList = {
   Splash: undefined;
   Login: undefined;
   Register: undefined;
-  PhoneOtp: undefined;
 };
 
 export type TabParamList = {
@@ -27,7 +26,10 @@ export type MainStackParamList = {
   PnlReport: undefined;
   TodoNotes: undefined;
   DailyHeatmap: undefined;
-  Paywall: undefined;
+  // `source` is the upstream surface that triggered the paywall — drives
+  // funnel attribution in PostHog (paywall_viewed, pro_purchase_*).
+  // Add new sources here as you wire more paywall entry points.
+  Paywall: { source: 'settings' | 'tomo_limit' | 'nudge' | 'aa_gate' | 'unknown' } | undefined;
   Groups: undefined;
   GroupDetail: { groupId: string };
   AddSharedExpense: { groupId: string };

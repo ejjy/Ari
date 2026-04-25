@@ -154,16 +154,6 @@ export default function LoginScreen({ navigation }: Props) {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => navigation.navigate('PhoneOtp')}
-              style={styles.socialBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Continue with phone"
-            >
-              <Icon name="send" size={16} color={Colors.textPrimary} />
-              <Text style={styles.socialText}>Continue with phone</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
               onPress={fillDemo}
               style={styles.demoBtn}
               accessibilityLabel="Try with demo account"

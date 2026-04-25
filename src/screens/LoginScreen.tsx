@@ -18,13 +18,14 @@ import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { Colors } from '../constants/colors';
 import Icon from '../components/ui/Icon';
-import { signInWithGoogle } from '../lib/socialAuth';
+import { useGoogleSignIn } from '../lib/socialAuth';
 import * as authApi from '../api/auth';
 
 type Props = StackScreenProps<AuthStackParamList, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
   const { login, refreshFromSession } = useAuth();
+  const google = useGoogleSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,9 +36,9 @@ export default function LoginScreen({ navigation }: Props) {
     setError('');
     setSocialLoading('google');
     try {
-      const res = await signInWithGoogle();
+      const res = await google.signIn();
       if (!res.ok) {
-        if (res.error !== 'cancelled') setError(res.error ?? 'Google sign-in failed');
+        if (!res.cancelled) setError(res.error ?? 'Google sign-in failed');
         return;
       }
       const me = await authApi.getMe();

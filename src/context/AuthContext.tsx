@@ -10,6 +10,7 @@ import * as authApi from '../api/auth';
 import { registerPushToken, clearPushToken } from '../api/push';
 import { getExpoPushToken } from '../lib/push';
 import { identifyUser, resetAnalytics, track } from '../lib/analytics';
+import { signOutGoogle } from '../lib/socialAuth';
 import type { User, RegisterPayload } from '../types';
 
 interface AuthContextValue {
@@ -134,6 +135,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* noop */
     }
+    // Clear local Google session so next signIn re-prompts the account picker.
+    await signOutGoogle();
     await AsyncStorage.multiRemove(['ari_token', 'ari_user']);
     setUser(null);
     resetAnalytics();

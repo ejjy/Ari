@@ -7,7 +7,7 @@ export type IconName =
   | 'home' | 'list' | 'target' | 'bot' | 'settings'
   // Actions
   | 'plus' | 'minus' | 'edit' | 'trash' | 'send' | 'search' | 'x' | 'chevron-right'
-  | 'chevron-left' | 'arrow-left'
+  | 'chevron-left' | 'chevron-down' | 'chevron-up' | 'arrow-left' | 'mail'
   // Finance
   | 'trending-down' | 'trending-up' | 'dollar-sign' | 'credit-card' | 'wallet'
   | 'pie-chart' | 'bar-chart' | 'activity'
@@ -46,7 +46,10 @@ const ICON_MAP: Record<IconName, { lib: 'feather' | 'mci' | 'ion'; icon: string 
   x: { lib: 'feather', icon: 'x' },
   'chevron-right': { lib: 'feather', icon: 'chevron-right' },
   'chevron-left': { lib: 'feather', icon: 'chevron-left' },
+  'chevron-down': { lib: 'feather', icon: 'chevron-down' },
+  'chevron-up': { lib: 'feather', icon: 'chevron-up' },
   'arrow-left': { lib: 'feather', icon: 'arrow-left' },
+  mail: { lib: 'feather', icon: 'mail' },
   // Finance
   'trending-down': { lib: 'feather', icon: 'trending-down' },
   'trending-up': { lib: 'feather', icon: 'trending-up' },

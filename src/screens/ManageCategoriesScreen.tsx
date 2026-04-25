@@ -13,7 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
@@ -43,6 +43,7 @@ interface Props {
 
 export default function ManageCategoriesScreen({ onBack }: Props) {
   const haptics = useHaptics();
+  const insets = useSafeAreaInsets();
   const [categories, setCategories] = useState<UserCategoryData[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -261,7 +262,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.modalOverlay}
         >
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
                 {editingCat ? 'Edit Category' : 'New Category'}

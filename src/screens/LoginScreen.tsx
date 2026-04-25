@@ -67,12 +67,6 @@ export default function LoginScreen({ navigation }: Props) {
     }
   };
 
-  const fillDemo = () => {
-    setEmail('demo@ari.app');
-    setPassword('demo123');
-    setError('');
-  };
-
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
@@ -153,17 +147,6 @@ export default function LoginScreen({ navigation }: Props) {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={fillDemo}
-              style={styles.demoBtn}
-              accessibilityLabel="Try with demo account"
-              accessibilityRole="button"
-            >
-              <View style={styles.demoContent}>
-                <Icon name="play" size={14} color={Colors.textSecondary} />
-                <Text style={styles.demoText}> Try with demo account</Text>
-              </View>
-            </TouchableOpacity>
           </View>
 
           {/* Footer */}

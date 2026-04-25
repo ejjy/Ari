@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../constants/colors';
 import Icon from './ui/Icon';
 import Button from './ui/Button';
@@ -28,6 +29,7 @@ export default function DeleteConfirmSheet({
   onCancel,
   loading,
 }: Props) {
+  const insets = useSafeAreaInsets();
   return (
     <Modal
       transparent
@@ -39,7 +41,7 @@ export default function DeleteConfirmSheet({
         <View style={styles.overlay} />
       </TouchableWithoutFeedback>
       <View style={styles.sheetWrapper}>
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
           <View style={styles.handle} />
           <View style={styles.iconContainer}>
             <Icon name="alert-triangle" size={40} color={Colors.danger} />

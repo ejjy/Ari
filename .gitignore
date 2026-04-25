@@ -30,8 +30,17 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# local env files — NEVER commit secrets
+.env
+.env.local
 .env*.local
+.env.development
+.env.production
+
+# Firebase / Google Cloud service accounts
+*-service-account*.json
+*serviceAccount*.json
+firebase-adminsdk-*.json
 
 # typescript
 *.tsbuildinfo
@@ -39,3 +48,4 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+scripts/__pycache__/

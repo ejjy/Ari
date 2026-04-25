@@ -22,7 +22,7 @@ import TransactionItem from '../components/TransactionItem';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
-import AnimatedFAB from '../components/ui/AnimatedFAB';
+// AnimatedFAB removed — Quick Actions row already covers add-expense/income flows.
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
@@ -104,11 +104,6 @@ export default function DashboardScreen() {
     [haptics, navigation]
   );
 
-  const handleFAB = useCallback(() => {
-    haptics.medium();
-    navigation.navigate('AddTransaction', { type: 'expense' });
-  }, [haptics, navigation]);
-
   const handleSeeAll = useCallback(() => {
     navigation.navigate('Tabs', { screen: 'Transactions' });
   }, [navigation]);
@@ -135,22 +130,13 @@ export default function DashboardScreen() {
           />
         }
       >
-        {/* Header */}
+        {/* Header — initial-letter avatar removed for visual cleanliness */}
         <AnimatedEntry delay={0}>
           <View style={styles.header}>
             <View>
               <Text style={styles.greeting}>{getGreeting()},</Text>
               <Text style={styles.userName}>
                 {user?.name?.split(' ')[0] || 'there'}
-              </Text>
-            </View>
-            <View
-              style={styles.avatarCircle}
-              accessible
-              accessibilityLabel={`Profile: ${user?.name ?? 'User'}`}
-            >
-              <Text style={styles.avatarText}>
-                {(user?.name ?? 'U')[0].toUpperCase()}
               </Text>
             </View>
           </View>
@@ -315,8 +301,6 @@ export default function DashboardScreen() {
           </View>
         </AnimatedEntry>
       </ScrollView>
-
-      <AnimatedFAB onPress={handleFAB} />
     </SafeAreaView>
   );
 }

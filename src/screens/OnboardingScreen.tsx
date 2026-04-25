@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Colors } from '../constants/colors';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
+import { track } from '../lib/analytics';
 
 const { width } = Dimensions.get('window');
 
@@ -66,6 +67,14 @@ export default function OnboardingScreen({ onComplete }: Props) {
     if (currentIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
+      // Completing onboarding implies consent to ToS / Privacy Policy
+      // (which must be visible on these slides before launch). Captured
+      // as a discrete event for DPDPA audit-trail; pair with the link
+      // copy review the user owes a CA before live keys.
+      track('consent_accepted', {
+        flow: 'onboarding',
+        slides_seen: SLIDES.length,
+      });
       onComplete();
     }
   };

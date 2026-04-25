@@ -1,5 +1,6 @@
 import PostHog from 'posthog-react-native';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 /**
  * PostHog analytics for Day-1/7/30 retention tracking (spec §2 Analytics
@@ -53,10 +54,17 @@ export async function initAnalytics(): Promise<void> {
       captureAppLifecycleEvents: true,
     });
     // Tag every event with build metadata so we can correlate retention
-    // dips with releases.
+    // dips with releases. Mirror Darelight's super-property set (platform +
+    // build_number) so PostHog dashboards can be defined identically across
+    // both apps (iOS vs Android slices, version-gated regression detection).
+    const buildNumber = Platform.OS === 'ios'
+      ? String(Constants.expoConfig?.ios?.buildNumber ?? '1')
+      : String(Constants.expoConfig?.android?.versionCode ?? 1);
     client.register({
       app_version: Constants.expoConfig?.version ?? 'dev',
       runtime: Constants.expoConfig?.runtimeVersion?.toString() ?? 'unknown',
+      platform: Platform.OS,
+      build_number: buildNumber,
     });
   } catch {
     /* swallow — analytics is never critical */
@@ -79,8 +87,13 @@ export function resetAnalytics(): void {
 
 export type AnalyticsEvent =
   | 'app_opened'
+  | 'app_foregrounded'
+  | 'app_backgrounded'
   | 'login_success'
   | 'register_success'
+  | 'consent_accepted'
+  | 'account_deleted'
+  | 'transaction_logged'
   | 'expense_logged'
   | 'expense_logged_voice'
   | 'expense_parsed_local'
@@ -88,7 +101,13 @@ export type AnalyticsEvent =
   | 'budget_created'
   | 'goal_created'
   | 'paywall_viewed'
+  | 'pro_purchase_initiated'
+  | 'pro_purchase_completed'
+  | 'pro_purchase_failed'
+  | 'pro_purchase_cancelled'
   | 'subscription_started'
+  | 'tomo_message_sent'
+  | 'tomo_response_received'
   | 'group_created'
   | 'group_joined'
   | 'group_expense_added'
@@ -105,4 +124,27 @@ export function track(event: AnalyticsEvent, props: Record<string, unknown> = {}
   try {
     client.capture(event, _props(props));
   } catch { /* noop */ }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Bucket an INR amount into a coarse band. Buckets are calibrated to Indian
+ * personal-finance context so the histogram across users is balanced and
+ * actionable — most expenses fall in 100–2k, salaries land in 50k+.
+ *
+ * Reasons we bucket instead of sending raw amounts:
+ *   1. PII minimisation (DPDPA-friendly)
+ *   2. Cohort-friendly aggregation in PostHog
+ *   3. Compresses the long tail of vehicle / rent / EMI amounts
+ */
+export function bucketAmount(amount: number): string {
+  if (amount < 100) return '0-100';
+  if (amount < 500) return '100-500';
+  if (amount < 2_000) return '500-2k';
+  if (amount < 10_000) return '2k-10k';
+  if (amount < 50_000) return '10k-50k';
+  if (amount < 2_00_000) return '50k-2L';
+  if (amount < 10_00_000) return '2L-10L';
+  return '10L+';
 }

@@ -12,6 +12,9 @@ import ErrorBanner from '../components/ui/ErrorBanner';
 import Icon from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
+import { track } from '../lib/analytics';
+import type { RouteProp } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
 /**
  * Paywall — three tiers, Razorpay Subscriptions checkout (spec Sprint 3).
@@ -45,6 +48,8 @@ const PLAN_BULLETS: Record<PlanKey, string[]> = {
 
 export default function PaywallScreen() {
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<Record<string, { source?: string } | undefined>, string>>();
+  const sourceScreen = route.params?.source ?? 'unknown';
   const { user, refreshFromSession } = useAuth();
   const haptics = useHaptics();
 
@@ -67,15 +72,38 @@ export default function PaywallScreen() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Top of the monetization funnel — fires once on mount with the entry
+  // point so we can A/B test paywall placement (settings vs. tomo-limit
+  // vs. nudge-card) before the launch tightens the funnel.
+  useEffect(() => {
+    track('paywall_viewed', {
+      source_screen: sourceScreen,
+      current_tier: user?.tier ?? 'unknown',
+    });
+    // Intentionally fires once per mount — re-mounting is itself a signal
+    // worth recording (user closed and reopened the paywall).
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleSubscribe = async () => {
     if (!user) return;
     setError('');
     setPaying(true);
     haptics.medium();
 
+    const plan = plans?.find((p) => p.key === selected);
+    const planPrice = plan?.price ?? null;
+
+    // Funnel step 2: user committed to attempt purchase. Fires before the
+    // network round-trip so dropped-network conversions still register.
+    track('pro_purchase_initiated', {
+      plan_key: selected,
+      plan_price: planPrice,
+      source_screen: sourceScreen,
+      current_tier: user.tier ?? 'unknown',
+    });
+
     try {
       const sub = await createSubscription(selected);
-      const plan = plans?.find((p) => p.key === selected);
       const options = {
         key: sub.keyId,
         subscription_id: sub.subscriptionId,
@@ -90,10 +118,15 @@ export default function PaywallScreen() {
         },
       };
 
-      const result = await RazorpayCheckout.open(options as never);
+      await RazorpayCheckout.open(options as never);
       // Success — Razorpay returns razorpay_payment_id, _subscription_id,
       // _signature. Server has already been webhook-notified; re-hydrate
       // our auth user so the tier shows updated.
+      track('pro_purchase_completed', {
+        plan_key: selected,
+        plan_price: planPrice,
+        source_screen: sourceScreen,
+      });
       haptics.success();
       Alert.alert('Welcome to Ari ' + (plan?.name ?? 'Pro') + '!', 'Your upgrade is active.');
       // Best-effort refresh; tolerate transient 5xx
@@ -106,9 +139,22 @@ export default function PaywallScreen() {
       haptics.error();
       // Razorpay cancel returns code==2 with a message; don't flag as error.
       const err = e as { code?: number; description?: string; message?: string };
-      if (err?.code === 2 || /payment cancel/i.test(err?.description ?? '')) {
+      const isCancel = err?.code === 2 || /payment cancel/i.test(err?.description ?? '');
+      if (isCancel) {
+        track('pro_purchase_cancelled', {
+          plan_key: selected,
+          plan_price: planPrice,
+          source_screen: sourceScreen,
+        });
         setError('Payment cancelled');
       } else {
+        track('pro_purchase_failed', {
+          plan_key: selected,
+          plan_price: planPrice,
+          source_screen: sourceScreen,
+          razorpay_code: err?.code ?? null,
+          reason: (err?.description ?? err?.message ?? 'unknown').slice(0, 120),
+        });
         setError(err?.description ?? err?.message ?? 'Payment failed');
       }
     } finally {

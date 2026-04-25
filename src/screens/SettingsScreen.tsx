@@ -31,8 +31,11 @@ import type { IconName } from '../components/ui/Icon';
 import ExportScreen from './ExportScreen';
 import AboutScreen from './AboutScreen';
 import ManageCategoriesScreen from './ManageCategoriesScreen';
+import HelpSupportScreen from './HelpSupportScreen';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { submitFeedback } from '../api/feedback';
 import { deleteAccount } from '../api/account';
+import { track } from '../lib/analytics';
 
 const AGE_LABELS: Record<string, string> = {
   'under-18': 'Under 18', '18-24': '18–24', '25-35': '25–35',
@@ -59,14 +62,28 @@ interface MenuItem {
   destructive?: boolean;
 }
 
-type SubScreen = 'main' | 'export' | 'about' | 'categories' | 'upi';
+type SubScreen = 'main' | 'export' | 'about' | 'categories' | 'upi' | 'help';
+
+/** "20:00" → "8:00 PM" — short, locale-friendly format for the row subtitle. */
+function formatTime12h(hour: number, minute: number): string {
+  const h12 = hour % 12 === 0 ? 12 : hour % 12;
+  const ampm = hour < 12 ? 'AM' : 'PM';
+  return `${h12}:${String(minute).padStart(2, '0')} ${ampm}`;
+}
 
 export default function SettingsScreen() {
   const { user, logout } = useAuth();
   const haptics = useHaptics();
   const insets = useSafeAreaInsets();
   const { isAvailable: biometricAvailable, isEnabled: biometricEnabled, toggleBiometric } = useBiometric();
-  const { isEnabled: notificationsEnabled, toggleNotifications, sendTestNotification } = useNotifications();
+  const {
+    isEnabled: notificationsEnabled,
+    toggleNotifications,
+    sendTestNotification,
+    reminderHour,
+    reminderMinute,
+    setReminderTime,
+  } = useNotifications();
   const { isPrivate, togglePrivate } = usePrivacy();
   const navigation = useNavigation<StackNavigationProp<MainStackParamList>>();
   const [subScreen, setSubScreen] = useState<SubScreen>('main');
@@ -76,6 +93,10 @@ export default function SettingsScreen() {
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  // Reminder time picker state — Android shows a one-shot dialog, iOS keeps
+  // the picker mounted and edits in-place, so we drive both with one flag.
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
 
   // Delete Account state
   const [deleteVisible, setDeleteVisible] = useState(false);
@@ -102,6 +123,22 @@ export default function SettingsScreen() {
     await toggleNotifications();
   };
 
+  const handleOpenTimePicker = () => {
+    haptics.light();
+    setTimePickerVisible(true);
+  };
+
+  /**
+   * DateTimePicker quirk: on Android the picker fires once and dismisses
+   * itself; on iOS it stays open and fires on every change. We dismiss
+   * on Android and accept the value either way.
+   */
+  const handleTimeChange = async (event: DateTimePickerEvent, date?: Date) => {
+    if (Platform.OS === 'android') setTimePickerVisible(false);
+    if (event.type === 'dismissed' || !date) return;
+    await setReminderTime(date.getHours(), date.getMinutes());
+  };
+
   const handleBiometric = async () => {
     haptics.light();
     await toggleBiometric();
@@ -118,11 +155,7 @@ export default function SettingsScreen() {
 
   const handleHelp = () => {
     haptics.light();
-    Alert.alert(
-      'Help & Support',
-      'Need help with Ari?\n\nCommon questions:\n- How to add a transaction?\n  Tap the + button on any screen\n\n- How to set a budget?\n  Go to Budget tab and tap + Add\n\n- Who is Tomo?\n  Your AI finance coach! Ask him anything in the Tomo tab',
-      [{ text: 'Close' }]
-    );
+    setSubScreen('help');
   };
 
   const handleRate = () => {
@@ -205,6 +238,11 @@ export default function SettingsScreen() {
     setDeleteLoading(true);
     try {
       await deleteAccount(deletePassword);
+      // DPDPA audit-trail event — fires after server confirms delete but
+      // BEFORE logout() so the user_id is still in the analytics context.
+      // This is the single trust signal the App Store reviewer will ask
+      // for to verify the data-deletion endpoint is real.
+      track('account_deleted', { source: 'settings' });
       haptics.medium();
       setDeleteVisible(false);
       Alert.alert('Account Deleted', 'Your account has been permanently deleted. We are sorry to see you go.');
@@ -233,6 +271,10 @@ export default function SettingsScreen() {
     return <UpiVpaEditor onBack={() => setSubScreen('main')} />;
   }
 
+  if (subScreen === 'help') {
+    return <HelpSupportScreen onBack={() => setSubScreen('main')} />;
+  }
+
   const tier = user?.tier ?? 'free';
   const isSubscribed = tier !== 'free';
 
@@ -243,7 +285,7 @@ export default function SettingsScreen() {
       subtitle: isSubscribed
         ? 'Manage your subscription'
         : 'Unlock the weekly brief, AA sync, and more',
-      onPress: () => { haptics.light(); navigation.navigate('Paywall'); },
+      onPress: () => { haptics.light(); navigation.navigate('Paywall', { source: 'settings' }); },
     },
     {
       icon: 'send',
@@ -259,7 +301,7 @@ export default function SettingsScreen() {
     },
     { icon: 'list', label: 'Manage Categories', subtitle: 'Add custom expense & income types', onPress: () => { haptics.light(); setSubScreen('categories'); } },
     { icon: 'upload', label: 'Export Data', subtitle: 'Download your transactions', onPress: () => { haptics.light(); setSubScreen('export'); } },
-    { icon: 'message-circle', label: 'Send Feedback', subtitle: 'Help us improve Ari', onPress: handleOpenFeedback },
+    { icon: 'message-circle', label: 'Send Feedback', subtitle: 'Goes straight to the Ari team', onPress: handleOpenFeedback },
     { icon: 'shield', label: 'Privacy & Security', subtitle: 'Manage your data', onPress: handlePrivacy },
     { icon: 'help-circle', label: 'Help & Support', subtitle: 'FAQs and contact us', onPress: handleHelp },
     { icon: 'star', label: 'Rate Ari', subtitle: 'Love Ari? Let us know!', onPress: handleRate },
@@ -321,7 +363,9 @@ export default function SettingsScreen() {
               <View style={styles.menuText}>
                 <Text style={styles.menuLabel}>Daily Reminders</Text>
                 <Text style={styles.menuSubtitle}>
-                  {notificationsEnabled ? 'Tomo reminds you at 8 PM' : 'Get nudged to log expenses'}
+                  {notificationsEnabled
+                    ? `Tomo reminds you at ${formatTime12h(reminderHour, reminderMinute)}`
+                    : 'Get nudged to log expenses'}
                 </Text>
               </View>
               <Switch
@@ -332,6 +376,50 @@ export default function SettingsScreen() {
                 accessibilityLabel="Toggle daily reminders"
               />
             </View>
+            {notificationsEnabled && (
+              <>
+                <View style={styles.separator} />
+                <TouchableOpacity
+                  style={styles.toggleRow}
+                  onPress={handleOpenTimePicker}
+                  activeOpacity={0.7}
+                  accessibilityLabel="Change reminder time"
+                  accessibilityRole="button"
+                >
+                  <View style={styles.menuIconWrap}>
+                    <Icon name="clock" size={20} color={Colors.textSecondary} />
+                  </View>
+                  <View style={styles.menuText}>
+                    <Text style={styles.menuLabel}>Reminder Time</Text>
+                    <Text style={styles.menuSubtitle}>Tap to change when Tomo nudges you</Text>
+                  </View>
+                  <Text style={styles.timeValue}>
+                    {formatTime12h(reminderHour, reminderMinute)}
+                  </Text>
+                </TouchableOpacity>
+                {Platform.OS === 'ios' && timePickerVisible && (
+                  <View style={styles.iosPickerWrap}>
+                    <DateTimePicker
+                      value={(() => {
+                        const d = new Date();
+                        d.setHours(reminderHour, reminderMinute, 0, 0);
+                        return d;
+                      })()}
+                      mode="time"
+                      display="spinner"
+                      onChange={handleTimeChange}
+                      themeVariant="dark"
+                    />
+                    <TouchableOpacity
+                      style={styles.iosPickerDone}
+                      onPress={() => setTimePickerVisible(false)}
+                    >
+                      <Text style={styles.iosPickerDoneText}>Done</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </>
+            )}
             {biometricAvailable && (
               <>
                 <View style={styles.separator} />
@@ -451,6 +539,21 @@ export default function SettingsScreen() {
         </AnimatedEntry>
       </ScrollView>
 
+      {/* Android time picker — mounts only while open, then dismisses itself. */}
+      {Platform.OS === 'android' && timePickerVisible && (
+        <DateTimePicker
+          value={(() => {
+            const d = new Date();
+            d.setHours(reminderHour, reminderMinute, 0, 0);
+            return d;
+          })()}
+          mode="time"
+          display="default"
+          is24Hour={false}
+          onChange={handleTimeChange}
+        />
+      )}
+
       {/* ── Feedback Modal ─────────────────────────────────────────── */}
       <Modal visible={feedbackVisible} transparent animationType="slide">
         <KeyboardAvoidingView
@@ -466,7 +569,7 @@ export default function SettingsScreen() {
             </View>
 
             <Text style={styles.modalSubtitle}>
-              We'd love to hear from you! Tell us what you like, what could be better, or any feature ideas.
+              We'd love to hear from you! Tell us what you like, what could be better, or any feature ideas. Your feedback is sent securely to the Ari team and reviewed personally.
             </Text>
 
             {/* Star Rating */}
@@ -624,6 +727,29 @@ const styles = StyleSheet.create({
   menuLabel: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
   menuSubtitle: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
   separator: { height: 1, backgroundColor: Colors.border, marginLeft: 42 },
+  timeValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.primary,
+    paddingHorizontal: 4,
+  },
+  iosPickerWrap: {
+    paddingTop: 8,
+    paddingBottom: 12,
+    alignItems: 'center',
+  },
+  iosPickerDone: {
+    marginTop: 4,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: Colors.primary,
+  },
+  iosPickerDoneText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.background,
+  },
   brandRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, marginBottom: 20,

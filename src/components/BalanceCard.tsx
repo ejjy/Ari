@@ -7,12 +7,19 @@ import { usePrivacy } from '../context/PrivacyContext';
 interface Props {
   income: number;
   expenses: number;
-  balance: number;
-  savingsRate: number;
+  /** Kept for caller compatibility; no longer rendered. */
+  balance?: number;
+  savingsRate?: number;
 }
 
-export default function BalanceCard({ income, expenses, balance, savingsRate }: Props) {
-  const { formatAmount, isPrivate } = usePrivacy();
+/**
+ * Income + Expenses side-by-side. The "Total Balance" hero number was
+ * removed because it conflated saved-up money with month-to-date net,
+ * which most users misread. The two flows tell a clearer story on their
+ * own.
+ */
+export default function BalanceCard({ income, expenses }: Props) {
+  const { formatAmount } = usePrivacy();
   return (
     <LinearGradient
       colors={['#1A3A3A', '#0D2B2B', '#0A1E1E']}
@@ -20,24 +27,19 @@ export default function BalanceCard({ income, expenses, balance, savingsRate }: 
       end={{ x: 1, y: 1 }}
       style={styles.card}
     >
-      <View style={styles.header}>
-        <Text style={styles.label}>Total Balance</Text>
-        <View style={styles.savingsBadge}>
-          <Text style={styles.savingsText}>💰 {isPrivate ? '•• %' : `${savingsRate}%`} saved</Text>
-        </View>
-      </View>
-
-      <Text style={styles.balance}>{formatAmount(balance)}</Text>
-
       <View style={styles.row}>
-        <View style={styles.statBox}>
-          <Text style={styles.statLabel}>↑ Income</Text>
-          <Text style={styles.statIncome}>{formatAmount(income)}</Text>
+        <View style={styles.col}>
+          <Text style={styles.label}>Income</Text>
+          <Text style={[styles.amount, { color: Colors.primary }]}>
+            {formatAmount(income)}
+          </Text>
         </View>
         <View style={styles.divider} />
-        <View style={styles.statBox}>
-          <Text style={styles.statLabel}>↓ Expenses</Text>
-          <Text style={styles.statExpense}>{formatAmount(expenses)}</Text>
+        <View style={styles.col}>
+          <Text style={styles.label}>Expenses</Text>
+          <Text style={[styles.amount, { color: Colors.danger }]}>
+            {formatAmount(expenses)}
+          </Text>
         </View>
       </View>
     </LinearGradient>
@@ -47,68 +49,36 @@ export default function BalanceCard({ income, expenses, balance, savingsRate }: 
 const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
-    padding: 24,
+    padding: 22,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: 'rgba(0,200,150,0.2)',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  label: {
-    fontSize: 13,
-    color: 'rgba(232,232,240,0.7)',
-    letterSpacing: 0.5,
-  },
-  savingsBadge: {
-    backgroundColor: 'rgba(0,200,150,0.15)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(0,200,150,0.3)',
-  },
-  savingsText: {
-    fontSize: 11,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  balance: {
-    fontSize: 36,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 20,
-    letterSpacing: -0.5,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  statBox: {
+  col: {
     flex: 1,
+    alignItems: 'center',
   },
   divider: {
     width: 1,
-    height: 40,
+    height: 56,
     backgroundColor: 'rgba(255,255,255,0.1)',
     marginHorizontal: 16,
   },
-  statLabel: {
+  label: {
     fontSize: 12,
-    color: 'rgba(232,232,240,0.5)',
-    marginBottom: 4,
+    color: 'rgba(232,232,240,0.55)',
+    marginBottom: 6,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    fontWeight: '600',
   },
-  statIncome: {
-    fontSize: 18,
+  amount: {
+    fontSize: 22,
     fontWeight: '700',
-    color: Colors.primary,
-  },
-  statExpense: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.danger,
+    letterSpacing: -0.5,
   },
 });

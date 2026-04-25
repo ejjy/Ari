@@ -14,6 +14,7 @@ import type { UserCategoryData } from '../api/categories';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useAuth } from './AuthContext';
 import { useOfflineCache } from '../hooks/useOfflineCache';
+import { track, bucketAmount } from '../lib/analytics';
 import type {
   Transaction,
   Summary,
@@ -205,9 +206,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       confidence?: number;
       merchant?: string | null;
       rawInput?: string;
+      entryType?: 'manual' | 'voice' | 'aa_sync';
     }) => {
       const txn = await txnApi.addTransaction(data);
       setTransactions((prev) => [txn, ...prev]);
+
+      // Habit-loop event — fire BEFORE the summary fetch so a slow network
+      // never delays it. Properties are chosen for D1/D7/D30 cohort math:
+      // amount is bucketed (DPDPA-minimal), source/entry tags split funnels
+      // by parsing path, day_of_week reveals weekday-vs-weekend habits.
+      track('transaction_logged', {
+        type: data.type,
+        category: data.category,
+        amount_bucket: bucketAmount(data.amount),
+        entry_type: data.entryType ?? 'manual',
+        parse_source: data.parseSource ?? 'unknown',
+        confidence: data.confidence ?? null,
+        merchant_known: !!data.merchant,
+        day_of_week: new Date(data.date + 'T00:00:00').getDay(),
+        has_note: !!data.note?.trim(),
+      });
+
       await fetchSummary();
     },
     [fetchSummary]
@@ -323,13 +342,34 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const updatedHistory = [...chatHistory, userMsg];
       setChatHistory(updatedHistory);
       setTomoLoading(true);
+
+      // Send-side event fires before the round-trip so we can attribute
+      // network failures to the right user-action. history_depth is the
+      // number of prior messages (Tomo only sends last 8 to Gemini).
+      track('tomo_message_sent', {
+        message_length: message.length,
+        history_depth: chatHistory.length,
+      });
+      const startedAt = Date.now();
+
       try {
         const { response } = await tomoApi.chatWithTomo(message, updatedHistory);
+        track('tomo_response_received', {
+          latency_ms: Date.now() - startedAt,
+          response_length: response.length,
+          success: true,
+        });
         setChatHistory((prev) => [
           ...prev,
           { role: 'assistant', content: response },
         ]);
       } catch (err) {
+        track('tomo_response_received', {
+          latency_ms: Date.now() - startedAt,
+          response_length: 0,
+          success: false,
+          error_status: err instanceof ApiError ? err.status : null,
+        });
         handleError(err);
         setChatHistory((prev) => [
           ...prev,

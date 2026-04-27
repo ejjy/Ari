@@ -21,7 +21,11 @@ export default class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Tag root-boundary catches so Sentry can split them from per-screen
+    // boundaries when we add those. The component-stack fragment gives us
+    // a quick triage hint without bloating the event payload.
     captureError(error, {
+      boundary: 'root',
       component: errorInfo.componentStack?.substring(0, 200) ?? 'unknown',
     });
   }

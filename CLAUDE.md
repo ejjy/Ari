@@ -43,7 +43,7 @@ cd backend && git push origin master
 - **Navigation**: React Navigation v6 (Stack + Bottom Tabs)
 - **State**: React Context (AuthContext, DataContext)
 - **Styling**: StyleSheet.create (no external CSS-in-JS)
-- **New Architecture**: Enabled (Fabric + TurboModules)
+- **New Architecture**: **Disabled** for v1 (Razorpay v2.3.1 not Fabric-compatible)
 - **Edge-to-edge**: Enabled on Android
 - **OTA Updates**: expo-updates configured (runtimeVersion: appVersion)
 

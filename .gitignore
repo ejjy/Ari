@@ -49,3 +49,12 @@ firebase-adminsdk-*.json
 /ios
 /android
 scripts/__pycache__/
+
+# Supabase CLI temp files
+supabase/.temp/
+
+# Claude / agent local settings
+.claude/
+
+# Logs
+*.log

@@ -1,6 +1,6 @@
 import 'react-native-url-polyfill/auto';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { secureStorage } from './secureStorage';
 
 /**
  * Ari mobile Supabase client.
@@ -13,8 +13,10 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
  * phone-OTP flow, where it's caught by the existing try/catch and shown
  * inline.
  *
- * Session persistence: AsyncStorage. Harden to SecureStore later if we
- * ever store sensitive material beyond the JWT (spec §7).
+ * Session persistence: expo-secure-store (Keychain on iOS, KeyStore +
+ * EncryptedSharedPreferences on Android). The adapter exposes the
+ * Promise-returning getItem/setItem/removeItem trio Supabase auth expects
+ * and transparently migrates legacy AsyncStorage values on first read.
  */
 
 let _client: SupabaseClient | null = null;
@@ -36,7 +38,7 @@ function _getClient(): SupabaseClient {
 
   _client = createClient(url, key, {
     auth: {
-      storage: AsyncStorage,
+      storage: secureStorage,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,  // RN has no window.location

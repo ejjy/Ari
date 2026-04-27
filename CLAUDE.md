@@ -533,8 +533,8 @@ npm run typecheck        # TypeScript validation
 
 ## Key Conventions
 
-1. **API Pattern**: All API calls use `apiRequest<T>(path, options)` from `src/api/client.ts`. JWT token auto-attached from AsyncStorage.
-2. **Auth Flow**: Token stored in AsyncStorage under `@ari_token`. AuthContext checks on mount.
+1. **API Pattern**: All API calls use `apiRequest<T>(path, options)` from `src/api/client.ts`. JWT token auto-attached from SecureStore.
+2. **Auth Flow**: JWT stored in expo-secure-store under key `ari_token` (Keychain on iOS, KeyStore + EncryptedSharedPreferences on Android). Access via `secureStorage` adapter in `src/lib/secureStorage.ts`. AuthContext checks on mount; the adapter transparently migrates legacy AsyncStorage values on first read.
 3. **Data Flow**: DataContext provides all data + methods. Components use `useData()` hook.
 4. **Month Format**: `YYYY-MM` string used consistently for month-based queries.
 5. **Currency**: Always integer amounts in INR. Formatted with `formatCurrency()`.

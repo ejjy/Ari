@@ -17,10 +17,9 @@
  *     code; Google enforces it server-side.
  *
  * Contract: same as before — on success we persist the Supabase session's
- * access_token to AsyncStorage 'ari_token' so the existing apiRequest +
+ * access_token to SecureStore under 'ari_token' so the existing apiRequest +
  * Flask dual-path JWT verifier keep working unchanged.
  */
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   GoogleSignin,
   statusCodes,
@@ -28,6 +27,7 @@ import {
   isSuccessResponse,
 } from '@react-native-google-signin/google-signin';
 import { supabase } from './supabase';
+import { secureStorage } from './secureStorage';
 
 
 let _configured = false;
@@ -106,7 +106,7 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
     if (error || !data.session) {
       return { ok: false, error: error?.message ?? 'Supabase rejected the Google token' };
     }
-    await AsyncStorage.setItem('ari_token', data.session.access_token);
+    await secureStorage.setItem('ari_token', data.session.access_token);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : 'Supabase exchange failed' };

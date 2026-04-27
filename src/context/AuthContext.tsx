@@ -11,6 +11,7 @@ import { registerPushToken, clearPushToken } from '../api/push';
 import { getExpoPushToken } from '../lib/push';
 import { identifyUser, resetAnalytics, track } from '../lib/analytics';
 import { signOutGoogle } from '../lib/socialAuth';
+import { secureStorage } from '../lib/secureStorage';
 import type { User, RegisterPayload } from '../types';
 
 interface AuthContextValue {
@@ -81,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const token = await AsyncStorage.getItem('ari_token');
+        const token = await secureStorage.getItem('ari_token');
         if (!token) {
           if (!cancelled) setLoading(false);
           return;
@@ -89,7 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const me = await authApi.getMe();
         if (!cancelled) setUser(me);
       } catch {
-        await AsyncStorage.multiRemove(['ari_token', 'ari_user']);
+        await secureStorage.removeItem('ari_token');
+        await AsyncStorage.removeItem('ari_user');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -110,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(async (email: string, password: string) => {
     const { token, user: u } = await authApi.login(email, password);
-    await AsyncStorage.setItem('ari_token', token);
+    await secureStorage.setItem('ari_token', token);
     setUser(u);
     identifyUser(u.id, { tier: u.tier ?? 'free', age_group: u.ageGroup });
     track('login_success');
@@ -120,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = useCallback(async (formData: RegisterFormData) => {
     const payload = buildRegisterPayload(formData);
     const { token, user: u } = await authApi.register(payload);
-    await AsyncStorage.setItem('ari_token', token);
+    await secureStorage.setItem('ari_token', token);
     setUser(u);
     identifyUser(u.id, { tier: u.tier ?? 'free', age_group: u.ageGroup });
     track('register_success');
@@ -137,7 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     // Clear local Google session so next signIn re-prompts the account picker.
     await signOutGoogle();
-    await AsyncStorage.multiRemove(['ari_token', 'ari_user']);
+    await secureStorage.removeItem('ari_token');
+    await AsyncStorage.removeItem('ari_user');
     setUser(null);
     resetAnalytics();
   }, []);

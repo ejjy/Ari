@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { secureStorage } from '../lib/secureStorage';
 
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:5000/api';
@@ -14,7 +14,7 @@ export class ApiError extends Error {
 }
 
 const getToken = (): Promise<string | null> =>
-  AsyncStorage.getItem('ari_token');
+  secureStorage.getItem('ari_token');
 
 export async function apiRequest<T>(
   path: string,

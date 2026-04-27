@@ -22,9 +22,9 @@ const QUICK_PROMPTS = [
   'How much did I spend this month?',
   'Am I saving enough?',
   'Tips to reduce food expenses?',
-  'How to start investing in India?',
+  'Where can I cut back this month?',
   'Help me create a budget plan',
-  'What is SIP and how to start?',
+  'Explain the 50/30/20 rule',
 ];
 
 function TypingIndicator() {

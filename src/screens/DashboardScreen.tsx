@@ -208,7 +208,7 @@ export default function DashboardScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.accountantTitle}>Ari Accountant</Text>
               <Text style={styles.accountantSub}>
-                Ledger, goals, tax planner & reports
+                Ledger, goals, tax estimator & reports
               </Text>
             </View>
             <Icon name="chevron-right" size={18} color={Colors.textMuted} />

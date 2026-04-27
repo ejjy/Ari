@@ -91,7 +91,39 @@ Events fired by the app: `app_opened`, `login_success`, `register_success`,
 `ari_users.id` with `tier` + `age_group` traits. Session replay is
 intentionally OFF (spec §7 PII).
 
-## 10. Stuff still TODO (post-launch polish)
+## 10. OTA Rollback
+
+If a published OTA update breaks the app:
+
+1. Find the last-known-good commit: `git log --oneline --grep "release\|ota" -10`
+2. Republish that bundle:
+   ```bash
+   git checkout <good-sha>
+   eas update --branch production --message "rollback to <good-sha>"
+   git checkout master
+   ```
+3. Verify on a real device: cold-launch, confirm version, walk the
+   primary flow (login → dashboard → add expense → Tomo).
+4. If JS-only rollback isn't enough (native module bug), rebuild from the
+   prior tag:
+   ```bash
+   git checkout v1.0.X        # the previous good tag
+   eas build --profile production --platform android
+   eas submit --platform android --latest
+   ```
+5. Open a Sentry incident, link the bad release, and write a one-line
+   post-mortem in this file under "Lessons Learned".
+
+OTA channel mapping (see `eas.json`):
+- `preview` profile → `preview` channel → preview APK installs
+- `production` profile → `production` channel → Play Store builds
+
+Never republish a `production`-channel update from a dev workstation
+without first verifying the diff vs. the last release tag.
+
+---
+
+## 11. Stuff still TODO (post-launch polish)
 
 - Doppler for unified secrets (currently `.env` + Railway dashboard)
 - Phase 4b (AuthContext full Supabase session swap) — dual-path tokens

@@ -1,4 +1,4 @@
-appId: com.ari.app
+appId: com.pinegrass.ari
 name: Add Transaction Flow
 tags:
   - requires_auth

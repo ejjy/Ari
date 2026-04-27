@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "884760562268",
+    "project_id": "ari-app-db12a",
+    "storage_bucket": "ari-app-db12a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:884760562268:android:038507a7c28d67c5dcb499",
+        "android_client_info": {
+          "package_name": "com.pinegrass.ari"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "884760562268-qfdld5o83gg97s6fsi152468d9bedbl9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pinegrass.ari",
+            "certificate_hash": "3eb52ae43e2b9c6d7e378463b08e6a0f8e9ca49a"
+          }
+        },
+        {
+          "client_id": "884760562268-32g7945l2p9ueue9tfrrkn5l2fg2b2d0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdkQ72gsmEkjC8S8N88n8dRx-L27KeqwU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "884760562268-32g7945l2p9ueue9tfrrkn5l2fg2b2d0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

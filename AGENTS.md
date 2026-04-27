@@ -477,8 +477,8 @@ APP_VARIANT=preview
 ### Frontend (EAS Build)
 - **EAS Project**: pinegrass-tech/ari
 - **Project ID**: ae18eabf-124f-4b0a-a09e-a2a40dfb473b
-- **Android Package**: com.ari.app
-- **iOS Bundle ID**: com.ari.app
+- **Android Package**: com.pinegrass.ari
+- **iOS Bundle ID**: com.pinegrass.ari
 - **Preview Profile**: APK (internal distribution)
 - **Production Profile**: AAB (Play Store)
 - **OTA Updates**: Configured via expo-updates

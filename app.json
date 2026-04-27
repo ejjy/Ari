@@ -16,14 +16,15 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.ari.app"
+      "bundleIdentifier": "com.pinegrass.ari"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0A0A0A"
       },
-      "package": "com.ari.app",
+      "package": "com.pinegrass.ari",
+      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },

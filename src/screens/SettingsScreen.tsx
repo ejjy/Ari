@@ -170,7 +170,7 @@ export default function SettingsScreen() {
           onPress: () => {
             const storeUrl = Platform.OS === 'ios'
               ? 'https://apps.apple.com/app/ari/id0000000000'
-              : 'https://play.google.com/store/apps/details?id=com.ari.app';
+              : 'https://play.google.com/store/apps/details?id=com.pinegrass.ari';
             Linking.openURL(storeUrl).catch(() => {});
           },
         },

@@ -1,6 +1,6 @@
 import type { Category, TransactionType } from '../types';
 import { MERCHANT_DB, type MerchantEntry } from './merchantDb';
-import { tokenFuzzyMatch } from './fuzzyMatch';
+import { levenshtein } from './fuzzyMatch';
 
 export interface ParseResult {
   merchant: string;           // canonical merchant key
@@ -9,6 +9,28 @@ export interface ParseResult {
   confidence: number;         // 0.0 – 1.0
   source: 'local' | 'fuzzy';  // spec §4 expenses.parse_source
   matchedAlias: string;
+}
+
+const ALIASES = MERCHANT_DB.flatMap((entry) =>
+  entry.aliases.map((alias) => ({
+    entry,
+    alias,
+    fuzzy: !alias.includes(' '),
+    tolerance: Math.min(2, Math.max(1, Math.floor(alias.length / 3))),
+  }))
+);
+
+const TOKEN_SPLIT_RE = /[\s,.;:!?()/\-]+/;
+const PARSE_CACHE_MAX = 256;
+const parseCache = new Map<string, ParseResult | null>();
+
+function remember(input: string, result: ParseResult | null): ParseResult | null {
+  if (parseCache.size >= PARSE_CACHE_MAX) {
+    const oldest = parseCache.keys().next().value;
+    if (oldest) parseCache.delete(oldest);
+  }
+  parseCache.set(input, result);
+  return result;
 }
 
 /**
@@ -20,20 +42,19 @@ export interface ParseResult {
 export function parseMerchant(input: string): ParseResult | null {
   if (!input) return null;
   const lower = input.toLowerCase();
+  if (parseCache.has(lower)) return parseCache.get(lower) ?? null;
 
   // Pass 1 — exact substring on any alias (confidence 1.0)
-  for (const entry of MERCHANT_DB) {
-    for (const alias of entry.aliases) {
-      if (lower.includes(alias)) {
-        return {
-          merchant: entry.canonical,
-          category: entry.category,
-          type: entry.type,
-          confidence: 1.0,
-          source: 'local',
-          matchedAlias: alias,
-        };
-      }
+  for (const item of ALIASES) {
+    if (lower.includes(item.alias)) {
+      return remember(lower, {
+        merchant: item.entry.canonical,
+        category: item.entry.category,
+        type: item.entry.type,
+        confidence: 1.0,
+        source: 'local',
+        matchedAlias: item.alias,
+      });
     }
   }
 
@@ -41,28 +62,30 @@ export function parseMerchant(input: string): ParseResult | null {
   let bestEntry: MerchantEntry | null = null;
   let bestAlias = '';
   let bestDistance = Infinity;
-  for (const entry of MERCHANT_DB) {
-    for (const alias of entry.aliases) {
-      // only single-word aliases make sense for token fuzzy match
-      if (alias.includes(' ')) continue;
-      const { matched, distance } = tokenFuzzyMatch(lower, alias, 2);
-      if (matched && distance < bestDistance) {
-        bestEntry = entry;
-        bestAlias = alias;
+  const tokens = lower.split(TOKEN_SPLIT_RE).filter((token) => token.length >= 4);
+  for (const token of tokens) {
+    for (const item of ALIASES) {
+      if (!item.fuzzy) continue;
+      const distance = levenshtein(token, item.alias);
+      if (distance <= item.tolerance && distance < bestDistance) {
+        bestEntry = item.entry;
+        bestAlias = item.alias;
         bestDistance = distance;
+        if (distance === 0) break;
       }
     }
+    if (bestDistance === 0) break;
   }
 
-  if (!bestEntry) return null;
+  if (!bestEntry) return remember(lower, null);
 
   const confidence = bestDistance === 1 ? 0.85 : 0.72;
-  return {
+  return remember(lower, {
     merchant: bestEntry.canonical,
     category: bestEntry.category,
     type: bestEntry.type,
     confidence,
     source: 'fuzzy',
     matchedAlias: bestAlias,
-  };
+  });
 }

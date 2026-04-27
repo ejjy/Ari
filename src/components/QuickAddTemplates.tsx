@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Colors } from '../constants/colors';
 import Icon, { CATEGORY_ICONS } from './ui/Icon';
 import type { Category, TransactionType } from '../types';

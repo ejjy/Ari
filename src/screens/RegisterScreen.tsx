@@ -263,7 +263,7 @@ export default function RegisterScreen({ navigation }: Props) {
             <View>
               <Text style={styles.stepLabel}>Step 3 of 3</Text>
               <Text style={styles.title}>Your main goal?</Text>
-              <Text style={styles.subtitle}>We'll personalise Tomo's coaching for you</Text>
+              <Text style={styles.subtitle}>We&apos;ll personalise Tomo&apos;s coaching for you</Text>
 
               <View style={styles.grid2}>
                 {GOAL_OPTIONS.map((opt) => (

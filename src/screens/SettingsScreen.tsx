@@ -569,12 +569,12 @@ export default function SettingsScreen() {
             </View>
 
             <Text style={styles.modalSubtitle}>
-              We'd love to hear from you! Tell us what you like, what could be better, or any feature ideas. Your feedback is sent securely to the Ari team and reviewed personally.
+              We&apos;d love to hear from you! Tell us what you like, what could be better, or any feature ideas. Your feedback is sent securely to the Ari team and reviewed personally.
             </Text>
 
             {/* Star Rating */}
             <View style={styles.ratingRow}>
-              <Text style={styles.ratingLabel}>How's your experience?</Text>
+              <Text style={styles.ratingLabel}>How&apos;s your experience?</Text>
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((s) => (
                   <TouchableOpacity

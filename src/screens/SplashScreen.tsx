@@ -117,7 +117,7 @@ export default function SplashScreen({ navigation }: Props) {
             accessibilityLabel="Let's Get Started"
             accessibilityRole="button"
           >
-            <Text style={styles.primaryBtnText}>Let's Get Started</Text>
+            <Text style={styles.primaryBtnText}>Let&apos;s Get Started</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.secondaryBtn}

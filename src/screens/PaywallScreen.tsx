@@ -218,7 +218,7 @@ export default function PaywallScreen() {
           </Button>
 
           <Text style={styles.fine}>
-            Billed monthly via Razorpay. You'll be charged ₹
+            Billed monthly via Razorpay. You&apos;ll be charged ₹
             {plans?.find((p) => p.key === selected)?.price ?? ''} today
             and every month until you cancel.
           </Text>

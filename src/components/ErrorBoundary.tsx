@@ -37,7 +37,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
           <Icon name="alert-triangle" size={64} color={Colors.danger} />
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
-            Don't worry, your data is safe. The error has been reported and we'll fix it soon.
+            Don&apos;t worry, your data is safe. The error has been reported and we&apos;ll fix it soon.
           </Text>
           {__DEV__ && this.state.error && (
             <View style={styles.debugBox}>

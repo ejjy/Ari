@@ -81,7 +81,7 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
     if (!voice.transcript) return;
     handleDescriptionChange(voice.transcript);
     setEntryType('voice');
-  // eslint-disable-next-line react-hooks/exhaustive-deps — handleDescriptionChange is stable enough
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voice.transcript]);
 
   useEffect(() => {

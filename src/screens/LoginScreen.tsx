@@ -156,7 +156,7 @@ export default function LoginScreen({ navigation }: Props) {
             accessibilityRole="button"
           >
             <Text style={styles.footerText}>
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Text style={styles.footerLink}>Sign up free</Text>
             </Text>
           </TouchableOpacity>

@@ -164,7 +164,7 @@ export default function DailyHeatmapScreen() {
             </View>
           </>
         ) : (
-          <Text style={styles.error}>Couldn't load heatmap.</Text>
+          <Text style={styles.error}>Couldn&apos;t load heatmap.</Text>
         )}
       </ScrollView>
     </SafeAreaView>

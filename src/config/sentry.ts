@@ -14,7 +14,7 @@ export function initSentry() {
     profilesSampleRate: 0.1,
     enableAutoSessionTracking: true,
     sessionTrackingIntervalMillis: 30000,
-    attachScreenshot: true,
+    attachScreenshot: false,
     environment: __DEV__ ? 'development' : 'production',
     beforeSend(event) {
       // Don't send events in dev mode

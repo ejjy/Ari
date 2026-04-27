@@ -374,7 +374,7 @@ export default function SavingsGoalsScreen() {
           <TouchableOpacity style={styles.modalOverlay} onPress={() => setContributeGoal(null)} activeOpacity={1} />
           <View style={[styles.modalSheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
             <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>Add to "{contributeGoal?.name}"</Text>
+            <Text style={styles.modalTitle}>Add to &quot;{contributeGoal?.name}&quot;</Text>
             {contributeGoal && (
               <Text style={styles.contributeStatus}>
                 {formatAmount(contributeGoal.currentAmount)} of {formatAmount(contributeGoal.targetAmount)} saved

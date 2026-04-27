@@ -1,5 +1,6 @@
 import PostHog from 'posthog-react-native';
 import Constants from 'expo-constants';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 /**
@@ -10,12 +11,23 @@ import { Platform } from 'react-native';
  * Wired in App.tsx (init) + AuthContext (identify on login, reset on
  * logout) + the screens that fire interesting events (expense logged,
  * brief opened, paywall viewed).
+ *
+ * Privacy / Private Mode:
+ *   When the user enables Private Mode (spec §7) we call PostHog's
+ *   native opt-out (`client.optOut()`) AND set a module-level flag that
+ *   `track()` / `identifyUser()` short-circuit on. Defense in depth — if
+ *   PostHog batches an event before the opt-out propagates, the early
+ *   return still drops it. The boot sequence reads the persisted Private
+ *   Mode flag synchronously enough that no events fire before the SDK
+ *   knows the user opted out.
  */
 
 const HOST = process.env.EXPO_PUBLIC_POSTHOG_HOST ?? 'https://app.posthog.com';
 const KEY = process.env.EXPO_PUBLIC_POSTHOG_KEY;
+const PRIVACY_STORAGE_KEY = 'ari_private_mode';
 
 let client: PostHog | null = null;
+let _privacyOptOut = false;
 
 // PostHog v2's typed PostHogEventProperties requires JSON-serialisable
 // values. We accept Record<string, unknown> from callers for ergonomics
@@ -48,6 +60,16 @@ function _props(p: Record<string, unknown>): Record<string, Json> {
 
 export async function initAnalytics(): Promise<void> {
   if (!KEY || client) return;
+  // Hydrate the privacy flag BEFORE the client exists so the SDK can be
+  // opted-out the moment it's constructed. Failure here is fine — the
+  // default ('not in private mode') is the louder, safer-by-default state
+  // since track() also no-ops without a key.
+  try {
+    const persisted = await AsyncStorage.getItem(PRIVACY_STORAGE_KEY);
+    _privacyOptOut = persisted === '1';
+  } catch {
+    /* noop */
+  }
   try {
     client = new PostHog(KEY, {
       host: HOST,
@@ -66,13 +88,39 @@ export async function initAnalytics(): Promise<void> {
       platform: Platform.OS,
       build_number: buildNumber,
     });
+    // If we restored opt-out from storage, propagate it into the SDK now.
+    if (_privacyOptOut) {
+      try { client.optOut(); } catch { /* noop */ }
+    }
   } catch {
     /* swallow — analytics is never critical */
   }
 }
 
-export function identifyUser(userId: string, traits: Record<string, unknown> = {}): void {
+/**
+ * Toggle analytics opt-out. Called by PrivacyContext whenever the user
+ * flips Private Mode in Settings. Uses PostHog's SDK-native optOut/optIn
+ * AND keeps a local flag so the early-return in track() catches anything
+ * the SDK queues during the transition.
+ */
+export function setPrivacyEnabled(enabled: boolean): void {
+  _privacyOptOut = enabled;
   if (!client) return;
+  try {
+    if (enabled) client.optOut();
+    else client.optIn();
+  } catch {
+    /* noop */
+  }
+}
+
+/** True iff the user has Private Mode on (analytics opt-out). */
+export function isPrivacyEnabled(): boolean {
+  return _privacyOptOut;
+}
+
+export function identifyUser(userId: string, traits: Record<string, unknown> = {}): void {
+  if (!client || _privacyOptOut) return;
   try {
     client.identify(userId, _props(traits));
   } catch { /* noop */ }
@@ -120,7 +168,7 @@ export type AnalyticsEvent =
   | 'aa_consent_completed';
 
 export function track(event: AnalyticsEvent, props: Record<string, unknown> = {}): void {
-  if (!client) return;
+  if (!client || _privacyOptOut) return;
   try {
     client.capture(event, _props(props));
   } catch { /* noop */ }

@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatCurrency } from '../utils/formatCurrency';
+import { setPrivacyEnabled } from '../lib/analytics';
 
 /**
  * Spec §7 — "Private Mode" UI toggle that hides all balance and amount
@@ -36,12 +37,16 @@ export function PrivacyProvider({ children }: { children: React.ReactNode }) {
   const [isPrivate, setPrivateState] = useState(false);
 
   // Restore persisted setting on mount. Failure is silent — default (off)
-  // is the safer fallback if AsyncStorage is unavailable.
+  // is the safer fallback if AsyncStorage is unavailable. Mirrors the
+  // hydrated state into the analytics layer so PostHog opts out / opts in
+  // BEFORE any screen has a chance to fire a track() call.
   useEffect(() => {
     (async () => {
       try {
         const raw = await AsyncStorage.getItem(STORAGE_KEY);
-        if (raw === '1') setPrivateState(true);
+        const v = raw === '1';
+        if (v) setPrivateState(true);
+        setPrivacyEnabled(v);
       } catch {
         /* noop */
       }
@@ -50,6 +55,10 @@ export function PrivacyProvider({ children }: { children: React.ReactNode }) {
 
   const setPrivate = useCallback((v: boolean) => {
     setPrivateState(v);
+    // Tell PostHog to opt out / opt back in. Synchronous so any track()
+    // calls fired in the same tick (e.g. from this same toggle button)
+    // see the updated flag.
+    setPrivacyEnabled(v);
     AsyncStorage.setItem(STORAGE_KEY, v ? '1' : '0').catch(() => {});
   }, []);
 

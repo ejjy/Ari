@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator, Alert,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import RazorpayCheckout from 'react-native-razorpay';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 import { getPlans, createSubscription, type Plan, type PlanKey } from '../api/billing';
 import Button from '../components/ui/Button';
@@ -15,6 +17,18 @@ import { useHaptics } from '../hooks/useHaptics';
 import { track } from '../lib/analytics';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
+
+// -----------------------------------------------------------------------------
+// Paywall feature flag.
+//
+// EXPO_PUBLIC_PAYWALL_ENABLED gates the live Razorpay flow. Defaulting to
+// false means v1 ships with the placeholder waitlist UI even if a build is
+// accidentally cut before the live keys + ToS clearance land. Flip the env
+// to "true" + add live RAZORPAY keys to Railway to ship monetization.
+// -----------------------------------------------------------------------------
+const PAYWALL_ENABLED =
+  (process.env.EXPO_PUBLIC_PAYWALL_ENABLED ?? 'false').toLowerCase() === 'true';
+const WAITLIST_STORAGE_KEY = 'ari_premium_waitlist_email';
 
 /**
  * Paywall — three tiers, Razorpay Subscriptions checkout (spec Sprint 3).
@@ -46,12 +60,115 @@ const PLAN_BULLETS: Record<PlanKey, string[]> = {
   ],
 };
 
+function WaitlistPlaceholder({ onClose }: { onClose: () => void }) {
+  const haptics = useHaptics();
+  const { user } = useAuth();
+  const [email, setEmail] = useState(user?.email ?? '');
+  const [submitted, setSubmitted] = useState(false);
+
+  // Hydrate any previously-stored waitlist email so users don't re-enter.
+  useEffect(() => {
+    (async () => {
+      try {
+        const v = await AsyncStorage.getItem(WAITLIST_STORAGE_KEY);
+        if (v) { setEmail(v); setSubmitted(true); }
+      } catch { /* noop */ }
+    })();
+  }, []);
+
+  useEffect(() => {
+    track('paywall_viewed', { current_tier: user?.tier ?? 'unknown', source_screen: 'waitlist_placeholder' });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleJoin = async () => {
+    const trimmed = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      Alert.alert('Enter a valid email', 'We need an email to let you know when Premium opens up.');
+      return;
+    }
+    haptics.success();
+    try {
+      await AsyncStorage.setItem(WAITLIST_STORAGE_KEY, trimmed);
+    } catch { /* noop — local-only persistence */ }
+    setSubmitted(true);
+  };
+
+  return (
+    <SafeAreaView style={styles.safe} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onClose} hitSlop={8}>
+          <Icon name="x" size={22} color={Colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Premium</Text>
+        <View style={{ width: 22 }} />
+      </View>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <Text style={[styles.title, { fontSize: 22, marginBottom: 8 }]}>
+          Premium is coming soon.
+        </Text>
+        <Text style={styles.subtitle}>
+          We&apos;re putting the finishing touches on Tomo Pro, account
+          aggregator sync, and shared expenses. Drop your email and we&apos;ll
+          notify you the moment it&apos;s live — early users get launch pricing.
+        </Text>
+        {submitted ? (
+          <View style={styles.planCard}>
+            <View style={styles.bulletRow}>
+              <Icon name="check-circle" size={16} color={Colors.primary} />
+              <Text style={[styles.bulletText, { color: Colors.textPrimary }]}>
+                You&apos;re on the list as <Text style={{ fontWeight: '700' }}>{email}</Text>
+              </Text>
+            </View>
+            <Text style={[styles.fine, { textAlign: 'left', marginTop: 8 }]}>
+              Want to update? Tap below.
+            </Text>
+            <TouchableOpacity onPress={() => setSubmitted(false)} style={{ marginTop: 8 }}>
+              <Text style={{ color: Colors.primary, fontSize: 13 }}>Change email</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.planCard}>
+            <Text style={{ color: Colors.textSecondary, fontSize: 12, marginBottom: 6 }}>EMAIL</Text>
+            <TextInput
+              value={email}
+              onChangeText={setEmail}
+              placeholder="you@example.com"
+              placeholderTextColor={Colors.textMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={{
+                color: Colors.textPrimary, fontSize: 15, paddingVertical: 8,
+                borderBottomWidth: 1, borderBottomColor: Colors.border,
+              }}
+            />
+            <Button onPress={handleJoin} fullWidth style={{ marginTop: 16 }}>
+              Notify me at launch
+            </Button>
+          </View>
+        )}
+        <Text style={styles.fine}>
+          We&apos;ll only email you about Premium. No spam, unsubscribe in one tap.
+        </Text>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
 export default function PaywallScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<Record<string, { source?: string } | undefined>, string>>();
   const sourceScreen = route.params?.source ?? 'unknown';
   const { user, refreshFromSession } = useAuth();
   const haptics = useHaptics();
+
+  // Feature-gated: when EXPO_PUBLIC_PAYWALL_ENABLED is not "true", show the
+  // waitlist placeholder so v1 ships without a live Razorpay flow but still
+  // captures purchase intent. Flipping the env var to "true" on the EAS build
+  // restores the full Razorpay path below — no other code changes needed.
+  if (!PAYWALL_ENABLED) {
+    return <WaitlistPlaceholder onClose={() => navigation.goBack()} />;
+  }
 
   const [plans, setPlans] = useState<Plan[] | null>(null);
   const [selected, setSelected] = useState<PlanKey>('pilot');

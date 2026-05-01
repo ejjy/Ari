@@ -43,7 +43,7 @@ cd backend && git push origin master
 - **Navigation**: React Navigation v6 (Stack + Bottom Tabs)
 - **State**: React Context (AuthContext, DataContext)
 - **Styling**: StyleSheet.create (no external CSS-in-JS)
-- **New Architecture**: **Disabled** for v1 (Razorpay v2.3.1 not Fabric-compatible)
+- **New Architecture**: Enabled (Fabric + TurboModules) — required by Reanimated 4.x. Razorpay autolinking disabled via `react-native.config.js` (paywall flag-gated off in v1)
 - **Edge-to-edge**: Enabled on Android
 - **OTA Updates**: expo-updates configured (runtimeVersion: appVersion)
 

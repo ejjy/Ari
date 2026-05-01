@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "scheme": "ari",
     "splash": {
       "image": "./assets/splash-icon.png",

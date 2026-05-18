@@ -28,6 +28,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import { supabase } from './supabase';
 import { secureStorage } from './secureStorage';
+import { addBreadcrumb, captureError, Sentry } from '../config/sentry';
 
 
 let _configured = false;
@@ -60,14 +61,15 @@ export interface GoogleAuthResult {
 
 export async function signInWithGoogle(): Promise<GoogleAuthResult> {
   if (!_ensureConfigured()) {
-    return { ok: false, error: 'EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID is not set on this build.' };
+    Sentry.captureMessage('google_sign_in_not_configured', { level: 'error' });
+    return { ok: false, error: 'Google sign-in is not available on this build. Please use your email and password.' };
   }
 
   // Make sure Play Services is available + up to date.
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
   } catch {
-    return { ok: false, error: 'Google Play Services unavailable on this device.' };
+    return { ok: false, error: 'Google Play Services is missing or out of date on this device.' };
   }
 
   let response;
@@ -80,12 +82,29 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
         case statusCodes.IN_PROGRESS:
           return { ok: false, cancelled: true };
         case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-          return { ok: false, error: 'Google Play Services not available.' };
-        default:
-          return { ok: false, error: `Google sign-in error (${e.code}): ${e.message}` };
+          return { ok: false, error: 'Google Play Services is missing or out of date on this device.' };
+        case statusCodes.SIGN_IN_REQUIRED:
+          return { ok: false, error: 'Please sign in to your Google account on this device first, then try again.' };
+        default: {
+          // DEVELOPER_ERROR ("code 10") is the famous SHA-1 / OAuth-client
+          // misconfig path. Never leak the raw code to the user — it just
+          // confuses people. Fingerprint via Sentry so we can spot it in
+          // aggregate.
+          Sentry.captureMessage(
+            `google_sign_in_failed:${String(e.code)}`,
+            { level: 'error', extra: { code: e.code, message: e.message } },
+          );
+          return {
+            ok: false,
+            error: 'Google sign-in is temporarily unavailable. Please use your email and password, or try again later.',
+          };
+        }
       }
     }
-    return { ok: false, error: e instanceof Error ? e.message : 'Google sign-in failed' };
+    captureError(e instanceof Error ? e : new Error('google_sign_in_unknown'), {
+      where: 'socialAuth.signIn',
+    });
+    return { ok: false, error: 'Google sign-in failed. Please try again or use your email.' };
   }
 
   if (!isSuccessResponse(response)) {
@@ -94,22 +113,35 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
 
   const idToken = response.data?.idToken;
   if (!idToken) {
-    return { ok: false, error: 'Google did not return an id_token (check webClientId).' };
+    Sentry.captureMessage('google_sign_in_no_id_token', { level: 'error' });
+    return { ok: false, error: 'Google sign-in is temporarily unavailable. Please use your email and password.' };
   }
 
-  // Hand off to Supabase — this is the same call we used before.
+  // Hand off to Supabase — this is the same call we used before. The
+  // session that lands here is what powers autoRefreshToken; AuthContext's
+  // onAuthStateChange hook mirrors the refreshed access_token into
+  // 'ari_token' so apiRequest keeps working past the initial 1h window.
   try {
+    addBreadcrumb('auth', 'google: exchanging id_token with Supabase');
     const { data, error } = await supabase.auth.signInWithIdToken({
       provider: 'google',
       token: idToken,
     });
     if (error || !data.session) {
-      return { ok: false, error: error?.message ?? 'Supabase rejected the Google token' };
+      Sentry.captureMessage('supabase_google_exchange_failed', {
+        level: 'error',
+        extra: { message: error?.message },
+      });
+      return { ok: false, error: 'Sign-in failed. Please try again or use your email.' };
     }
     await secureStorage.setItem('ari_token', data.session.access_token);
+    addBreadcrumb('auth', 'google: session adopted');
     return { ok: true };
   } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : 'Supabase exchange failed' };
+    captureError(e instanceof Error ? e : new Error('supabase_exchange_threw'), {
+      where: 'socialAuth.signInWithIdToken',
+    });
+    return { ok: false, error: 'Sign-in failed. Please try again or use your email.' };
   }
 }
 

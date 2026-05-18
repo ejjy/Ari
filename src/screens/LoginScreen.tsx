@@ -20,6 +20,32 @@ import { Colors } from '../constants/colors';
 import Icon from '../components/ui/Icon';
 import { useGoogleSignIn } from '../lib/socialAuth';
 import * as authApi from '../api/auth';
+import { Sentry, addBreadcrumb } from '../config/sentry';
+
+// Map backend / network failures to messages a user can actually act on.
+// Anything we don't recognise gets a generic fallback + a Sentry capture so
+// we can grow the lookup table without leaking raw 502 bodies to users.
+function humanizeLoginError(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 401) return 'Wrong email or password. Please try again.';
+    if (err.status === 400) return 'Please enter a valid email and password.';
+    if (err.status === 404) return 'No account found for this email. Please sign up first.';
+    if (err.status === 429) return 'Too many attempts. Please wait a minute and try again.';
+    if (err.status >= 500) {
+      Sentry.captureMessage(`login_failed_${err.status}`, {
+        level: 'error',
+        extra: { message: err.message },
+      });
+      return 'Our servers are having a moment. Please try again shortly.';
+    }
+    if (err.status === 0) return 'No internet connection. Please check your network and try again.';
+  }
+  Sentry.captureMessage('login_failed_unknown', {
+    level: 'error',
+    extra: { message: err instanceof Error ? err.message : String(err) },
+  });
+  return 'Login failed. Please try again.';
+}
 
 type Props = StackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -35,16 +61,22 @@ export default function LoginScreen({ navigation }: Props) {
   const handleGoogle = async () => {
     setError('');
     setSocialLoading('google');
+    addBreadcrumb('auth', 'LoginScreen: google tapped');
     try {
       const res = await google.signIn();
       if (!res.ok) {
-        if (!res.cancelled) setError(res.error ?? 'Google sign-in failed');
+        if (!res.cancelled) setError(res.error ?? 'Google sign-in failed. Please try again.');
         return;
       }
       const me = await authApi.getMe();
       await refreshFromSession(me);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Google sign-in error');
+      // Anything reaching here is unexpected (socialAuth handles its own
+      // failure cases). Log, show generic.
+      Sentry.captureException(e instanceof Error ? e : new Error(String(e)), {
+        tags: { where: 'LoginScreen.handleGoogle' },
+      });
+      setError('Sign-in failed. Please try again or use your email.');
     } finally {
       setSocialLoading(null);
     }
@@ -56,12 +88,11 @@ export default function LoginScreen({ navigation }: Props) {
     if (!password) { setError('Password is required'); return; }
 
     setLoading(true);
+    addBreadcrumb('auth', 'LoginScreen: submitting');
     try {
       await login(email.trim().toLowerCase(), password);
     } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : 'Login failed. Please try again.'
-      );
+      setError(humanizeLoginError(err));
     } finally {
       setLoading(false);
     }

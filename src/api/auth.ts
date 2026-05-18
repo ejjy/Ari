@@ -1,14 +1,24 @@
 import { apiRequest } from './client';
 import type { User, RegisterPayload } from '../types';
 
+// refresh_token is optional so the frontend keeps working against a backend
+// that hasn't been redeployed with the refresh_token field yet. The Supabase
+// auto-refresh path is a no-op in that case; user just sees the legacy 1h
+// access_token TTL until backend catches up.
+export interface AuthSessionResponse {
+  token: string;
+  refresh_token?: string;
+  user: User;
+}
+
 export const login = (email: string, password: string) =>
-  apiRequest<{ token: string; user: User }>('/auth/login', {
+  apiRequest<AuthSessionResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
 
 export const register = (payload: RegisterPayload) =>
-  apiRequest<{ token: string; user: User }>('/auth/register', {
+  apiRequest<AuthSessionResponse>('/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload),
   });

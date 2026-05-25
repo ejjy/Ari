@@ -4,6 +4,7 @@ import {
   formatDateShort,
   formatSectionDate,
   groupTransactionsByDate,
+  toLocalISODate,
   todayISO,
 } from '../dateHelpers';
 import type { Transaction } from '../../types';
@@ -40,14 +41,14 @@ describe('formatDateShort', () => {
 
 describe('formatSectionDate', () => {
   it('returns "Today" for today\'s date', () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = toLocalISODate(new Date());
     expect(formatSectionDate(today)).toBe('Today');
   });
 
   it('returns "Yesterday" for yesterday\'s date', () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const dateStr = yesterday.toISOString().split('T')[0];
+    const dateStr = toLocalISODate(yesterday);
     expect(formatSectionDate(dateStr)).toBe('Yesterday');
   });
 
@@ -103,8 +104,6 @@ describe('todayISO', () => {
   });
 
   it('matches current date', () => {
-    const now = new Date();
-    const expected = now.toISOString().split('T')[0];
-    expect(todayISO()).toBe(expected);
+    expect(todayISO()).toBe(toLocalISODate(new Date()));
   });
 });

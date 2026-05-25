@@ -4,7 +4,7 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import RazorpayCheckout from 'react-native-razorpay';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
@@ -15,8 +15,6 @@ import Icon from '../components/ui/Icon';
 import { Colors } from '../constants/colors';
 import { useHaptics } from '../hooks/useHaptics';
 import { track } from '../lib/analytics';
-import type { RouteProp } from '@react-navigation/native';
-import { useRoute } from '@react-navigation/native';
 
 // -----------------------------------------------------------------------------
 // Paywall feature flag.
@@ -155,20 +153,12 @@ function WaitlistPlaceholder({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function PaywallScreen() {
+function LivePaywallScreen() {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<Record<string, { source?: string } | undefined>, string>>();
   const sourceScreen = route.params?.source ?? 'unknown';
   const { user, refreshFromSession } = useAuth();
   const haptics = useHaptics();
-
-  // Feature-gated: when EXPO_PUBLIC_PAYWALL_ENABLED is not "true", show the
-  // waitlist placeholder so v1 ships without a live Razorpay flow but still
-  // captures purchase intent. Flipping the env var to "true" on the EAS build
-  // restores the full Razorpay path below — no other code changes needed.
-  if (!PAYWALL_ENABLED) {
-    return <WaitlistPlaceholder onClose={() => navigation.goBack()} />;
-  }
 
   const [plans, setPlans] = useState<Plan[] | null>(null);
   const [selected, setSelected] = useState<PlanKey>('pilot');
@@ -343,6 +333,20 @@ export default function PaywallScreen() {
       )}
     </SafeAreaView>
   );
+}
+
+export default function PaywallScreen() {
+  const navigation = useNavigation();
+
+  // Feature-gated: when EXPO_PUBLIC_PAYWALL_ENABLED is not "true", show the
+  // waitlist placeholder so v1 ships without a live Razorpay flow but still
+  // captures purchase intent. Flipping the env var to "true" on the EAS build
+  // restores the full Razorpay path below with no other code changes needed.
+  if (!PAYWALL_ENABLED) {
+    return <WaitlistPlaceholder onClose={() => navigation.goBack()} />;
+  }
+
+  return <LivePaywallScreen />;
 }
 
 const styles = StyleSheet.create({

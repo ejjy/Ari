@@ -27,7 +27,7 @@ import { autoDetectCategory } from '../utils/autoDetectCategory';
 import { parseMerchant } from '../utils/merchantParser';
 import { parseExpenseAI, type AiParseResult } from '../api/parse';
 import ConfidenceConfirmSheet from '../components/ConfidenceConfirmSheet';
-import { todayISO } from '../utils/dateHelpers';
+import { todayISO, toLocalISODate } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
 import { useVoiceInput } from '../hooks/useVoiceInput';
 import Icon from '../components/ui/Icon';
@@ -174,7 +174,7 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
   const handleDateChange = (_: unknown, selected?: Date) => {
     if (Platform.OS === 'android') setShowDatePicker(false);
     if (selected) {
-      setDate(selected.toISOString().split('T')[0]);
+      setDate(toLocalISODate(selected));
     }
   };
 

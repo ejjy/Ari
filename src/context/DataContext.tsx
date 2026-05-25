@@ -12,9 +12,9 @@ import * as goalsApi from '../api/savingsGoals';
 import * as catApi from '../api/categories';
 import type { UserCategoryData } from '../api/categories';
 import { getCurrentMonth } from '../utils/dateHelpers';
-import { useAuth } from './AuthContext';
 import { useOfflineCache } from '../hooks/useOfflineCache';
 import { track, bucketAmount } from '../lib/analytics';
+import { addBreadcrumb } from '../config/sentry';
 import type {
   Transaction,
   Summary,
@@ -86,7 +86,6 @@ const INITIAL_TOMO_MESSAGE: ChatMessage = {
 };
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { logout } = useAuth();
   const { fetchWithCache } = useOfflineCache();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -106,10 +105,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const handleError = useCallback(
     (err: unknown) => {
       if (err instanceof ApiError && err.status === 401) {
-        logout();
+        addBreadcrumb(
+          'auth',
+          'data fetch received 401 after refresh attempt; preserving local session',
+          'warning',
+        );
       }
     },
-    [logout]
+    []
   );
 
   const fetchTransactions = useCallback(async () => {

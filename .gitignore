@@ -62,3 +62,10 @@ supabase/.temp/
 
 # Logs
 *.log
+
+# Signing credentials — NEVER commit
+*.jks
+*.keystore
+credentials.json
+*.p12
+*.pem

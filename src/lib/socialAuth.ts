@@ -32,6 +32,8 @@ import { addBreadcrumb, captureError, Sentry } from '../config/sentry';
 
 
 let _configured = false;
+const GOOGLE_TEMPORARY_ERROR =
+  'Google sign-in is temporarily unavailable. Please use your email and password, or try again later.';
 
 function _ensureConfigured(): boolean {
   if (_configured) return true;
@@ -94,10 +96,7 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
             `google_sign_in_failed:${String(e.code)}`,
             { level: 'error', extra: { code: e.code, message: e.message } },
           );
-          return {
-            ok: false,
-            error: 'Google sign-in is temporarily unavailable. Please use your email and password, or try again later.',
-          };
+          return { ok: false, error: GOOGLE_TEMPORARY_ERROR };
         }
       }
     }
@@ -111,10 +110,24 @@ export async function signInWithGoogle(): Promise<GoogleAuthResult> {
     return { ok: false, cancelled: true };
   }
 
-  const idToken = response.data?.idToken;
+  let idToken = response.data?.idToken;
+  if (!idToken) {
+    try {
+      const tokens = await GoogleSignin.getTokens();
+      idToken = tokens.idToken;
+    } catch (e) {
+      Sentry.captureMessage('google_sign_in_get_tokens_failed', {
+        level: 'error',
+        extra: {
+          message: e instanceof Error ? e.message : String(e),
+        },
+      });
+    }
+  }
+
   if (!idToken) {
     Sentry.captureMessage('google_sign_in_no_id_token', { level: 'error' });
-    return { ok: false, error: 'Google sign-in is temporarily unavailable. Please use your email and password.' };
+    return { ok: false, error: GOOGLE_TEMPORARY_ERROR };
   }
 
   // Hand off to Supabase — this is the same call we used before. The

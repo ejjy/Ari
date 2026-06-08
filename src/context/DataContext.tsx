@@ -182,19 +182,43 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const fetchAll = useCallback(async () => {
     setLoadingData(true);
-    await Promise.all([fetchTransactions(), fetchSummary(), fetchUserCategories()]);
-    setLoadingData(false);
+    try {
+      // allSettled (not all) so one rejecting fetch can't short-circuit the
+      // others; the finally guarantees the spinner clears even on an
+      // unexpected throw. Each fetch already swallows its own error via
+      // handleError, so a rejection here is genuinely unexpected — log it.
+      const results = await Promise.allSettled([
+        fetchTransactions(),
+        fetchSummary(),
+        fetchUserCategories(),
+      ]);
+      results.forEach((r) => {
+        if (r.status === 'rejected') {
+          addBreadcrumb('data', `fetchAll sub-fetch rejected: ${r.reason}`, 'warning');
+        }
+      });
+    } finally {
+      setLoadingData(false);
+    }
   }, [fetchTransactions, fetchSummary, fetchUserCategories]);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([
-      fetchTransactions(),
-      fetchSummary(),
-      fetchNudge(),
-      fetchInsights(),
-    ]);
-    setRefreshing(false);
+    try {
+      const results = await Promise.allSettled([
+        fetchTransactions(),
+        fetchSummary(),
+        fetchNudge(),
+        fetchInsights(),
+      ]);
+      results.forEach((r) => {
+        if (r.status === 'rejected') {
+          addBreadcrumb('data', `refresh sub-fetch rejected: ${r.reason}`, 'warning');
+        }
+      });
+    } finally {
+      setRefreshing(false);
+    }
   }, [fetchTransactions, fetchSummary, fetchNudge, fetchInsights]);
 
   const addTransaction = useCallback(
@@ -237,13 +261,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTransaction = useCallback(
     async (id: string) => {
-      // Optimistic delete: remove from UI immediately
+      // Snapshot the pre-delete list in local closure scope so concurrent
+      // deletes each keep their own rollback state. (Previously this lived on
+      // (deleteTransaction as any).__rollback, a single shared slot that a
+      // second in-flight delete would overwrite — corrupting the first's
+      // rollback.) Capturing inside the functional updater also avoids a
+      // stale closure over `transactions`.
+      let snapshot: Transaction[] | null = null;
+
+      // Optimistic delete: remove from UI immediately.
       setTransactions((prev) => {
-        const txn = prev.find((t) => t.id === id);
-        if (txn) {
-          // Store for rollback
-          (deleteTransaction as any).__rollback = { id, txn, prev };
-        }
+        snapshot = prev;
         return prev.filter((t) => t.id !== id);
       });
 
@@ -251,11 +279,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         await txnApi.deleteTransaction(id);
         await fetchSummary();
       } catch (err) {
-        // Rollback on failure
-        const rb = (deleteTransaction as any).__rollback;
-        if (rb?.id === id) {
-          setTransactions(rb.prev);
-        }
+        // Rollback to this invocation's own snapshot.
+        if (snapshot) setTransactions(snapshot);
         throw err;
       }
     },

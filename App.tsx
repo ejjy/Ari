@@ -8,6 +8,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Sentry from '@sentry/react-native';
 import { initSentry } from './src/config/sentry';
 import { initAnalytics, track } from './src/lib/analytics';
+import { checkAndApplyUpdate, registerOtaReloadHandler } from './src/lib/otaUpdates';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { AuthProvider } from './src/context/AuthContext';
 import { DataProvider } from './src/context/DataContext';
@@ -19,6 +20,12 @@ import RootNavigator from './src/navigation/RootNavigator';
 // foregrounding is tracked separately via the AppState listener below.
 initSentry();
 initAnalytics().then(() => track('app_opened', { source: 'cold' }));
+
+// Fire-and-forget OTA check on cold start. Never blocks the splash: if a newer
+// JS bundle exists it's downloaded in the background and applied when the app
+// is next backgrounded (see registerOtaReloadHandler) or on the next cold
+// launch. All failures are silent no-ops.
+checkAndApplyUpdate();
 
 function App() {
   // Tracks the wall-clock time spent in the foreground for the current
@@ -73,6 +80,10 @@ function App() {
 
     return () => sub.remove();
   }, []);
+
+  // Apply a staged OTA update when the app goes to background, so an active
+  // user is never interrupted mid-session by a reload.
+  useEffect(() => registerOtaReloadHandler(), []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -1,5 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiRequest, ApiError } from '../client';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+
+jest.mock('../../lib/supabase', () => ({
+  isSupabaseConfigured: jest.fn(() => false),
+  supabase: {
+    auth: {
+      refreshSession: jest.fn(),
+    },
+  },
+}));
 
 // Mock fetch globally
 const mockFetch = jest.fn();
@@ -9,6 +19,7 @@ describe('apiRequest', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (AsyncStorage.getItem as jest.Mock).mockResolvedValue(null);
+    (isSupabaseConfigured as jest.Mock).mockReturnValue(false);
   });
 
   it('makes GET request with correct URL', async () => {
@@ -93,5 +104,38 @@ describe('apiRequest', () => {
       expect(err).toBeInstanceOf(ApiError);
       expect((err as ApiError).status).toBe(401);
     }
+  });
+
+  it('refreshes and retries /auth/me after an expired access token', async () => {
+    (AsyncStorage.getItem as jest.Mock).mockResolvedValue('old-token');
+    (isSupabaseConfigured as jest.Mock).mockReturnValue(true);
+    (supabase.auth.refreshSession as jest.Mock).mockResolvedValue({
+      data: { session: { access_token: 'new-token' } },
+      error: null,
+    });
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: () => Promise.resolve({ error: 'Expired token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ id: 'u1', email: 'demo@ari.app' }),
+      });
+
+    const result = await apiRequest('/auth/me');
+
+    expect(result).toEqual({ id: 'u1', email: 'demo@ari.app' });
+    expect(supabase.auth.refreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenLastCalledWith(
+      expect.stringContaining('/auth/me'),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer new-token',
+        }),
+      })
+    );
   });
 });

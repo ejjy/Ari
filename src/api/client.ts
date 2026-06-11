@@ -23,6 +23,14 @@ const getToken = (): Promise<string | null> =>
 // rate-limit the auth endpoint, and likely race with the token write.
 let _refreshInFlight: Promise<string | null> | null = null;
 
+function shouldRefreshAfter401(path: string): boolean {
+  // Login/register are expected to return 401/4xx for bad credentials and
+  // cannot be repaired by refreshing the current session. Other auth routes
+  // such as /auth/me are protected API calls and should get the same refresh
+  // path as transactions, budgets, etc.
+  return path !== '/auth/login' && path !== '/auth/register';
+}
+
 async function _refreshAccessToken(): Promise<string | null> {
   if (!isSupabaseConfigured()) return null;
   if (_refreshInFlight) return _refreshInFlight;
@@ -96,9 +104,9 @@ export async function apiRequest<T>(
 
   // On 401, try once to refresh the session and retry. Anything else
   // (network, 4xx that isn't 401, 5xx) propagates without retry. We
-  // explicitly skip refresh for /auth/* so a failed login doesn't trigger
-  // a refresh storm against expired credentials.
-  if (first.status === 401 && !path.startsWith('/auth/')) {
+  // explicitly skip refresh for credential exchange routes so a failed login
+  // doesn't trigger a refresh storm against expired credentials.
+  if (first.status === 401 && shouldRefreshAfter401(path)) {
     const newToken = await _refreshAccessToken();
     if (newToken) {
       const second = await _doRequest<T>(path, options, newToken);

@@ -12,6 +12,10 @@ export const getSummary = (month?: string) =>
   );
 
 export const addTransaction = (data: {
+  // Client-generated UUID (offline-first, ID model A). When present the backend
+  // upserts on it, so a retried create lands exactly once. Omit for the legacy
+  // path and the server mints an id.
+  id?: string;
   type: string;
   amount: number;
   category: string;
@@ -24,6 +28,9 @@ export const addTransaction = (data: {
   merchant?: string | null;
   rawInput?: string;
   entryType?: 'manual' | 'voice' | 'aa_sync';
+  // Sync engine sets this when flushing a backlog so old offline writes don't
+  // fire stale budget pushes (G7).
+  suppressAlerts?: boolean;
 }) =>
   apiRequest<Transaction>('/transactions', {
     method: 'POST',

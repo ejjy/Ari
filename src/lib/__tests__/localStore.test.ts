@@ -7,6 +7,11 @@
  * backend smoke test (upsert on client id).
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { localStore } from '../localStore';
+import type { Transaction } from '../../types';
+
+// jest.mock is hoisted above imports by babel-jest, so the mocks below apply
+// before localStore loads despite appearing after the import line.
 
 // Stateful AsyncStorage so persistence is real within a test.
 jest.mock('@react-native-async-storage/async-storage', () => {
@@ -34,9 +39,6 @@ jest.mock('expo-crypto', () => {
   let n = 0;
   return { randomUUID: jest.fn(() => `uuid-${++n}`) };
 });
-
-import { localStore } from '../localStore';
-import type { Transaction } from '../../types';
 
 const STORE_KEY = 'ari_txn_store_v1';
 

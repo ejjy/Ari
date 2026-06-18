@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useEffect,
 } from 'react';
 import { ApiError } from '../api/client';
 import * as txnApi from '../api/transactions';
@@ -14,6 +15,7 @@ import type { UserCategoryData } from '../api/categories';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useOfflineCache } from '../hooks/useOfflineCache';
 import { localStore } from '../lib/localStore';
+import { flushPending as engineFlush, startAutoFlush } from '../lib/syncEngine';
 import { track, bucketAmount } from '../lib/analytics';
 import { addBreadcrumb } from '../config/sentry';
 import type {
@@ -116,56 +118,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  // Push any not-yet-synced local rows to the server in causal order. This is
-  // the lightweight opportunistic flush (Commit 2); the full NetInfo-driven
-  // engine with backoff lands in Commit 4. Backlog rows flush with
-  // suppressAlerts so reconnecting doesn't fire a burst of stale budget pushes
-  // (G7). Stops on the first failure to preserve ordering and avoid hammering
-  // an offline network.
-  const flushPending = useCallback(async () => {
-    let pending: Awaited<ReturnType<typeof localStore.getPending>>;
-    try {
-      pending = await localStore.getPending();
-    } catch {
-      return;
-    }
-    if (pending.length === 0) return;
-
-    let changed = false;
-    for (const r of pending) {
-      try {
-        if (r.op === 'delete') {
-          await txnApi.deleteTransaction(r.id);
-          await localStore.removeRow(r.id);
-        } else {
-          const server = await txnApi.addTransaction({
-            id: r.id,
-            type: r.type,
-            amount: r.amount,
-            category: r.category ?? 'uncategorized',
-            description: r.description,
-            note: r.note,
-            date: r.date,
-            parseSource: r.parseSource === 'aa' ? undefined : r.parseSource,
-            confidence: r.confidence ?? undefined,
-            merchant: r.merchant,
-            rawInput: r.rawInput ?? undefined,
-            entryType: r.entryType,
-            suppressAlerts: true,
-          });
-          await localStore.markSynced(r.id, {
-            updatedAt: (server as { updatedAt?: string }).updatedAt,
-            userId: server.userId,
-          });
-        }
-        changed = true;
-      } catch {
-        // Leave it pending; the sync engine (Commit 4) owns retry/backoff.
-        break;
-      }
-    }
-    if (changed) setTransactions(await localStore.getAll());
+  const refreshFromLocal = useCallback(async () => {
+    setTransactions(await localStore.getAll());
   }, []);
+
+  // Backlog flush is owned by the sync engine (Commit 4): single-flight, with
+  // AppState/interval/backoff triggers, OTA-safe (no NetInfo — D8). Backlog
+  // rows go up with suppressAlerts so reconnecting doesn't fire stale budget
+  // pushes (G7). Refresh the list only when something actually synced.
+  const syncTransactions = useCallback(async () => {
+    const { changed } = await engineFlush();
+    if (changed) await refreshFromLocal();
+  }, [refreshFromLocal]);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -180,12 +144,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           handleError(err);
         }
       }
-      setTransactions(await localStore.getAll());
-      void flushPending();
+      await refreshFromLocal();
+      void syncTransactions();
     } catch (err) {
       handleError(err);
     }
-  }, [handleError, flushPending]);
+  }, [handleError, refreshFromLocal, syncTransactions]);
+
+  // Start the recurring background flush once for the provider's lifetime.
+  useEffect(
+    () => startAutoFlush(() => void refreshFromLocal()),
+    [refreshFromLocal]
+  );
 
   const fetchSummary = useCallback(async () => {
     try {

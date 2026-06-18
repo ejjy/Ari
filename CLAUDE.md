@@ -19,7 +19,9 @@ npm run lint         # ESLint
 ```bash
 cd backend
 py app.py            # Dev server on :5000
-# Requires: .env with SECRET_KEY, DATABASE_URL, GEMINI_API_KEY
+# Requires: .env with SECRET_KEY, GEMINI_API_KEY, and Supabase keys
+# (SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_DATABASE_URL).
+# Falls back to sqlite:///ari_dev.db when no DB URL is set. See backend/config.py.
 ```
 
 ### Build & Deploy
@@ -45,13 +47,14 @@ cd backend && git push origin master
 - **Styling**: StyleSheet.create (no external CSS-in-JS)
 - **New Architecture**: Enabled (Fabric + TurboModules) — required by Reanimated 4.x. Razorpay autolinking disabled via `react-native.config.js` (paywall flag-gated off in v1)
 - **Edge-to-edge**: Enabled on Android
-- **OTA Updates**: expo-updates configured (runtimeVersion: appVersion)
+- **OTA Updates**: expo-updates configured (runtimeVersion: appVersion). Wired and live — `App.tsx` calls `checkAndApplyUpdate()` on launch (`src/lib/otaUpdates.ts`: `checkForUpdateAsync` → `fetchUpdateAsync` → `reloadAsync`). Shipped in v1.0.1 (versionCode 5).
+- **Auth/Backend client**: Supabase (`@supabase/supabase-js`) for the auth session + token refresh; Google Sign-In via `@react-native-google-signin/google-signin`
 
 ### Backend
-- **Framework**: Flask 3.1 + SQLAlchemy 2.0
-- **Database**: PostgreSQL (Railway prod) / SQLite (local dev)
-- **Auth**: JWT (PyJWT) + bcrypt password hashing
-- **AI**: Google Gemini 2.5 Flash via google-genai SDK
+- **Framework**: Flask 3.1 + SQLAlchemy 2.0 (ORM maps to the Supabase Postgres schema)
+- **Database**: Supabase PostgreSQL (canonical; URL precedence SUPABASE_DATABASE_URL → DATABASE_URL → SQLite local)
+- **Auth**: **Supabase** — auth.users owns the password hash. `token_required` accepts both Supabase ES256 JWTs (verified via JWKS) and a still-active legacy HS256 path; register/login proxy to Supabase. bcrypt/hash_password removed. See `backend/auth_helpers.py`.
+- **AI**: Google Gemini 2.5 Flash via google-genai SDK (exclusively — no OpenAI)
 - **Hosting**: Railway (auto-deploy from GitHub master)
 - **WSGI**: Gunicorn with 2 workers
 
@@ -67,7 +70,7 @@ cd backend && git push origin master
 ### Frontend Dependencies
 | Package | Purpose |
 |---------|---------|
-| expo ~54.0.33 | Core framework |
+| expo ~54.0.34 | Core framework |
 | react-native 0.81.5 | Mobile runtime |
 | @react-navigation/native ^6.1.18 | Navigation |
 | @react-navigation/stack ^6.4.1 | Stack navigator |
@@ -77,10 +80,19 @@ cd backend && git push origin master
 | react-native-safe-area-context ~5.6.0 | Safe area |
 | react-native-screens ~4.16.0 | Native screens |
 | @react-native-async-storage/async-storage 2.2.0 | Local storage |
+| expo-secure-store ^55.0.13 | Secure token storage (JWT) |
+| @supabase/supabase-js ^2.103.3 | Auth + session/token refresh (`src/lib/supabase.ts`, `src/api/client.ts`) |
+| @react-native-google-signin/google-signin ^16.1.2 | Google Sign-In (`src/lib/socialAuth.ts`; google-services.json present) |
+| expo-speech-recognition ^3.1.2 | Voice expense entry (`src/hooks/useVoiceInput.ts`; app.json plugin) |
+| posthog-react-native ^4.43.0 | Analytics (`src/lib/analytics.ts`) — NO-OP in v1 (EXPO_PUBLIC_POSTHOG_KEY unset) |
+| react-native-razorpay ^2.3.1 | Payments — installed but de-linked for New Arch via `react-native.config.js`; paywall flag-gated off (`src/screens/PaywallScreen.tsx`, EXPO_PUBLIC_PAYWALL_ENABLED) |
+| expo-auth-session / expo-web-browser ~7.0 / ~15.0 | OAuth support libs |
+| expo-crypto ~15.0.9 | Crypto primitives |
+| expo-device ~8.0.10 | Device info (push notifications) |
 | expo-haptics ~15.0.8 | Haptic feedback |
 | expo-local-authentication ~17.0.8 | Biometric auth |
-| expo-notifications ~0.32.16 | Push notifications |
-| expo-updates ~29.0.16 | OTA updates |
+| expo-notifications ~0.32.17 | Push notifications |
+| expo-updates ~29.0.17 | OTA updates (wired — `src/lib/otaUpdates.ts`, called from `App.tsx`) |
 | @sentry/react-native ~7.2.0 | Error tracking |
 
 ### Backend Dependencies
@@ -242,17 +254,27 @@ RootNavigator (Stack)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | /feedback | Submit feedback |
+| POST | /parse/expense | AI expense parsing (Gemini, schema-enforced, PII-scrubbed) |
+| * | /groups/* | Shared / split group expenses (+ UPI settlement) |
+| * | /billing/* | Razorpay subscriptions (503 when not configured; paywall off in v1) |
+| * | /coaching/* | AI coaching briefs (latest + internal weekly-brief trigger) |
+| * | /aa/* | Account Aggregator (gated by SETU_ENABLED) |
+| GET | /legal/* | Public privacy policy + terms (no auth) |
 | GET | /health | Health check |
+
+> Full route details (methods, params, auth) live in `backend/CLAUDE.md`.
 
 ---
 
 ## Database Models
 
-### User
-id, name, email, password_hash, phone, age_group, income_bracket, main_goal, role, currency, created_at
+> ORM classes map to the Supabase schema (`User`→`ari_users`, `Transaction`→`expenses`, `Budget`→`budgets`, `SavingsGoal`→`goals`, …). IDs are UUID strings. No `password_hash` on User (Supabase auth.users owns it). See `backend/models.py`.
 
-### Transaction
-id, user_id, amount, type (expense/income), category, description, note, date, month, is_recurring, recurrence_rule, tags, income_source, parent_recurring_id, created_at
+### User (`ari_users`)
+id (UUID), name, email, phone, currency, monthly_income, tier, aa_consent, aa_linked_at, age_group, income_bracket, main_goal, role, expo_push_token, push_notifications_enabled, razorpay_customer_id, razorpay_subscription_id, subscription_status, tier_valid_until, upi_vpa, created_at, updated_at — **no password_hash**
+
+### Transaction (`expenses`)
+id, user_id, amount, type (expense/income), category, description, note, date, month (derived), merchant, merchant_id, entry_type, raw_input, parse_source, confidence, account_id, is_recurring, recurrence_rule, tags, income_source, parent_recurring_id, created_at
 
 ### Budget
 id, user_id, category, limit_amount, month, icon, color, created_at (unique: user_id+category+month)
@@ -268,6 +290,9 @@ id, user_id, name, type, emoji, color, is_default, sort_order, created_at (uniqu
 
 ### TodoNote
 id, user_id, title, body, is_done, priority (low/medium/high), due_date, due_time, color, pinned, created_at, updated_at
+
+### Additional models
+BudgetRollover, Feedback, CoachingCache (weekly/monthly briefs), SubscriptionEvent (Razorpay audit), AAConsent (Account Aggregator), and shared-expense models (ExpenseGroup, ExpenseGroupMember, ExpenseGroupInvite, SharedExpense, SharedExpenseSplit). See `backend/CLAUDE.md` for fields.
 
 ---
 
@@ -447,14 +472,24 @@ backend/
 ```
 EXPO_PUBLIC_API_URL=https://web-production-7c65f.up.railway.app/api
 EXPO_PUBLIC_SENTRY_DSN=<sentry-dsn>
+EXPO_PUBLIC_SUPABASE_URL=<supabase-url>            # auth/session
+EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon-key>
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=<web-oauth-client-id>  # Google Sign-In
+EXPO_PUBLIC_PAYWALL_ENABLED=false                   # Razorpay paywall off in v1
+EXPO_PUBLIC_POSTHOG_KEY=<unset in v1 → analytics no-op>
 ```
 
 ### Backend (.env)
 ```
-SECRET_KEY=<jwt-secret>
-DATABASE_URL=postgresql://...  (or sqlite:///ari_dev.db for local)
+SECRET_KEY=<legacy-HS256-secret>   # INSECURE default "dev-secret-change-me" — override!
 GEMINI_API_KEY=<google-gemini-key>
 CORS_ORIGIN=*
+SENTRY_DSN=<sentry-dsn>            # optional
+# Supabase (canonical data + auth)
+SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY
+SUPABASE_DATABASE_URL=postgresql://...   # preferred; else DATABASE_URL; else sqlite local
+# Razorpay (optional; billing returns 503 when unset)
+RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET / RAZORPAY_WEBHOOK_SECRET / RAZORPAY_PLAN_ID_*
 ```
 
 ### EAS Environment (preview)
@@ -472,7 +507,7 @@ APP_VARIANT=preview
 - **GitHub**: github.com/ejjy/ari-backend (master branch)
 - **Auto-deploy**: Enabled (master branch connected to production)
 - **Region**: asia-southeast1 (Singapore)
-- **Database**: Railway PostgreSQL add-on
+- **Database**: Supabase PostgreSQL (canonical; via SUPABASE_DATABASE_URL). Auth via Supabase.
 
 ### Frontend (EAS Build)
 - **EAS Project**: pinegrass-tech/ari
@@ -534,7 +569,7 @@ npm run typecheck        # TypeScript validation
 ## Key Conventions
 
 1. **API Pattern**: All API calls use `apiRequest<T>(path, options)` from `src/api/client.ts`. JWT token auto-attached from SecureStore.
-2. **Auth Flow**: JWT stored in expo-secure-store under key `ari_token` (Keychain on iOS, KeyStore + EncryptedSharedPreferences on Android). Access via `secureStorage` adapter in `src/lib/secureStorage.ts`. AuthContext checks on mount; the adapter transparently migrates legacy AsyncStorage values on first read.
+2. **Auth Flow**: Supabase auth. The Supabase access token (ES256 JWT) is stored in expo-secure-store under key `ari_token` (Keychain on iOS, KeyStore + EncryptedSharedPreferences on Android) via the `secureStorage` adapter in `src/lib/secureStorage.ts`. `src/api/client.ts` refreshes it via `supabase.auth.refreshSession()`. Google Sign-In (`src/lib/socialAuth.ts`) persists the same Supabase session token. The adapter transparently migrates legacy AsyncStorage values on first read; the backend still accepts legacy HS256 tokens.
 3. **Data Flow**: DataContext provides all data + methods. Components use `useData()` hook.
 4. **Month Format**: `YYYY-MM` string used consistently for month-based queries.
 5. **Currency**: Always integer amounts in INR. Formatted with `formatCurrency()`.
@@ -543,5 +578,5 @@ npm run typecheck        # TypeScript validation
 8. **Icons**: Custom Icon component with 60+ Lucide-style SVG paths. Use `IconName` type.
 9. **Animations**: AnimatedEntry wraps elements for staggered fade-in with delay prop.
 10. **Backend Blueprint Pattern**: Each route file exports a Blueprint with `url_prefix="/api"`.
-11. **Auth Decorator**: `@token_required` passes `current_user` as first arg to route handlers.
+11. **Auth Decorator**: `@token_required` passes `current_user` (the `ari_users` row) as first arg to route handlers. Accepts both Supabase ES256 and legacy HS256 tokens.
 12. **No OpenAI**: App exclusively uses Google Gemini 2.5 Flash. No OpenAI dependency.

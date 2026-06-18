@@ -25,6 +25,7 @@ The local store is the source of truth for the UI; the server is a replica we re
 | Mandatory fields (D4) | relax vs defaults | **Relax the backend**: a create may omit category (stored `uncategorized`) and send empty description. AI/auto-categorize fills category post-save. Reads render an "Uncategorized" bucket. Honors the true 2-tap promise; no fake data. |
 | Amount cap (D5) | 1cr vs 100cr | **1 crore (10,000,000 rupees)** enforced identically in keypad, backend `_parse_amount`, and this doc. Rename `MAX_AMOUNT_PAISE` to a rupee-named constant (it was misnamed; app is whole-rupee). |
 | Local store (D7) | SQLite vs AsyncStorage | **AsyncStorage behind a `localStore` interface**, not `expo-sqlite`. Right-sized for the data profile, no native module (OTA-able), swappable to SQLite later. Sync architecture is identical either way. See §3. |
+| Sync triggers (D8) | NetInfo vs AppState | **AppState + interval + backoff**, no `@react-native-community/netinfo`. NetInfo is native and would break OTA-ability (D7's whole point). Online-ness is implicit (write succeeds or not). See §5. |
 
 ---
 
@@ -99,7 +100,7 @@ Explicitly **out of scope for offline writes** this sprint (online-only paths se
 ---
 
 ## 5. Sync engine (`src/lib/syncEngine.ts`)
-- **Triggers:** app foreground (`AppState`), connectivity regained (`@react-native-community/netinfo`), opportunistic flush after each local write when online, and a 60s foreground safety interval.
+- **Triggers (D8 — no NetInfo):** app foreground (`AppState`, JS-only), a 60s foreground safety interval, exponential backoff with jitter while work remains, plus the opportunistic flush after each local write. `@react-native-community/netinfo` was dropped because it's a native module that would break the OTA-ability D7 preserves; online-ness is detected implicitly (the write succeeds or it doesn't). Trade-off: we flush on the next foreground/interval rather than the instant the radio returns — negligible for a foregrounded app, and the upsert design means a double-send can't dupe. NetInfo can be added in a future native build if true radio-level triggering is ever wanted.
 - **Flush (single-flight):** in-memory lock; select `pending`/backoff-eligible `failed` ordered by `created_at ASC`; dispatch by `op` (`create`→POST upsert, `update`→PUT, `delete`→DELETE then drop the tombstone); on success `synced` + clear error; on failure classify (network/5xx→backoff, 4xx→surface). Batch cap 50/flush. Update `meta.last_sync_at`. Sync creates carry the `suppressAlerts` flag (G7).
 - **Backoff:** exponential + jitter (~2/4/8/16s … cap 5min), `retry_count` drives the exponent.
 
@@ -125,7 +126,7 @@ Local `updated_at` newer → server accepts. Older → server returns 409 + curr
 ## 8. Sequencing
 - **Commit 2 (mobile, can start now):** local AsyncStorage-backed store (`localStore.ts`, D7) + `DataContext` reads from local + opportunistic flush over today's existing POST/DELETE. Works standalone; a fresh install starts empty and backfills through use.
 - **Backend PR (before Commit 4):** G1 (`updated_at`), G2 (upsert), G3 (idempotent delete), G5 (relax), G7 (suppressAlerts), G6 (bulk seed). Without G1+G2 the sync engine isn't trustworthy.
-- **Commit 4 (mobile):** sync engine + NetInfo, once the backend PR is live.
+- **Commit 4 (mobile):** sync engine (AppState/interval/backoff, no NetInfo — D8), once the backend PR is live.
 - **Commit 5:** edit path (`PUT` + `updateTransaction` + edit UI).
 
 ---

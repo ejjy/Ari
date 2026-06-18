@@ -10,7 +10,7 @@
 ---
 
 ## 0. The boundary (unchanged from draft)
-The local SQLite DB is the source of truth for the UI; the server is a replica we reconcile toward. Every read renders from local. Every write commits to local first and returns immediately. The network is never in the path of a user action.
+The local store is the source of truth for the UI; the server is a replica we reconcile toward. Every read renders from local. Every write commits to local first and returns immediately. The network is never in the path of a user action.
 
 ---
 
@@ -24,6 +24,7 @@ The local SQLite DB is the source of truth for the UI; the server is a replica w
 | Delete UX | gesture | **Keep long-press.** Soft-delete tombstone is internal only. |
 | Mandatory fields (D4) | relax vs defaults | **Relax the backend**: a create may omit category (stored `uncategorized`) and send empty description. AI/auto-categorize fills category post-save. Reads render an "Uncategorized" bucket. Honors the true 2-tap promise; no fake data. |
 | Amount cap (D5) | 1cr vs 100cr | **1 crore (10,000,000 rupees)** enforced identically in keypad, backend `_parse_amount`, and this doc. Rename `MAX_AMOUNT_PAISE` to a rupee-named constant (it was misnamed; app is whole-rupee). |
+| Local store (D7) | SQLite vs AsyncStorage | **AsyncStorage behind a `localStore` interface**, not `expo-sqlite`. Right-sized for the data profile, no native module (OTA-able), swappable to SQLite later. Sync architecture is identical either way. See §3. |
 
 ---
 
@@ -53,42 +54,42 @@ Each expense create fires `check_budget_thresholds` inline ([routes:133](../back
 
 ---
 
-## 3. Local schema (`expo-sqlite`)
+## 3. Local store (AsyncStorage behind a `localStore` interface — D7)
 
-```sql
-CREATE TABLE transactions (
-  id            TEXT PRIMARY KEY,   -- client UUID v4 (canonical; model A)
-  -- domain (mirror server; whole rupees, no paise)
-  amount        INTEGER NOT NULL,   -- cap 10_000_000 (1 crore)
-  type          TEXT NOT NULL,      -- 'expense' | 'income'
-  category      TEXT,               -- nullable; 'uncategorized' until AI/user sets it (D4)
-  description   TEXT NOT NULL DEFAULT '',  -- server is NOT NULL (G4)
-  note          TEXT,
-  txn_date      TEXT NOT NULL,      -- 'YYYY-MM-DD'; payload key on the wire is `date`
-  -- parse provenance (kept because D1 keeps voice/AI) (G4)
-  merchant      TEXT,
-  entry_type    TEXT NOT NULL DEFAULT 'manual',  -- 'manual' | 'voice'
-  raw_input     TEXT,
-  parse_source  TEXT NOT NULL DEFAULT 'local',   -- 'local' | 'fuzzy' | 'ai' | 'aa'
-  confidence    REAL,
-  -- timestamps
-  created_at    TEXT NOT NULL,      -- ISO 8601 UTC
-  updated_at    TEXT NOT NULL,      -- server-authoritative once synced (G1)
-  -- sync control (LOCAL ONLY)
-  sync_status   TEXT NOT NULL DEFAULT 'pending',  -- 'synced' | 'pending' | 'failed'
-  op            TEXT NOT NULL DEFAULT 'create',   -- 'create' | 'update' | 'delete'
-  deleted       INTEGER NOT NULL DEFAULT 0,       -- tombstone (0/1)
-  retry_count   INTEGER NOT NULL DEFAULT 0,
-  last_error    TEXT
-);
-CREATE INDEX idx_txn_sync    ON transactions(sync_status) WHERE sync_status != 'synced';
-CREATE INDEX idx_txn_date    ON transactions(txn_date DESC);
-CREATE INDEX idx_txn_deleted ON transactions(deleted);
+**Decision D7:** the on-device store is AsyncStorage (already a dependency), not `expo-sqlite`. For this app's data profile (single-user; a heavy user ≈ 600 rows/year, ~1 MB over 5 years) a load-all-into-memory + filter-in-JS model is fast, and it keeps the feature OTA-able with no native module. AsyncStorage on Android is itself SQLite-backed, so we lose nothing structural. `localStore.ts` exposes a storage-agnostic interface so we can swap to `expo-sqlite` later if a real user's volume ever justifies indexed queries — the sync engine and DataContext never see the backing store.
 
-CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT);  -- schema_version, last_sync_at
+Persisted under one AsyncStorage key (`ari_txn_store_v1`) as a JSON array of records; writes go through an in-memory mutex so concurrent saves can't clobber the blob. Each record:
+
+```ts
+interface LocalTxn {
+  id: string;            // client UUID v4 (canonical; ID model A)
+  amount: number;        // whole rupees, cap 10_000_000 (1 crore)
+  type: 'expense' | 'income';
+  category: string | null;       // 'uncategorized' until AI/user sets it (D4)
+  description: string;            // server is NOT NULL (G4) — default ''
+  note: string;
+  date: string;                   // 'YYYY-MM-DD'; same key on the wire
+  // parse provenance — kept because D1 keeps voice/AI (G4)
+  merchant: string | null;
+  entryType: 'manual' | 'voice';
+  rawInput: string | null;
+  parseSource: 'local' | 'fuzzy' | 'ai' | 'aa';
+  confidence: number | null;
+  // timestamps
+  createdAt: string;              // ISO 8601 UTC
+  updatedAt: string;              // server-authoritative once synced (G1)
+  // sync control (LOCAL ONLY — never sent as domain data)
+  syncStatus: 'synced' | 'pending' | 'failed';
+  op: 'create' | 'update' | 'delete';
+  deleted: boolean;               // tombstone
+  retryCount: number;
+  lastError: string | null;
+}
 ```
 
-`month` is **not stored** (server derives it via a hybrid property). The local read layer derives it as `substr(txn_date,1,7)` for month-scoped queries (Budget/Trends). AsyncStorage keeps only tiny KV app state (token, flags, last_sync_at); `useOfflineCache` is removed once reads come from SQLite. No two caches in parallel.
+Explicitly **out of scope for offline writes** this sprint (online-only paths set them; the keypad flow never does): `tags`, `isRecurring`/`recurrenceRule`, `incomeSource`, `parentRecurringId`, `accountId`, `merchantId`. The local store ignores them; if the server returns them on a seed/read they're dropped from the local mirror.
+
+`month` is **not stored** (server derives it). The read layer derives it as `date.slice(0,7)` for month-scoped queries (Budget/Trends). A separate KV key holds `schema_version` + `last_sync_at`. `useOfflineCache` is removed once reads come from `localStore`. No two caches in parallel.
 
 ---
 
@@ -122,7 +123,7 @@ Local `updated_at` newer → server accepts. Older → server returns 409 + curr
 ---
 
 ## 8. Sequencing
-- **Commit 2 (mobile, can start now):** local SQLite store + `DataContext` reads from local + opportunistic flush over today's existing POST/DELETE. Works standalone; a fresh install starts empty and backfills through use.
+- **Commit 2 (mobile, can start now):** local AsyncStorage-backed store (`localStore.ts`, D7) + `DataContext` reads from local + opportunistic flush over today's existing POST/DELETE. Works standalone; a fresh install starts empty and backfills through use.
 - **Backend PR (before Commit 4):** G1 (`updated_at`), G2 (upsert), G3 (idempotent delete), G5 (relax), G7 (suppressAlerts), G6 (bulk seed). Without G1+G2 the sync engine isn't trustworthy.
 - **Commit 4 (mobile):** sync engine + NetInfo, once the backend PR is live.
 - **Commit 5:** edit path (`PUT` + `updateTransaction` + edit UI).
@@ -135,4 +136,4 @@ Local `updated_at` newer → server accepts. Older → server returns 409 + curr
 - Retried create (kill mid-flush) → exactly one row server-side (idempotency holds).
 - Stale-edit conflict → server wins, local converges, no crash, no infinite retry.
 - Syncing a backlog fires no stale budget pushes (G7).
-- `useOfflineCache` removed; SQLite is the single source of truth.
+- `useOfflineCache` removed; `localStore` (AsyncStorage) is the single source of truth.

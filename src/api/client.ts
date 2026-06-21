@@ -6,12 +6,17 @@ const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:5000/api';
 
 export class ApiError extends Error {
+  // body carries the full parsed response for structured errors (e.g. 409
+  // conflict returns {conflict: true, current: Transaction}).
+  body: unknown;
   constructor(
     public status: number,
-    message: string
+    message: string,
+    body?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
+    this.body = body;
   }
 }
 
@@ -58,7 +63,7 @@ async function _doRequest<T>(
   path: string,
   options: RequestInit,
   tokenOverride?: string,
-): Promise<{ ok: true; data: T } | { ok: false; status: number; message: string }> {
+): Promise<{ ok: true; data: T } | { ok: false; status: number; message: string; body?: unknown }> {
   const token = tokenOverride ?? (await getToken());
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -90,7 +95,7 @@ async function _doRequest<T>(
       typeof (json as { error: unknown }).error === 'string'
         ? (json as { error: string }).error
         : 'Request failed';
-    return { ok: false, status: res.status, message: msg };
+    return { ok: false, status: res.status, message: msg, body: json };
   }
   return { ok: true, data: json as T };
 }
@@ -111,9 +116,9 @@ export async function apiRequest<T>(
     if (newToken) {
       const second = await _doRequest<T>(path, options, newToken);
       if (second.ok) return second.data;
-      throw new ApiError(second.status, second.message);
+      throw new ApiError(second.status, second.message, second.body);
     }
   }
 
-  throw new ApiError(first.status, first.message);
+  throw new ApiError(first.status, first.message, first.body);
 }

@@ -110,6 +110,19 @@ export default function TransactionsScreen() {
           <TransactionItem
             transaction={item}
             onDelete={handleDeletePress}
+            onEdit={(t) =>
+              navigation.navigate('AddTransaction', {
+                editTransaction: {
+                  id: t.id,
+                  type: t.type,
+                  amount: t.amount,
+                  category: t.category,
+                  description: t.description,
+                  note: t.note,
+                  date: t.date,
+                },
+              })
+            }
             showDelete
           />
         )}

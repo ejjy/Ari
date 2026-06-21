@@ -66,6 +66,15 @@ export interface CreateInput {
   confidence?: number | null;
 }
 
+export interface UpdateInput {
+  type?: TransactionType;
+  amount?: number;
+  category?: string | null;
+  description?: string;
+  note?: string;
+  date?: string;
+}
+
 // In-memory cache of the full row set. Loaded once, kept in sync with every
 // persist so reads never touch disk after the first.
 let cache: LocalTxn[] | null = null;
@@ -116,6 +125,8 @@ function toTxn(r: LocalTxn): Transaction {
     date: r.date,
     month: r.date.slice(0, 7),
     createdAt: r.createdAt,
+    updatedAt: r.updatedAt,
+    syncStatus: r.syncStatus,
   };
 }
 
@@ -228,6 +239,38 @@ export const localStore = {
       rows.push(record);
       await persist(rows);
       return record;
+    });
+  },
+
+  /**
+   * Patch an existing row (edit path). The edit is applied locally and the row
+   * is re-queued as a pending update so the sync engine can PUT it. If the row
+   * is itself still a pending-create (never reached the server), we just patch
+   * it inline — the next create flush will carry the updated fields. Returns
+   * the updated Transaction view or null if the id isn't found.
+   */
+  async update(id: string, patch: UpdateInput): Promise<Transaction | null> {
+    return withLock(async () => {
+      const rows = await load();
+      const r = rows.find((x) => x.id === id && !x.deleted);
+      if (!r) return null;
+      if (patch.type !== undefined) r.type = patch.type;
+      if (patch.amount !== undefined) r.amount = patch.amount;
+      if (patch.category !== undefined) r.category = patch.category;
+      if (patch.description !== undefined) r.description = patch.description;
+      if (patch.note !== undefined) r.note = patch.note;
+      if (patch.date !== undefined) r.date = patch.date;
+      r.updatedAt = nowISO();
+      // A never-synced create just gets re-queued as the same create op with
+      // the new fields — the server will see the final state on first flush.
+      if (r.syncStatus === 'synced') {
+        r.syncStatus = 'pending';
+        r.op = 'update';
+      }
+      r.retryCount = 0;
+      r.lastError = null;
+      await persist(rows);
+      return toTxn(r);
     });
   },
 

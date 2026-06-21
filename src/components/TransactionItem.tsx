@@ -3,13 +3,14 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getCategoryDef } from '../constants/categories';
 import { usePrivacy } from '../context/PrivacyContext';
 import { formatSectionDate } from '../utils/dateHelpers';
-import { color, font, type } from '../theme/tokens';
+import { color, font } from '../theme/tokens';
 import Icon from './ui/Icon';
 import type { Transaction } from '../types';
 
 interface Props {
   transaction: Transaction;
   onDelete?: (id: string) => void;
+  onEdit?: (transaction: Transaction) => void;
   showDelete?: boolean;
 }
 
@@ -18,13 +19,24 @@ interface Props {
  * (not a card), warm emoji tile, Fraunces signed amount. Mirrors `.row` in
  * docs/ari-v2-forest.html. Subline uses inkSoft, not inkFaint, for legibility.
  */
-export default function TransactionItem({ transaction, onDelete, showDelete }: Props) {
+export default function TransactionItem({ transaction, onDelete, onEdit, showDelete }: Props) {
   const cat = getCategoryDef(transaction.category);
   const isExpense = transaction.type === 'expense';
   const { formatAmount } = usePrivacy();
+  const sync = transaction.syncStatus;
+  const showSyncTag = sync === 'pending' || sync === 'failed';
+
+  const handleLongPress = () => {
+    if (onEdit) onEdit(transaction);
+  };
 
   return (
-    <View style={styles.row}>
+    <TouchableOpacity
+      style={styles.row}
+      onLongPress={handleLongPress}
+      delayLongPress={400}
+      activeOpacity={onEdit ? 0.7 : 1}
+    >
       <View style={styles.iconBox}>
         <Text style={styles.icon}>{cat.emoji}</Text>
       </View>
@@ -35,6 +47,11 @@ export default function TransactionItem({ transaction, onDelete, showDelete }: P
         </Text>
         <Text style={styles.meta}>
           {cat.label} · {formatSectionDate(transaction.date)}
+          {showSyncTag && (
+            <Text style={sync === 'failed' ? styles.syncFailed : styles.syncPending}>
+              {sync === 'failed' ? '  · ✗ not synced' : '  · ↑ syncing…'}
+            </Text>
+          )}
         </Text>
       </View>
 
@@ -54,7 +71,7 @@ export default function TransactionItem({ transaction, onDelete, showDelete }: P
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -107,5 +124,15 @@ const styles = StyleSheet.create({
   },
   incomeColor: {
     color: color.forest2,
+  },
+  syncPending: {
+    fontFamily: font.body,
+    fontSize: 11,
+    color: color.clay,
+  },
+  syncFailed: {
+    fontFamily: font.body,
+    fontSize: 11,
+    color: color.clay,
   },
 });

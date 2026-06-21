@@ -167,7 +167,23 @@ export default function DashboardScreen() {
           ) : (
             recentTxns.map((txn, i) => (
               <AnimatedEntry key={txn.id} delay={300 + i * 60}>
-                <TransactionItem transaction={txn} showDelete={false} />
+                <TransactionItem
+                  transaction={txn}
+                  showDelete={false}
+                  onEdit={(t) =>
+                    navigation.navigate('AddTransaction', {
+                      editTransaction: {
+                        id: t.id,
+                        type: t.type,
+                        amount: t.amount,
+                        category: t.category,
+                        description: t.description,
+                        note: t.note,
+                        date: t.date,
+                      },
+                    })
+                  }
+                />
               </AnimatedEntry>
             ))
           )}

@@ -8,6 +8,7 @@
 import { localStore } from '../localStore';
 import { flushPending } from '../syncEngine';
 import * as txnApi from '../../api/transactions';
+import { ApiError } from '../../api/client';
 
 jest.mock('@react-native-async-storage/async-storage', () => {
   let store: Record<string, string> = {};
@@ -36,6 +37,7 @@ jest.mock('expo-crypto', () => {
 jest.mock('../../api/transactions', () => ({
   addTransaction: jest.fn(),
   deleteTransaction: jest.fn(),
+  updateTransaction: jest.fn(),
   getTransactions: jest.fn(),
 }));
 
@@ -100,5 +102,48 @@ describe('syncEngine.flushPending', () => {
     const { changed } = await flushPending();
     expect(changed).toBe(false);
     expect(txnApi.addTransaction).not.toHaveBeenCalled();
+  });
+
+  it('flushes a pending update via PUT and marks it synced', async () => {
+    const rec = await localStore.create(input);
+    await localStore.markSynced(rec.id, { updatedAt: '2026-06-18T10:00:00Z', userId: 'u1' });
+    await localStore.update(rec.id, { amount: 200 });
+
+    (txnApi.updateTransaction as jest.Mock).mockResolvedValue({
+      id: rec.id,
+      userId: 'u1',
+      updatedAt: '2026-06-18T11:00:00Z',
+    });
+
+    const { changed } = await flushPending();
+
+    expect(changed).toBe(true);
+    expect(txnApi.updateTransaction).toHaveBeenCalledWith(
+      rec.id,
+      expect.objectContaining({ amount: 200 })
+    );
+    expect(await localStore.getPending()).toHaveLength(0);
+  });
+
+  it('server-wins on 409 conflict: overwrites local and marks synced', async () => {
+    const rec = await localStore.create(input);
+    await localStore.markSynced(rec.id, { updatedAt: '2026-06-18T09:00:00Z', userId: 'u1' });
+    await localStore.update(rec.id, { amount: 999 });
+
+    const conflict = new ApiError(409, 'Conflict');
+    (conflict as ApiError & { body: unknown }).body = {
+      conflict: true,
+      current: { id: rec.id, amount: 777, category: 'food', description: 'test', note: '', date: '2026-06-18', type: 'expense', userId: 'u1', updatedAt: '2026-06-18T12:00:00Z', month: '2026-06', createdAt: '2026-06-18T09:00:00Z' },
+    };
+    (txnApi.updateTransaction as jest.Mock).mockRejectedValue(conflict);
+
+    const { changed } = await flushPending();
+
+    expect(changed).toBe(true);
+    expect(await localStore.getPending()).toHaveLength(0);
+    const all = await localStore.getAll();
+    const row = all.find((t) => t.id === rec.id);
+    expect(row?.amount).toBe(777);
+    expect(row?.syncStatus).toBe('synced');
   });
 });

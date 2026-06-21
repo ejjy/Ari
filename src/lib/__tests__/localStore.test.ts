@@ -178,6 +178,48 @@ describe('localStore — seed merge', () => {
   });
 });
 
+describe('localStore — update (edit path)', () => {
+  it('patches an existing row and marks it pending/update', async () => {
+    const rec = await localStore.create(input({ amount: 100 }));
+    await localStore.markSynced(rec.id, { updatedAt: '2026-06-18T10:00:00Z', userId: 'u1' });
+
+    const updated = await localStore.update(rec.id, { amount: 250 });
+
+    expect(updated).not.toBeNull();
+    expect(updated!.amount).toBe(250);
+    expect(updated!.syncStatus).toBe('pending');
+
+    const pending = await localStore.getPending();
+    expect(pending).toHaveLength(1);
+    expect(pending[0].op).toBe('update');
+    expect(pending[0].amount).toBe(250);
+  });
+
+  it('patching a still-pending create keeps op as create', async () => {
+    const rec = await localStore.create(input({ amount: 100 }));
+    // row is pending/create — edit before it syncs
+    await localStore.update(rec.id, { amount: 200 });
+
+    const pending = await localStore.getPending();
+    expect(pending).toHaveLength(1);
+    expect(pending[0].op).toBe('create'); // create carries the final values
+    expect(pending[0].amount).toBe(200);
+  });
+
+  it('returns null for a non-existent id', async () => {
+    const result = await localStore.update('no-such-id', { amount: 999 });
+    expect(result).toBeNull();
+  });
+
+  it('exposing updatedAt in toTxn so the UI can read it', async () => {
+    const rec = await localStore.create(input());
+    await localStore.markSynced(rec.id, { updatedAt: '2026-06-21T06:00:00Z', userId: 'u1' });
+    const all = await localStore.getAll();
+    const txn = all.find((t) => t.id === rec.id);
+    expect(txn?.updatedAt).toBe('2026-06-21T06:00:00Z');
+  });
+});
+
 describe('localStore — logout', () => {
   it('clear wipes rows and the seeded flag', async () => {
     await localStore.create(input());

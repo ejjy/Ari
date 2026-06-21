@@ -20,6 +20,7 @@ import { AppState, type AppStateStatus } from 'react-native';
 import { localStore } from './localStore';
 import * as txnApi from '../api/transactions';
 import { ApiError } from '../api/client';
+import type { Transaction } from '../types';
 
 const SAFETY_INTERVAL_MS = 60_000;
 const BASE_BACKOFF_MS = 2_000;
@@ -48,7 +49,54 @@ export async function flushPending(): Promise<{ changed: boolean }> {
         if (r.op === 'delete') {
           await txnApi.deleteTransaction(r.id);
           await localStore.removeRow(r.id);
+        } else if (r.op === 'update') {
+          // LWW: send the baseline the client edited from. If the server has
+          // moved past it (another device / concurrent edit) it returns 409 +
+          // the current row. Server wins: overwrite local with the server's
+          // version and mark synced — no infinite retry.
+          try {
+            const server = await txnApi.updateTransaction(r.id, {
+              type: r.type,
+              amount: r.amount,
+              category: r.category ?? 'uncategorized',
+              description: r.description,
+              note: r.note,
+              date: r.date,
+              updatedAt: r.updatedAt,
+            });
+            await localStore.markSynced(r.id, {
+              updatedAt: (server as Transaction & { updatedAt?: string }).updatedAt,
+              userId: server.userId,
+            });
+          } catch (conflictErr) {
+            if (conflictErr instanceof ApiError && conflictErr.status === 409) {
+              // Server wins — reconcile to its version and mark synced.
+              const body = conflictErr.body as { current?: Transaction } | undefined;
+              const current = body?.current;
+              if (current) {
+                await localStore.markSynced(r.id, {
+                  updatedAt: (current as Transaction & { updatedAt?: string }).updatedAt,
+                  userId: current.userId,
+                });
+                await localStore.update(r.id, {
+                  type: current.type,
+                  amount: current.amount,
+                  category: current.category,
+                  description: current.description,
+                  note: current.note,
+                  date: current.date,
+                });
+                // Re-mark synced — update() re-pends it.
+                await localStore.markSynced(r.id);
+              } else {
+                await localStore.markSynced(r.id);
+              }
+            } else {
+              throw conflictErr; // re-raise for the outer catch
+            }
+          }
         } else {
+          // op === 'create'
           const server = await txnApi.addTransaction({
             id: r.id,
             type: r.type,
@@ -65,7 +113,7 @@ export async function flushPending(): Promise<{ changed: boolean }> {
             suppressAlerts: true, // backlog — don't fire stale budget pushes (G7)
           });
           await localStore.markSynced(r.id, {
-            updatedAt: (server as { updatedAt?: string }).updatedAt,
+            updatedAt: (server as Transaction & { updatedAt?: string }).updatedAt,
             userId: server.userId,
           });
         }

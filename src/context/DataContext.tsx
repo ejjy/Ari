@@ -62,6 +62,17 @@ interface DataContextValue {
     entryType?: 'manual' | 'voice' | 'aa_sync';
   }) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  updateTransaction: (
+    id: string,
+    patch: {
+      type?: string;
+      amount?: number;
+      category?: string;
+      description?: string;
+      note?: string;
+      date?: string;
+    }
+  ) => Promise<void>;
   saveBudget: (data: { category: string; limit: number; month: string }) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
   createSavingsGoal: (data: {
@@ -311,7 +322,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setTransactions(await localStore.getAll());
         await fetchSummary();
       } catch (err) {
+        // 401 → handleError deals with session expiry. 4xx (validation / auth)
+        // → mark the row failed so the UI shows a failed tag and stops retrying.
+        // Network / 5xx → row stays pending for engine retry; no UI noise yet.
         handleError(err);
+        if (err instanceof ApiError && err.status !== 401 && err.status >= 400 && err.status < 500) {
+          await localStore.markFailed(
+            record.id,
+            err.message ?? 'Validation error — tap to retry'
+          );
+          setTransactions(await localStore.getAll());
+        }
+        // Do NOT rethrow: the local write succeeded (offline-first contract).
+        // The caller's success-toast is correct — the entry is durably saved.
       }
     },
     [fetchSummary, handleError]
@@ -337,6 +360,64 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     },
     [fetchSummary, handleError]
+  );
+
+  const updateTransaction = useCallback(
+    async (
+      id: string,
+      patch: {
+        type?: string;
+        amount?: number;
+        category?: string;
+        description?: string;
+        note?: string;
+        date?: string;
+      }
+    ) => {
+      // Read the current updatedAt BEFORE patching — it's the LWW baseline we
+      // send to the server. After localStore.update() the field is nowISO().
+      const existing = transactions.find((t) => t.id === id);
+      const lwwBaseline = existing?.updatedAt;
+
+      // Optimistic local update — instant UI, survives app kill.
+      const updated = await localStore.update(id, {
+        type: patch.type as Transaction['type'] | undefined,
+        amount: patch.amount,
+        category: patch.category ?? null,
+        description: patch.description,
+        note: patch.note,
+        date: patch.date,
+      });
+      if (!updated) return; // row disappeared — nothing to do
+      setTransactions(await localStore.getAll());
+
+      // Inline flush: PUT with the pre-edit updatedAt as the LWW baseline.
+      // 409 (stale baseline) is handled by the sync engine's conflict pass;
+      // here we just mark the row failed so the tag surfaces.
+      try {
+        const server = await txnApi.updateTransaction(id, {
+          ...patch,
+          updatedAt: lwwBaseline,
+        });
+        await localStore.markSynced(id, {
+          updatedAt: (server as Transaction & { updatedAt?: string }).updatedAt,
+          userId: server.userId,
+        });
+        setTransactions(await localStore.getAll());
+        await fetchSummary();
+      } catch (err) {
+        handleError(err);
+        if (err instanceof ApiError && err.status !== 401) {
+          await localStore.markFailed(
+            id,
+            err.message ?? 'Update failed'
+          );
+          setTransactions(await localStore.getAll());
+        }
+        // Do NOT rethrow — the local edit is durable; engine will reconcile.
+      }
+    },
+    [fetchSummary, handleError, transactions]
   );
 
   const saveBudget = useCallback(
@@ -494,6 +575,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         fetchUserCategories,
         addTransaction,
         deleteTransaction,
+        updateTransaction,
         saveBudget,
         deleteBudget,
         createSavingsGoal,

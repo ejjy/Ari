@@ -31,12 +31,16 @@ export interface Transaction {
   date: string;
   month: string;
   createdAt: string;
+  updatedAt?: string;  // server-authoritative; used as LWW baseline for edit path
   // Accountant: Smart Ledger fields
   isRecurring?: boolean;
   recurrenceRule?: 'monthly' | 'weekly' | 'biweekly' | 'quarterly' | 'yearly';
   tags?: string[];
   incomeSource?: string;
   parentRecurringId?: string;
+  // Offline-first (Sprint 2): sync state for locally-sourced rows. Undefined
+  // for rows that came straight from the server. Drives the not-synced tag.
+  syncStatus?: 'synced' | 'pending' | 'failed';
 }
 
 export interface Summary {

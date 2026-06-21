@@ -37,6 +37,31 @@ export const addTransaction = (data: {
     body: JSON.stringify(data),
   });
 
+export interface UpdateConflict {
+  conflict: true;
+  current: Transaction;
+}
+
+export const updateTransaction = (
+  id: string,
+  patch: {
+    type?: string;
+    amount?: number;
+    category?: string;
+    description?: string;
+    note?: string;
+    date?: string;
+    // Last-write-wins baseline: the updatedAt the client edited from. If the
+    // server has moved past it, the PUT returns 409 (ApiError 409) and the
+    // sync engine reconciles by taking the server's version.
+    updatedAt?: string;
+  }
+) =>
+  apiRequest<Transaction>(`/transactions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(patch),
+  });
+
 export const deleteTransaction = (id: string) =>
   apiRequest<{ message: string }>(`/transactions/${id}`, {
     method: 'DELETE',

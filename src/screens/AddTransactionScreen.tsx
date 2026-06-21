@@ -43,8 +43,15 @@ const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '', '0', 'del'] as co
  * local-first (Commit 2), so Save returns instantly and works offline.
  */
 export default function AddTransactionScreen({ navigation, route }: Props) {
-  const initialType: TransactionType = route.params?.type ?? 'expense';
-  const { addTransaction, userCategories, fetchUserCategories } = useData();
+  const params = route.params as
+    | { type?: 'expense' | 'income' }
+    | { editTransaction: { id: string; type: 'expense' | 'income'; amount: number; category: string; description: string; note: string; date: string } }
+    | undefined;
+  const editTxn = params && 'editTransaction' in params ? params.editTransaction : null;
+  const isEdit = !!editTxn;
+  const initialType: TransactionType = editTxn?.type ?? (params as { type?: 'expense' | 'income' } | undefined)?.type ?? 'expense';
+
+  const { addTransaction, updateTransaction, userCategories, fetchUserCategories } = useData();
   const haptics = useHaptics();
 
   useEffect(() => {
@@ -52,10 +59,10 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
   }, [userCategories.length, fetchUserCategories]);
 
   const [type, setType] = useState<TransactionType>(initialType);
-  const [amount, setAmount] = useState(''); // digits only, '' renders as 0
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(initialType === 'expense' ? 'food' : 'salary');
-  const [date, setDate] = useState(todayISO());
+  const [amount, setAmount] = useState(editTxn ? String(editTxn.amount) : ''); // digits only, '' renders as 0
+  const [description, setDescription] = useState(editTxn?.description ?? '');
+  const [category, setCategory] = useState(editTxn?.category ?? (initialType === 'expense' ? 'food' : 'salary'));
+  const [date, setDate] = useState(editTxn?.date ?? todayISO());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -217,21 +224,32 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
     }
     setSaving(true);
     try {
-      await addTransaction({
-        type,
-        amount: numericAmount,
-        category,
-        description: description.trim(),
-        note: '',
-        date,
-        parseSource,
-        confidence,
-        merchant: merchantName,
-        rawInput,
-        entryType,
-      });
+      if (isEdit && editTxn) {
+        await updateTransaction(editTxn.id, {
+          type,
+          amount: numericAmount,
+          category,
+          description: description.trim(),
+          note: editTxn.note,
+          date,
+        });
+      } else {
+        await addTransaction({
+          type,
+          amount: numericAmount,
+          category,
+          description: description.trim(),
+          note: '',
+          date,
+          parseSource,
+          confidence,
+          merchant: merchantName,
+          rawInput,
+          entryType,
+        });
+      }
       haptics.success();
-      // Toast, then auto-return Home. DataContext write is local-first so this
+      // Toast, then auto-return. DataContext write is local-first so this
       // is instant even offline.
       setToast(true);
       Animated.timing(toastY, { toValue: 0, duration: 220, useNativeDriver: true }).start();
@@ -261,7 +279,7 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
         >
           <Text style={styles.closeText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>New entry</Text>
+        <Text style={styles.title}>{isEdit ? 'Edit entry' : 'New entry'}</Text>
         <View style={{ width: 38 }} />
       </View>
 
@@ -364,15 +382,15 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
         onPress={handleSave}
         disabled={!canSave}
         accessibilityRole="button"
-        accessibilityLabel="Save entry"
+        accessibilityLabel={isEdit ? 'Update entry' : 'Save entry'}
       >
-        <Text style={styles.saveText}>Save entry</Text>
+        <Text style={styles.saveText}>{isEdit ? 'Update entry' : 'Save entry'}</Text>
       </TouchableOpacity>
 
       {/* Toast */}
       {toast && (
         <Animated.View style={[styles.toast, { transform: [{ translateX: -70 }, { translateY: toastY }] }]}>
-          <Text style={styles.toastText}>✓ Entry saved</Text>
+          <Text style={styles.toastText}>{isEdit ? '✓ Entry updated' : '✓ Entry saved'}</Text>
         </Animated.View>
       )}
 

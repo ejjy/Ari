@@ -7,7 +7,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon from './ui/Icon';
 import Button from './ui/Button';
 
@@ -43,7 +43,7 @@ export default function DeleteConfirmSheet({
         <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
           <View style={styles.handle} />
           <View style={styles.iconContainer}>
-            <Icon name="alert-triangle" size={40} color={Colors.danger} />
+            <Icon name="alert-triangle" size={40} color={color.clay} />
           </View>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
@@ -76,7 +76,7 @@ export default function DeleteConfirmSheet({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.overlay,
+    backgroundColor: 'rgba(35,41,31,0.55)',
   },
   sheetWrapper: {
     position: 'absolute',
@@ -85,32 +85,33 @@ const styles = StyleSheet.create({
     right: 0,
   },
   sheet: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 40,
     alignItems: 'center',
     borderTopWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: color.line,
     borderRadius: 2,
     marginBottom: 20,
   },
   iconContainer: { marginBottom: 12 },
   title: {
+    fontFamily: font.bodyBold,
     fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    color: color.ink,
     marginBottom: 8,
   },
   message: {
+    fontFamily: font.body,
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,

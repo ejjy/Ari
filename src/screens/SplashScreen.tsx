@@ -1,17 +1,9 @@
 import React, { useEffect, useRef } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Animated,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
+import { View, Text, TouchableOpacity, Animated, StyleSheet, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
 import type { StackScreenProps } from '@react-navigation/stack';
 import type { AuthStackParamList } from '../navigation/navigationTypes';
-import { Colors } from '../constants/colors';
+import { color, font, onForest } from '../theme/tokens';
 import Icon from '../components/ui/Icon';
 
 type Props = StackScreenProps<AuthStackParamList, 'Splash'>;
@@ -63,10 +55,7 @@ export default function SplashScreen({ navigation }: Props) {
   }, []);
 
   return (
-    <LinearGradient
-      colors={['#0D2B2B', '#0A1A2A', '#0A0A0A']}
-      style={styles.gradient}
-    >
+    <View style={styles.root}>
       <SafeAreaView style={styles.safe}>
         {/* Logo */}
         <Animated.View
@@ -76,7 +65,7 @@ export default function SplashScreen({ navigation }: Props) {
           ]}
         >
           <View style={styles.logoRing}>
-            <Icon name="sprout" size={44} color={Colors.primary} />
+            <Icon name="sprout" size={44} color={color.cream} />
           </View>
           <Text style={styles.appName}>Ari</Text>
           <Text style={styles.tagline}>Your Money, Your Future</Text>
@@ -90,7 +79,7 @@ export default function SplashScreen({ navigation }: Props) {
               style={[styles.featureRow, { opacity: featureOpacities[i] }]}
             >
               <View style={styles.featureIcon}>
-                <Icon name={f.icon} size={22} color={Colors.primary} />
+                <Icon name={f.icon} size={22} color={color.cream} />
               </View>
               <View style={styles.featureText}>
                 <Text style={styles.featureTitle}>{f.title}</Text>
@@ -130,12 +119,12 @@ export default function SplashScreen({ navigation }: Props) {
           </TouchableOpacity>
         </Animated.View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  gradient: { flex: 1 },
+  root: { flex: 1, backgroundColor: color.forest },
   safe: { flex: 1, paddingHorizontal: 24 },
   logoSection: {
     alignItems: 'center',
@@ -146,24 +135,24 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 45,
-    backgroundColor: 'rgba(0,200,150,0.15)',
-    borderWidth: 2,
-    borderColor: 'rgba(0,200,150,0.4)',
+    backgroundColor: color.forest2,
+    borderWidth: 1,
+    borderColor: color.moss,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
   },
-  // logoEmoji style no longer needed — replaced by Icon component
   appName: {
+    fontFamily: font.displayBold,
     fontSize: 48,
-    fontWeight: '800',
-    color: Colors.primary,
+    color: color.cream,
     letterSpacing: -1,
     marginBottom: 8,
   },
   tagline: {
+    fontFamily: font.body,
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: onForest.muted,
     letterSpacing: 0.5,
   },
   features: {
@@ -174,10 +163,10 @@ const styles = StyleSheet.create({
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: color.forestDeep,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.forest2,
     padding: 16,
     gap: 16,
   },
@@ -185,32 +174,32 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 14,
-    backgroundColor: 'rgba(0,200,150,0.12)',
+    backgroundColor: color.forest2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   featureText: { flex: 1 },
   featureTitle: {
+    fontFamily: font.bodySemi,
     fontSize: 15,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    color: onForest.textBright,
     marginBottom: 3,
   },
-  featureDesc: { fontSize: 13, color: Colors.textSecondary },
+  featureDesc: { fontFamily: font.body, fontSize: 13, color: onForest.muted },
   buttons: {
     paddingBottom: 16,
     gap: 12,
   },
   primaryBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: color.clay,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
   },
   primaryBtnText: {
+    fontFamily: font.bodySemi,
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.background,
+    color: color.cream,
     letterSpacing: 0.3,
   },
   secondaryBtn: {
@@ -218,8 +207,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   secondaryBtnText: {
+    fontFamily: font.body,
     fontSize: 15,
-    color: Colors.textSecondary,
-    fontWeight: '500',
+    color: onForest.muted,
   },
 });

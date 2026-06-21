@@ -14,7 +14,7 @@ import ErrorBanner from '../../components/ui/ErrorBanner';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import DeleteConfirmSheet from '../../components/DeleteConfirmSheet';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import * as goalsApi from '../../api/savingsGoals';
@@ -201,14 +201,14 @@ export default function SavingsGoalsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>Savings Goals</Text>
           <Text style={styles.headerSub}>Track your financial dreams</Text>
         </View>
         <TouchableOpacity onPress={openAdd} style={styles.addBtnHeader}>
-          <Icon name="plus" size={18} color={Colors.background} />
+          <Icon name="plus" size={18} color={color.cream} />
         </TouchableOpacity>
       </View>
 
@@ -217,7 +217,7 @@ export default function SavingsGoalsScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh}
-            tintColor={Colors.primary} colors={[Colors.primary]} />
+            tintColor={color.forest} colors={[color.forest]} />
         }
       >
         {loading ? <LoadingSpinner /> : (
@@ -229,7 +229,7 @@ export default function SavingsGoalsScreen() {
                   <View style={styles.summaryRow}>
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Total Saved</Text>
-                      <Text style={[styles.summaryValue, { color: Colors.primary }]}>
+                      <Text style={[styles.summaryValue, { color: color.forest }]}>
                         {formatAmount(totalSaved)}
                       </Text>
                     </View>
@@ -241,7 +241,7 @@ export default function SavingsGoalsScreen() {
                     <View style={styles.summaryDivider} />
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Progress</Text>
-                      <Text style={[styles.summaryValue, { color: Colors.accent }]}>{overallPct}%</Text>
+                      <Text style={[styles.summaryValue, { color: color.gold }]}>{overallPct}%</Text>
                     </View>
                   </View>
                   {/* Overall progress bar */}
@@ -318,8 +318,8 @@ export default function SavingsGoalsScreen() {
                 value={goalName}
                 onChangeText={setGoalName}
                 placeholder="e.g., Dream Car, Emergency Fund"
-                placeholderTextColor={Colors.textMuted}
-                selectionColor={Colors.primary}
+                placeholderTextColor={color.inkFaint}
+                selectionColor={color.forest}
               />
 
               <Text style={styles.fieldLabel}>Target Amount</Text>
@@ -330,9 +330,9 @@ export default function SavingsGoalsScreen() {
                   value={targetAmount}
                   onChangeText={setTargetAmount}
                   placeholder="5,00,000"
-                  placeholderTextColor={Colors.textMuted}
+                  placeholderTextColor={color.inkFaint}
                   keyboardType="numeric"
-                  selectionColor={Colors.primary}
+                  selectionColor={color.forest}
                 />
               </View>
 
@@ -342,8 +342,8 @@ export default function SavingsGoalsScreen() {
                 value={targetDate}
                 onChangeText={setTargetDate}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor={Colors.textMuted}
-                selectionColor={Colors.primary}
+                placeholderTextColor={color.inkFaint}
+                selectionColor={color.forest}
               />
 
               <Text style={styles.fieldLabel}>Icon</Text>
@@ -354,7 +354,7 @@ export default function SavingsGoalsScreen() {
                     style={[styles.iconOption, selectedIcon === i && { borderColor: item.color, backgroundColor: `${item.color}20` }]}
                     onPress={() => setSelectedIcon(i)}
                   >
-                    <Icon name={item.icon} size={22} color={selectedIcon === i ? item.color : Colors.textMuted} />
+                    <Icon name={item.icon} size={22} color={selectedIcon === i ? item.color : color.inkFaint} />
                     <Text style={[styles.iconLabel, selectedIcon === i && { color: item.color }]}>{item.label}</Text>
                   </TouchableOpacity>
                 ))}
@@ -388,9 +388,9 @@ export default function SavingsGoalsScreen() {
                 value={contributeAmount}
                 onChangeText={setContributeAmount}
                 placeholder="1,000"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 keyboardType="numeric"
-                selectionColor={Colors.primary}
+                selectionColor={color.forest}
                 autoFocus
               />
             </View>
@@ -444,10 +444,10 @@ function GoalCard({
 }) {
   const { formatAmount } = usePrivacy();
   const progressColor = completed
-    ? Colors.primary
-    : goal.percentage >= 75 ? Colors.primary
-    : goal.percentage >= 40 ? Colors.accent
-    : Colors.orange;
+    ? color.forest
+    : goal.percentage >= 75 ? color.forest
+    : goal.percentage >= 40 ? color.gold
+    : color.clay;
 
   const daysLeft = goal.targetDate
     ? Math.max(Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / 86400000), 0)
@@ -457,8 +457,8 @@ function GoalCard({
     <View style={[styles.goalCard, completed && styles.goalCardCompleted]}>
       {/* Top row: icon + name + menu */}
       <View style={styles.goalTopRow}>
-        <View style={[styles.goalIconWrap, { backgroundColor: `${goal.color || Colors.primary}20` }]}>
-          <Icon name={(goal.icon as IconName) || 'flag'} size={24} color={goal.color || Colors.primary} />
+        <View style={[styles.goalIconWrap, { backgroundColor: `${goal.color || color.forest}20` }]}>
+          <Icon name={(goal.icon as IconName) || 'flag'} size={24} color={goal.color || color.forest} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.goalName}>{goal.name}</Text>
@@ -468,16 +468,16 @@ function GoalCard({
                 {daysLeft > 0 ? `${daysLeft} days left` : 'Past due'}
               </Text>
             )}
-            {completed && <Text style={[styles.goalMeta, { color: Colors.primary }]}>Achieved!</Text>}
+            {completed && <Text style={[styles.goalMeta, { color: color.forest }]}>Achieved!</Text>}
           </View>
         </View>
         {!completed && (
           <View style={styles.goalActions}>
             <TouchableOpacity onPress={onEdit} style={styles.goalActionBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name="edit" size={16} color={Colors.textMuted} />
+              <Icon name="edit" size={16} color={color.inkFaint} />
             </TouchableOpacity>
             <TouchableOpacity onPress={onDelete} style={styles.goalActionBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon name="trash" size={16} color={Colors.textMuted} />
+              <Icon name="trash" size={16} color={color.inkFaint} />
             </TouchableOpacity>
           </View>
         )}
@@ -509,7 +509,7 @@ function GoalCard({
             )}
           </View>
           <TouchableOpacity style={styles.contributeBtn} onPress={onContribute} activeOpacity={0.8}>
-            <Icon name="plus" size={14} color={Colors.background} />
+            <Icon name="plus" size={14} color={color.cream} />
             <Text style={styles.contributeBtnText}>Add</Text>
           </TouchableOpacity>
         </View>
@@ -522,70 +522,70 @@ function GoalCard({
 // Styles
 // ---------------------------------------------------------------------------
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20,
     paddingVertical: 14, gap: 12, borderBottomWidth: 1,
-    borderColor: Colors.border, backgroundColor: Colors.card,
+    borderColor: color.line, backgroundColor: color.card,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 18, fontFamily: font.bodySemi, color: color.ink },
+  headerSub: { fontSize: 12, color: color.inkSoft, fontFamily: font.body, marginTop: 2 },
   addBtnHeader: {
-    backgroundColor: Colors.primary, width: 36, height: 36,
+    backgroundColor: color.forest, width: 36, height: 36,
     borderRadius: 18, alignItems: 'center', justifyContent: 'center',
   },
   container: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
   sectionTitle: {
-    fontSize: 16, fontWeight: '700', color: Colors.textSecondary,
+    fontSize: 16, fontFamily: font.bodySemi, color: color.inkSoft,
     marginTop: 24, marginBottom: 12,
   },
 
   // Summary Card
   summaryCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 20,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 20,
   },
   summaryRow: { flexDirection: 'row', alignItems: 'center' },
   summaryItem: { flex: 1, alignItems: 'center' },
-  summaryDivider: { width: 1, height: 36, backgroundColor: Colors.border },
-  summaryLabel: { fontSize: 11, color: Colors.textSecondary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-  summaryValue: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  summaryDivider: { width: 1, height: 36, backgroundColor: color.line },
+  summaryLabel: { fontSize: 11, color: color.inkSoft, fontFamily: font.body, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  summaryValue: { fontSize: 17, fontFamily: font.bodySemi, color: color.ink },
   overallBarBg: {
-    height: 6, backgroundColor: Colors.input, borderRadius: 3, marginTop: 14,
+    height: 6, backgroundColor: color.cream2, borderRadius: 3, marginTop: 14,
     overflow: 'hidden',
   },
   overallBarFill: {
-    height: '100%', backgroundColor: Colors.primary, borderRadius: 3,
+    height: '100%', backgroundColor: color.forest, borderRadius: 3,
   },
   completedCount: {
-    fontSize: 12, color: Colors.primary, fontWeight: '600',
+    fontSize: 12, color: color.forest, fontFamily: font.bodySemi,
     textAlign: 'center', marginTop: 10,
   },
 
   // Goal Card
   goalCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 12,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 12,
   },
-  goalCardCompleted: { opacity: 0.7, borderColor: Colors.primary },
+  goalCardCompleted: { opacity: 0.7, borderColor: color.forest },
   goalTopRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   goalIconWrap: {
     width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
   },
-  goalName: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  goalName: { fontSize: 16, fontFamily: font.bodySemi, color: color.ink },
   goalMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
-  goalMeta: { fontSize: 12, color: Colors.textSecondary },
+  goalMeta: { fontSize: 12, color: color.inkSoft, fontFamily: font.body },
   goalActions: { flexDirection: 'row', gap: 12 },
   goalActionBtn: { padding: 4 },
   goalAmountRow: {
     flexDirection: 'row', alignItems: 'baseline', marginTop: 14,
   },
-  goalCurrentAmt: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
-  goalTargetAmt: { fontSize: 14, color: Colors.textSecondary },
-  goalPct: { fontSize: 14, fontWeight: '700', marginLeft: 'auto' },
+  goalCurrentAmt: { fontSize: 20, fontFamily: font.displayBold, color: color.ink },
+  goalTargetAmt: { fontSize: 14, color: color.inkSoft, fontFamily: font.body },
+  goalPct: { fontSize: 14, fontFamily: font.bodySemi, marginLeft: 'auto' },
   progressBg: {
-    height: 8, backgroundColor: Colors.input, borderRadius: 4,
+    height: 8, backgroundColor: color.cream2, borderRadius: 4,
     marginTop: 10, overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: 4 },
@@ -593,59 +593,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginTop: 14,
   },
-  goalMonthly: { fontSize: 12, color: Colors.textSecondary },
-  goalRemaining: { fontSize: 11, color: Colors.textMuted, marginTop: 2 },
+  goalMonthly: { fontSize: 12, color: color.inkSoft, fontFamily: font.body },
+  goalRemaining: { fontSize: 11, color: color.inkFaint, fontFamily: font.body, marginTop: 2 },
   contributeBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: Colors.primary, paddingHorizontal: 14,
+    backgroundColor: color.forest, paddingHorizontal: 14,
     paddingVertical: 8, borderRadius: 20,
   },
-  contributeBtnText: { fontSize: 13, fontWeight: '700', color: Colors.background },
+  contributeBtnText: { fontSize: 13, fontFamily: font.bodySemi, color: color.cream },
 
   // Modals
-  modalOverlay: { flex: 1, backgroundColor: Colors.overlay },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(35,41,31,0.55)' },
   modalSheet: {
-    backgroundColor: Colors.card, borderTopLeftRadius: 24,
+    backgroundColor: color.card, borderTopLeftRadius: 24,
     borderTopRightRadius: 24, padding: 24,
-    borderTopWidth: 1, borderColor: Colors.border,
+    borderTopWidth: 1, borderColor: color.line,
     maxHeight: '90%',
   },
   modalHandle: {
-    width: 40, height: 4, backgroundColor: Colors.border,
+    width: 40, height: 4, backgroundColor: color.line,
     borderRadius: 2, alignSelf: 'center', marginBottom: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
-  fieldLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600', marginBottom: 8, marginTop: 12 },
+  modalTitle: { fontSize: 20, fontFamily: font.bodySemi, color: color.ink, marginBottom: 20 },
+  fieldLabel: { fontSize: 13, color: color.inkSoft, fontFamily: font.bodySemi, marginBottom: 8, marginTop: 12 },
   textInput: {
-    backgroundColor: Colors.input, borderRadius: 12, borderWidth: 1,
-    borderColor: Colors.border, paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 16, color: Colors.textPrimary,
+    backgroundColor: color.cream2, borderRadius: 12, borderWidth: 1,
+    borderColor: color.line, paddingHorizontal: 14, paddingVertical: 12,
+    fontSize: 16, color: color.ink, fontFamily: font.body,
   },
   amountRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: Colors.input, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 14,
+    backgroundColor: color.cream2, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line, paddingHorizontal: 14,
   },
-  rupee: { fontSize: 22, fontWeight: '700', color: Colors.textMuted },
-  amountInput: { flex: 1, fontSize: 24, fontWeight: '700', color: Colors.textPrimary, paddingVertical: 12 },
+  rupee: { fontSize: 22, fontFamily: font.bodySemi, color: color.inkFaint },
+  amountInput: { flex: 1, fontSize: 24, fontFamily: font.displayBold, color: color.ink, paddingVertical: 12 },
   iconGrid: {
     flexDirection: 'row', flexWrap: 'wrap', gap: 10,
   },
   iconOption: {
     alignItems: 'center', gap: 4, paddingVertical: 10, paddingHorizontal: 12,
-    borderRadius: 12, borderWidth: 1.5, borderColor: Colors.border,
+    borderRadius: 12, borderWidth: 1.5, borderColor: color.line,
     minWidth: 68,
   },
-  iconLabel: { fontSize: 10, color: Colors.textMuted, fontWeight: '600' },
+  iconLabel: { fontSize: 10, color: color.inkFaint, fontFamily: font.bodySemi },
   contributeStatus: {
-    fontSize: 14, color: Colors.textSecondary, marginTop: -8, marginBottom: 4,
+    fontSize: 14, color: color.inkSoft, fontFamily: font.body, marginTop: -8, marginBottom: 4,
   },
   quickAmounts: { flexDirection: 'row', gap: 8, marginTop: 16, flexWrap: 'wrap' },
   quickBtn: {
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: color.line,
   },
-  quickBtnActive: { borderColor: Colors.primary, backgroundColor: `${Colors.primary}20` },
-  quickBtnText: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary },
-  quickBtnTextActive: { color: Colors.primary },
+  quickBtnActive: { borderColor: color.forest, backgroundColor: color.cream2 },
+  quickBtnText: { fontSize: 13, fontFamily: font.bodySemi, color: color.inkSoft },
+  quickBtnTextActive: { color: color.forest },
 });

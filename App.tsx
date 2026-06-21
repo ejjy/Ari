@@ -2,6 +2,19 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import {
+  useFonts,
+  Fraunces_400Regular,
+  Fraunces_500Medium,
+  Fraunces_600SemiBold,
+  Fraunces_700Bold,
+} from '@expo-google-fonts/fraunces';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -28,6 +41,21 @@ initAnalytics().then(() => track('app_opened', { source: 'cold' }));
 checkAndApplyUpdate();
 
 function App() {
+  // Forest-on-cream design system uses Fraunces (display) + Inter (body).
+  // Gate first render until both are ready so no Text flashes in the system
+  // font. Hooks below must still run unconditionally — the early return sits
+  // after every hook to respect the rules of hooks.
+  const [fontsLoaded] = useFonts({
+    Fraunces_400Regular,
+    Fraunces_500Medium,
+    Fraunces_600SemiBold,
+    Fraunces_700Bold,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
   // Tracks the wall-clock time spent in the foreground for the current
   // session. Reset on every transition into 'active'. Used to compute
   // `foreground_duration_sec` on backgrounding — the input to D1/D7
@@ -85,6 +113,9 @@ function App() {
   // user is never interrupted mid-session by a reload.
   useEffect(() => registerOtaReloadHandler(), []);
 
+  // Native splash stays up until fonts resolve; brief null avoids a FOUT.
+  if (!fontsLoaded) return null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ErrorBoundary>
@@ -93,7 +124,7 @@ function App() {
             <AuthProvider>
               <DataProvider>
                 <PrivacyProvider>
-                  <StatusBar style="light" />
+                  <StatusBar style="dark" />
                   <RootNavigator />
                 </PrivacyProvider>
               </DataProvider>

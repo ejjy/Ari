@@ -11,7 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import type { MainStackParamList } from '../navigation/navigationTypes';
 
@@ -29,49 +29,49 @@ const MODULES: ModuleItem[] = [
   {
     key: 'SmartLedger',
     icon: 'list',
-    iconColor: Colors.teal,
+    iconColor: color.forest2,
     title: 'Smart Ledger',
     subtitle: 'Recurring entries, tags & multi-source income',
   },
   {
     key: 'BudgetPlanner',
     icon: 'target',
-    iconColor: Colors.orange,
+    iconColor: color.clay,
     title: 'Budget Planner',
     subtitle: 'Monthly targets with rollover tracking',
   },
   {
     key: 'SavingsGoals',
     icon: 'flag',
-    iconColor: Colors.primary,
+    iconColor: color.forest,
     title: 'Savings Goals',
     subtitle: 'Track goals & contributions',
   },
   {
     key: 'TaxEstimator',
     icon: 'briefcase',
-    iconColor: Colors.purple,
+    iconColor: color.moss,
     title: 'Tax Estimator',
     subtitle: 'Old vs New regime, 80C/80D, HRA, GST',
   },
   {
     key: 'PnlReport',
     icon: 'bar-chart',
-    iconColor: Colors.accent,
+    iconColor: color.gold,
     title: 'P&L Reports',
     subtitle: 'Income vs expense trends & insights',
   },
   {
     key: 'DailyHeatmap',
     icon: 'calendar',
-    iconColor: Colors.primary,
+    iconColor: color.forest,
     title: 'Daily Heatmap',
     subtitle: 'Which days of the month you spend the most',
   },
   {
     key: 'Groups',
     icon: 'user',
-    iconColor: Colors.teal,
+    iconColor: color.forest2,
     title: 'Shared Expenses',
     subtitle: 'Split with friends, settle via UPI',
   },
@@ -91,7 +91,7 @@ export default function AccountantScreen() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <View>
           <Text style={styles.headerTitle}>Ari Accountant</Text>
@@ -122,7 +122,7 @@ export default function AccountantScreen() {
               <Text style={styles.moduleTitle}>{mod.title}</Text>
               <Text style={styles.moduleSub}>{mod.subtitle}</Text>
             </View>
-            <Icon name="chevron-right" size={18} color={Colors.textMuted} />
+            <Icon name="chevron-right" size={18} color={color.inkFaint} />
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -131,7 +131,7 @@ export default function AccountantScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -139,20 +139,20 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 12,
     borderBottomWidth: 1,
-    borderColor: Colors.border,
-    backgroundColor: Colors.card,
+    borderColor: color.line,
+    backgroundColor: color.card,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 18, fontFamily: font.bodySemi, color: color.ink },
+  headerSub: { fontSize: 12, color: color.inkSoft, fontFamily: font.body, marginTop: 2 },
   content: { padding: 20, gap: 12 },
   moduleCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 16,
     gap: 14,
   },
@@ -164,6 +164,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   moduleText: { flex: 1 },
-  moduleTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
-  moduleSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 3 },
+  moduleTitle: { fontSize: 15, fontFamily: font.bodySemi, color: color.ink },
+  moduleSub: { fontSize: 12, color: color.inkSoft, fontFamily: font.body, marginTop: 3 },
 });

@@ -15,7 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useData } from '../context/DataContext';
 import ChatBubble from '../components/ChatBubble';
 import Icon from '../components/ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 
 const QUICK_PROMPTS = [
@@ -52,7 +52,7 @@ function TypingIndicator() {
 
   return (
     <View style={typing.row}>
-      <View style={typing.avatar}><Icon name="bot" size={16} color={Colors.primary} /></View>
+      <View style={typing.avatar}><Icon name="bot" size={16} color={color.forest} /></View>
       <View style={typing.bubble}>
         {[dot1, dot2, dot3].map((dot, i) => (
           <Animated.View
@@ -69,16 +69,16 @@ const typing = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 12, paddingHorizontal: 16, gap: 8 },
   avatar: {
     width: 32, height: 32, borderRadius: 16,
-    backgroundColor: Colors.card2, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: color.line,
   },
   bubble: {
     flexDirection: 'row', gap: 4,
-    backgroundColor: Colors.card, borderRadius: 18, borderBottomLeftRadius: 4,
+    backgroundColor: color.card, borderRadius: 18, borderBottomLeftRadius: 4,
     paddingHorizontal: 16, paddingVertical: 14,
-    borderWidth: 1, borderColor: Colors.border, alignItems: 'center',
+    borderWidth: 1, borderColor: color.line, alignItems: 'center',
   },
-  dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: Colors.textSecondary },
+  dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: color.inkSoft },
 });
 
 export default function TomoScreen() {
@@ -115,7 +115,7 @@ export default function TomoScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={styles.avatarBox}><Icon name="bot" size={22} color={Colors.primary} /></View>
+            <View style={styles.avatarBox}><Icon name="bot" size={22} color={color.forest} /></View>
             <View>
               <Text style={styles.headerName}>Tomo</Text>
               <Text style={styles.headerSub}>Your AI Finance Coach</Text>
@@ -171,10 +171,10 @@ export default function TomoScreen() {
             value={input}
             onChangeText={setInput}
             placeholder="Ask Tomo anything..."
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={color.inkFaint}
             returnKeyType="send"
             onSubmitEditing={() => handleSend()}
-            selectionColor={Colors.primary}
+            selectionColor={color.forest}
             multiline
           />
           <TouchableOpacity
@@ -185,7 +185,7 @@ export default function TomoScreen() {
             accessibilityRole="button"
             accessibilityLabel="Send message"
           >
-            <Icon name="send" size={18} color={Colors.background} />
+            <Icon name="send" size={18} color={color.cream} />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -194,47 +194,47 @@ export default function TomoScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 20, paddingVertical: 12,
-    borderBottomWidth: 1, borderColor: Colors.border,
-    backgroundColor: Colors.card,
+    borderBottomWidth: 1, borderColor: color.line,
+    backgroundColor: color.card,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatarBox: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: 'rgba(0,200,150,0.15)', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(0,200,150,0.3)',
+    backgroundColor: color.cream2, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: color.line,
   },
-  headerName: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textSecondary },
+  headerName: { fontFamily: font.bodySemi, fontSize: 16, color: color.ink },
+  headerSub: { fontFamily: font.body, fontSize: 12, color: color.inkSoft },
   clearBtn: { paddingHorizontal: 12, paddingVertical: 6 },
-  clearText: { fontSize: 14, color: Colors.textMuted },
+  clearText: { fontFamily: font.body, fontSize: 14, color: color.inkFaint },
   listContent: { paddingTop: 16, paddingBottom: 16 },
   prompts: { paddingHorizontal: 16, gap: 8, marginTop: 16 },
-  promptsLabel: { fontSize: 12, color: Colors.textMuted, fontWeight: '600', marginBottom: 4 },
+  promptsLabel: { fontFamily: font.bodySemi, fontSize: 12, color: color.inkFaint, marginBottom: 4 },
   promptBtn: {
-    backgroundColor: Colors.card, borderRadius: 20,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 20,
+    borderWidth: 1, borderColor: color.line,
     paddingHorizontal: 16, paddingVertical: 10,
   },
-  promptText: { fontSize: 13, color: Colors.textSecondary },
+  promptText: { fontFamily: font.body, fontSize: 13, color: color.inkSoft },
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', gap: 8,
     paddingHorizontal: 16, paddingVertical: 12,
-    borderTopWidth: 1, borderColor: Colors.border,
-    backgroundColor: Colors.card,
+    borderTopWidth: 1, borderColor: color.line,
+    backgroundColor: color.card,
   },
   input: {
-    flex: 1, backgroundColor: Colors.input,
+    flex: 1, backgroundColor: color.cream2,
     borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10,
-    fontSize: 14, color: Colors.textPrimary, maxHeight: 100,
-    borderWidth: 1, borderColor: Colors.border,
+    fontFamily: font.body, fontSize: 14, color: color.ink, maxHeight: 100,
+    borderWidth: 1, borderColor: color.line,
   },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: color.forest, alignItems: 'center', justifyContent: 'center',
   },
-  sendBtnDisabled: { backgroundColor: Colors.border },
+  sendBtnDisabled: { backgroundColor: color.line },
 });

@@ -11,7 +11,7 @@ import {
   UIManager,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
@@ -112,7 +112,7 @@ export default function HelpSupportScreen({ onBack }: Props) {
         <AnimatedEntry delay={60}>
           <View style={styles.heroCard}>
             <View style={styles.heroIcon}>
-              <Icon name="help-circle" size={28} color={Colors.primary} />
+              <Icon name="help-circle" size={28} color={color.forest} />
             </View>
             <Text style={styles.heroTitle}>How can we help?</Text>
             <Text style={styles.heroSubtitle}>
@@ -131,7 +131,7 @@ export default function HelpSupportScreen({ onBack }: Props) {
               accessibilityLabel="Email support"
               accessibilityRole="button"
             >
-              <Icon name="mail" size={22} color={Colors.primary} />
+              <Icon name="mail" size={22} color={color.forest} />
               <Text style={styles.actionLabel}>Email Us</Text>
               <Text style={styles.actionSubtitle}>{SUPPORT_EMAIL}</Text>
             </TouchableOpacity>
@@ -142,7 +142,7 @@ export default function HelpSupportScreen({ onBack }: Props) {
               accessibilityLabel="Visit website"
               accessibilityRole="button"
             >
-              <Icon name="info" size={22} color={Colors.primary} />
+              <Icon name="info" size={22} color={color.forest} />
               <Text style={styles.actionLabel}>Website</Text>
               <Text style={styles.actionSubtitle}>aritomo.in</Text>
             </TouchableOpacity>
@@ -168,7 +168,7 @@ export default function HelpSupportScreen({ onBack }: Props) {
                     <Icon
                       name={isOpen ? 'chevron-down' : 'chevron-right' as IconName}
                       size={18}
-                      color={Colors.textMuted}
+                      color={color.inkFaint}
                     />
                   </TouchableOpacity>
                   {isOpen && (
@@ -194,7 +194,7 @@ export default function HelpSupportScreen({ onBack }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -202,17 +202,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
-  backText: { fontSize: 16, color: Colors.textSecondary },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  backText: { fontSize: 16, color: color.inkSoft, fontFamily: font.body },
+  title: { fontSize: 17, fontFamily: font.bodyBold, color: color.ink },
   content: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40, gap: 20 },
 
   heroCard: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 20,
     alignItems: 'center',
     gap: 8,
@@ -221,47 +221,48 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(0,200,150,0.12)',
+    backgroundColor: color.cream2,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 4,
   },
-  heroTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  heroTitle: { fontSize: 18, fontFamily: font.bodyBold, color: color.ink },
   heroSubtitle: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textAlign: 'center',
     lineHeight: 19,
+    fontFamily: font.body,
   },
 
   actionRow: { flexDirection: 'row', gap: 12 },
   actionCard: {
     flex: 1,
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 16,
     alignItems: 'center',
     gap: 6,
   },
-  actionLabel: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, marginTop: 2 },
-  actionSubtitle: { fontSize: 11, color: Colors.textMuted },
+  actionLabel: { fontSize: 14, fontFamily: font.bodySemi, color: color.ink, marginTop: 2 },
+  actionSubtitle: { fontSize: 11, color: color.inkFaint, fontFamily: font.body },
 
   sectionTitle: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: 8,
     marginLeft: 4,
-    fontWeight: '600',
+    fontFamily: font.bodySemi,
   },
   faqCard: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     paddingHorizontal: 16,
   },
   faqRow: {
@@ -271,18 +272,19 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 12,
   },
-  faqQuestion: { flex: 1, fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
+  faqQuestion: { flex: 1, fontSize: 15, fontFamily: font.bodyMed, color: color.ink },
   faqAnswerWrap: {
     paddingBottom: 16,
     paddingRight: 24,
   },
-  faqAnswer: { fontSize: 14, color: Colors.textSecondary, lineHeight: 20 },
-  separator: { height: 1, backgroundColor: Colors.border },
+  faqAnswer: { fontSize: 14, color: color.inkSoft, lineHeight: 20, fontFamily: font.body },
+  separator: { height: 1, backgroundColor: color.line },
 
   footnote: {
     fontSize: 13,
-    color: Colors.textMuted,
+    color: color.inkFaint,
     textAlign: 'center',
     marginTop: 8,
+    fontFamily: font.body,
   },
 });

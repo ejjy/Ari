@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import { useBiometric } from '../hooks/useBiometric';
 import { useNotifications } from '../hooks/useNotifications';
@@ -358,7 +358,7 @@ export default function SettingsScreen() {
           <View style={styles.menuCard}>
             <View style={styles.toggleRow}>
               <View style={styles.menuIconWrap}>
-                <Icon name="bell" size={20} color={Colors.textSecondary} />
+                <Icon name="bell" size={20} color={color.inkFaint} />
               </View>
               <View style={styles.menuText}>
                 <Text style={styles.menuLabel}>Daily Reminders</Text>
@@ -371,8 +371,8 @@ export default function SettingsScreen() {
               <Switch
                 value={notificationsEnabled}
                 onValueChange={handleNotifications}
-                trackColor={{ false: Colors.border, true: Colors.primaryDark }}
-                thumbColor={notificationsEnabled ? Colors.primary : Colors.textMuted}
+                trackColor={{ false: color.line, true: color.forest2 }}
+                thumbColor={notificationsEnabled ? color.forest : color.inkFaint}
                 accessibilityLabel="Toggle daily reminders"
               />
             </View>
@@ -387,7 +387,7 @@ export default function SettingsScreen() {
                   accessibilityRole="button"
                 >
                   <View style={styles.menuIconWrap}>
-                    <Icon name="clock" size={20} color={Colors.textSecondary} />
+                    <Icon name="clock" size={20} color={color.inkFaint} />
                   </View>
                   <View style={styles.menuText}>
                     <Text style={styles.menuLabel}>Reminder Time</Text>
@@ -425,7 +425,7 @@ export default function SettingsScreen() {
                 <View style={styles.separator} />
                 <View style={styles.toggleRow}>
                   <View style={styles.menuIconWrap}>
-                    <Icon name="fingerprint" size={20} color={Colors.textSecondary} />
+                    <Icon name="fingerprint" size={20} color={color.inkFaint} />
                   </View>
                   <View style={styles.menuText}>
                     <Text style={styles.menuLabel}>Biometric Lock</Text>
@@ -436,8 +436,8 @@ export default function SettingsScreen() {
                   <Switch
                     value={biometricEnabled}
                     onValueChange={handleBiometric}
-                    trackColor={{ false: Colors.border, true: Colors.primaryDark }}
-                    thumbColor={biometricEnabled ? Colors.primary : Colors.textMuted}
+                    trackColor={{ false: color.line, true: color.forest2 }}
+                    thumbColor={biometricEnabled ? color.forest : color.inkFaint}
                     accessibilityLabel="Toggle biometric lock"
                   />
                 </View>
@@ -446,7 +446,7 @@ export default function SettingsScreen() {
             <View style={styles.separator} />
             <View style={styles.toggleRow}>
               <View style={styles.menuIconWrap}>
-                <Icon name={isPrivate ? 'eye-off' : 'eye'} size={20} color={Colors.textSecondary} />
+                <Icon name={isPrivate ? 'eye-off' : 'eye'} size={20} color={color.inkFaint} />
               </View>
               <View style={styles.menuText}>
                 <Text style={styles.menuLabel}>Private Mode</Text>
@@ -460,8 +460,8 @@ export default function SettingsScreen() {
                   haptics.light();
                   togglePrivate();
                 }}
-                trackColor={{ false: Colors.border, true: Colors.primaryDark }}
-                thumbColor={isPrivate ? Colors.primary : Colors.textMuted}
+                trackColor={{ false: color.line, true: color.forest2 }}
+                thumbColor={isPrivate ? color.forest : color.inkFaint}
                 accessibilityLabel="Toggle private mode"
               />
             </View>
@@ -481,17 +481,17 @@ export default function SettingsScreen() {
                   accessibilityRole="button"
                 >
                   <View style={styles.menuIconWrap}>
-                    <Icon name={item.icon} size={20} color={Colors.textSecondary} />
+                    <Icon name={item.icon} size={20} color={color.inkFaint} />
                   </View>
                   <View style={styles.menuText}>
-                    <Text style={[styles.menuLabel, item.destructive && { color: Colors.danger }]}>
+                    <Text style={[styles.menuLabel, item.destructive && { color: color.clay }]}>
                       {item.label}
                     </Text>
                     {item.subtitle && (
                       <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
                     )}
                   </View>
-                  <Icon name="chevron-right" size={18} color={Colors.textMuted} />
+                  <Icon name="chevron-right" size={18} color={color.inkFaint} />
                 </TouchableOpacity>
                 {i < menuItems.length - 1 && <View style={styles.separator} />}
               </View>
@@ -502,7 +502,7 @@ export default function SettingsScreen() {
         {/* Tomo Branding */}
         <AnimatedEntry delay={240}>
           <View style={styles.brandRow}>
-            <Icon name="bot" size={18} color={Colors.textMuted} />
+            <Icon name="bot" size={18} color={color.inkFaint} />
             <Text style={styles.brandText}>Powered by Tomo AI</Text>
           </View>
         </AnimatedEntry>
@@ -518,7 +518,7 @@ export default function SettingsScreen() {
               accessibilityRole="button"
             >
               <View style={styles.logoutInner}>
-                <Icon name="log-out" size={18} color={Colors.danger} />
+                <Icon name="log-out" size={18} color={color.clay} />
                 <Text style={styles.logoutText}>Sign Out</Text>
               </View>
             </TouchableOpacity>
@@ -531,7 +531,7 @@ export default function SettingsScreen() {
               accessibilityRole="button"
             >
               <View style={styles.logoutInner}>
-                <Icon name="trash" size={18} color={Colors.textMuted} />
+                <Icon name="trash" size={18} color={color.inkFaint} />
                 <Text style={styles.deleteText}>Delete Account</Text>
               </View>
             </TouchableOpacity>
@@ -564,7 +564,7 @@ export default function SettingsScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Send Feedback</Text>
               <TouchableOpacity onPress={() => setFeedbackVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <Icon name="x" size={22} color={Colors.textSecondary} />
+                <Icon name="x" size={22} color={color.inkSoft} />
               </TouchableOpacity>
             </View>
 
@@ -593,7 +593,7 @@ export default function SettingsScreen() {
             <TextInput
               style={styles.feedbackInput}
               placeholder="Write your feedback..."
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={color.inkFaint}
               value={feedbackMessage}
               onChangeText={setFeedbackMessage}
               multiline
@@ -611,7 +611,7 @@ export default function SettingsScreen() {
               activeOpacity={0.8}
             >
               {feedbackLoading ? (
-                <ActivityIndicator color={Colors.background} size="small" />
+                <ActivityIndicator color={color.cream} size="small" />
               ) : (
                 <Text style={styles.submitBtnText}>Submit Feedback</Text>
               )}
@@ -628,14 +628,14 @@ export default function SettingsScreen() {
         >
           <View style={[styles.modalContent, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: Colors.danger }]}>Delete Account</Text>
+              <Text style={[styles.modalTitle, { color: color.clay }]}>Delete Account</Text>
               <TouchableOpacity onPress={() => setDeleteVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <Icon name="x" size={22} color={Colors.textSecondary} />
+                <Icon name="x" size={22} color={color.inkSoft} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.warningBox}>
-              <Icon name="alert-triangle" size={20} color={Colors.danger} />
+              <Icon name="alert-triangle" size={20} color={color.clay} />
               <Text style={styles.warningText}>
                 This will permanently delete your account, all transactions, budgets, savings goals, and financial data. This cannot be undone.
               </Text>
@@ -646,7 +646,7 @@ export default function SettingsScreen() {
               <TextInput
                 style={styles.passwordInput}
                 placeholder="Password"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 value={deletePassword}
                 onChangeText={setDeletePassword}
                 secureTextEntry={!showDeletePassword}
@@ -657,7 +657,7 @@ export default function SettingsScreen() {
                 style={styles.eyeBtn}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <Icon name={showDeletePassword ? 'eye-off' : 'eye'} size={20} color={Colors.textMuted} />
+                <Icon name={showDeletePassword ? 'eye-off' : 'eye'} size={20} color={color.inkFaint} />
               </TouchableOpacity>
             </View>
 
@@ -668,7 +668,7 @@ export default function SettingsScreen() {
               activeOpacity={0.8}
             >
               {deleteLoading ? (
-                <ActivityIndicator color={Colors.white} size="small" />
+                <ActivityIndicator color={color.cream} size="small" />
               ) : (
                 <Text style={styles.deleteBtnConfirmText}>Permanently Delete My Account</Text>
               )}
@@ -681,39 +681,39 @@ export default function SettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   container: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 },
   screenTitle: {
-    fontSize: 26, fontWeight: '800', color: Colors.textPrimary,
-    marginBottom: 20, letterSpacing: -0.5,
+    fontFamily: font.displayBold,
+    fontSize: 26, color: color.ink, marginBottom: 20,
   },
   profileCard: {
     flexDirection: 'row', alignItems: 'center', gap: 16,
-    backgroundColor: Colors.card, borderRadius: 16,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 16,
+    borderWidth: 1, borderColor: color.line,
     padding: 20, marginBottom: 16,
   },
   avatarLarge: {
     width: 64, height: 64, borderRadius: 32,
-    backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: color.forest, alignItems: 'center', justifyContent: 'center',
   },
-  avatarInitial: { fontSize: 28, fontWeight: '800', color: Colors.background },
+  avatarInitial: { fontFamily: font.displayBold, fontSize: 28, color: color.cream },
   profileInfo: { flex: 1 },
-  profileName: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
-  profileEmail: { fontSize: 14, color: Colors.textSecondary },
+  profileName: { fontFamily: font.displaySemi, fontSize: 20, color: color.ink, marginBottom: 4 },
+  profileEmail: { fontFamily: font.body, fontSize: 14, color: color.inkSoft },
   detailsCard: {
-    backgroundColor: Colors.card, borderRadius: 16,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 16,
+    borderWidth: 1, borderColor: color.line,
     paddingHorizontal: 16, marginBottom: 16,
   },
   detailRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14 },
   detailEmoji: { fontSize: 22, width: 30, textAlign: 'center' },
   detailText: { flex: 1 },
-  detailLabel: { fontSize: 12, color: Colors.textSecondary, marginBottom: 2 },
-  detailValue: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
+  detailLabel: { fontFamily: font.body, fontSize: 12, color: color.inkSoft, marginBottom: 2 },
+  detailValue: { fontFamily: font.bodySemi, fontSize: 14, color: color.ink },
   menuCard: {
-    backgroundColor: Colors.card, borderRadius: 16,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 16,
+    borderWidth: 1, borderColor: color.line,
     paddingHorizontal: 16, marginBottom: 24,
   },
   toggleRow: {
@@ -724,66 +724,53 @@ const styles = StyleSheet.create({
   },
   menuIconWrap: { width: 30, alignItems: 'center', justifyContent: 'center' },
   menuText: { flex: 1 },
-  menuLabel: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
-  menuSubtitle: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  separator: { height: 1, backgroundColor: Colors.border, marginLeft: 42 },
+  menuLabel: { fontFamily: font.bodyMed, fontSize: 15, color: color.ink },
+  menuSubtitle: { fontFamily: font.body, fontSize: 12, color: color.inkSoft, marginTop: 2 },
+  separator: { height: 1, backgroundColor: color.line, marginLeft: 42 },
   timeValue: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.primary,
-    paddingHorizontal: 4,
+    fontFamily: font.bodySemi,
+    fontSize: 15, color: color.forest, paddingHorizontal: 4,
   },
-  iosPickerWrap: {
-    paddingTop: 8,
-    paddingBottom: 12,
-    alignItems: 'center',
-  },
+  iosPickerWrap: { paddingTop: 8, paddingBottom: 12, alignItems: 'center' },
   iosPickerDone: {
-    marginTop: 4,
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: Colors.primary,
+    marginTop: 4, paddingHorizontal: 24, paddingVertical: 10,
+    borderRadius: 10, backgroundColor: color.forest,
   },
-  iosPickerDoneText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.background,
-  },
+  iosPickerDoneText: { fontFamily: font.bodySemi, fontSize: 14, color: color.cream },
   brandRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, marginBottom: 20,
   },
-  brandText: { fontSize: 13, color: Colors.textMuted },
+  brandText: { fontFamily: font.body, fontSize: 13, color: color.inkFaint },
   logoutBtn: {
-    borderWidth: 1.5, borderColor: Colors.danger,
+    borderWidth: 1.5, borderColor: color.clay,
     borderRadius: 14, paddingVertical: 14,
-    alignItems: 'center', backgroundColor: 'rgba(255,71,87,0.08)',
+    alignItems: 'center', backgroundColor: color.clayTint,
   },
   logoutInner: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logoutText: { fontSize: 16, fontWeight: '600', color: Colors.danger },
+  logoutText: { fontFamily: font.bodySemi, fontSize: 16, color: color.clay },
   deleteBtn: {
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: color.line,
     borderRadius: 14, paddingVertical: 14, alignItems: 'center',
   },
-  deleteText: { fontSize: 14, fontWeight: '500', color: Colors.textMuted },
+  deleteText: { fontFamily: font.bodyMed, fontSize: 14, color: color.inkFaint },
 
   // ── Modal styles ──────────────────────────────────────────────────
   modalOverlay: {
-    flex: 1, backgroundColor: Colors.overlay,
+    flex: 1, backgroundColor: 'rgba(35,41,31,0.55)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: Colors.card, borderTopLeftRadius: 24,
+    backgroundColor: color.card, borderTopLeftRadius: 24,
     borderTopRightRadius: 24, padding: 24, paddingBottom: 40,
   },
   modalHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 12,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
+  modalTitle: { fontFamily: font.displaySemi, fontSize: 20, color: color.ink },
   modalSubtitle: {
-    fontSize: 14, color: Colors.textSecondary, lineHeight: 20, marginBottom: 20,
+    fontFamily: font.body, fontSize: 14, color: color.inkSoft, lineHeight: 20, marginBottom: 20,
   },
 
   // Feedback
@@ -791,50 +778,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 16,
   },
-  ratingLabel: { fontSize: 14, color: Colors.textSecondary },
+  ratingLabel: { fontFamily: font.body, fontSize: 14, color: color.inkSoft },
   starsRow: { flexDirection: 'row', gap: 6 },
-  starIcon: { fontSize: 28, color: Colors.textMuted },
-  starActive: { color: Colors.accent },
+  starIcon: { fontSize: 28, color: color.inkFaint },
+  starActive: { color: color.gold },
   feedbackInput: {
-    backgroundColor: Colors.input, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
-    padding: 16, fontSize: 15, color: Colors.textPrimary,
+    backgroundColor: color.cream2, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line,
+    padding: 16, fontFamily: font.body, fontSize: 15, color: color.ink,
     minHeight: 120, textAlignVertical: 'top',
   },
   charCount: {
-    fontSize: 12, color: Colors.textMuted, textAlign: 'right', marginTop: 6, marginBottom: 16,
+    fontFamily: font.body, fontSize: 12, color: color.inkFaint, textAlign: 'right', marginTop: 6, marginBottom: 16,
   },
   submitBtn: {
-    backgroundColor: Colors.primary, borderRadius: 14,
+    backgroundColor: color.forest, borderRadius: 14,
     paddingVertical: 16, alignItems: 'center',
   },
   submitBtnDisabled: { opacity: 0.4 },
-  submitBtnText: { fontSize: 16, fontWeight: '700', color: Colors.background },
+  submitBtnText: { fontFamily: font.bodySemi, fontSize: 16, color: color.cream },
 
   // Delete Account
   warningBox: {
-    flexDirection: 'row', gap: 12, backgroundColor: 'rgba(255,71,87,0.1)',
+    flexDirection: 'row', gap: 12, backgroundColor: color.clayTint,
     borderRadius: 12, padding: 14, marginBottom: 20, alignItems: 'flex-start',
   },
   warningText: {
-    flex: 1, fontSize: 13, color: Colors.danger, lineHeight: 19,
+    fontFamily: font.body, flex: 1, fontSize: 13, color: color.clay, lineHeight: 19,
   },
   fieldLabel: {
-    fontSize: 13, color: Colors.textSecondary, marginBottom: 8,
+    fontFamily: font.bodyMed, fontSize: 13, color: color.inkSoft, marginBottom: 8,
   },
   passwordRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.input, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line,
     marginBottom: 20,
   },
   passwordInput: {
-    flex: 1, padding: 16, fontSize: 15, color: Colors.textPrimary,
+    flex: 1, padding: 16, fontFamily: font.body, fontSize: 15, color: color.ink,
   },
   eyeBtn: { paddingHorizontal: 14 },
   deleteBtnConfirm: {
-    backgroundColor: Colors.danger, borderRadius: 14,
+    backgroundColor: color.clay, borderRadius: 14,
     paddingVertical: 16, alignItems: 'center',
   },
-  deleteBtnConfirmText: { fontSize: 15, fontWeight: '700', color: Colors.white },
+  deleteBtnConfirmText: { fontFamily: font.bodySemi, fontSize: 15, color: color.cream },
 });

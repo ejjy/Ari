@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 
 interface Props {
   message: string;
@@ -17,16 +17,17 @@ export default function ErrorBanner({ message }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(255,71,87,0.12)',
+    backgroundColor: color.clayTint,
     borderWidth: 1,
-    borderColor: Colors.danger,
+    borderColor: color.clay,
     borderRadius: 10,
     padding: 12,
     marginBottom: 16,
   },
   text: {
-    color: Colors.danger,
+    color: color.clay,
     fontSize: 13,
+    fontFamily: font.body,
     lineHeight: 18,
   },
 });

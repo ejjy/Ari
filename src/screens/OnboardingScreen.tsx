@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import { track } from '../lib/analytics';
@@ -96,7 +96,7 @@ export default function OnboardingScreen({ onComplete }: Props) {
       <View style={styles.slide}>
         <Animated.View style={[styles.emojiContainer, { transform: [{ scale }], opacity }]}>
           <View style={styles.emojiRing}>
-            <Icon name={item.icon} size={56} color={Colors.primary} />
+            <Icon name={item.icon} size={56} color={color.forest} />
           </View>
         </Animated.View>
         <Animated.Text style={[styles.title, { opacity }]}>{item.title}</Animated.Text>
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
   },
-  skipText: { fontSize: 15, color: Colors.textSecondary, fontWeight: '500' },
+  skipText: { fontSize: 15, color: color.inkSoft, fontFamily: font.bodyMed },
   slide: {
     width,
     alignItems: 'center',
@@ -191,26 +191,27 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(0,200,150,0.12)',
+    backgroundColor: color.cream2,
     borderWidth: 2,
-    borderColor: 'rgba(0,200,150,0.3)',
+    borderColor: color.forest,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emoji: { fontSize: 56 },
   title: {
     fontSize: 28,
-    fontWeight: '800',
-    color: Colors.textPrimary,
+    fontFamily: font.displayBold,
+    color: color.ink,
     textAlign: 'center',
     marginBottom: 16,
     letterSpacing: -0.5,
   },
   desc: {
     fontSize: 15,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textAlign: 'center',
     lineHeight: 22,
+    fontFamily: font.body,
   },
   footer: {
     paddingHorizontal: 24,
@@ -226,18 +227,18 @@ const styles = StyleSheet.create({
   dot: {
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
+    backgroundColor: color.forest,
   },
   nextBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: color.forest,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
   },
   nextText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.background,
+    fontFamily: font.bodyBold,
+    color: color.cream,
     letterSpacing: 0.3,
   },
 });

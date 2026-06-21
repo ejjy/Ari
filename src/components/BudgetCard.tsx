@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import ProgressBar from './ui/ProgressBar';
 import { getCategoryDef } from '../constants/categories';
 import { usePrivacy } from '../context/PrivacyContext';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon from './ui/Icon';
 import type { Budget } from '../types';
 
@@ -39,7 +39,7 @@ export default function BudgetCard({ budget, onDelete, onEdit }: Props) {
             accessibilityLabel="Edit budget"
             accessibilityRole="button"
           >
-            <Icon name="edit" size={14} color={Colors.textSecondary} />
+            <Icon name="edit" size={14} color={color.inkSoft} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => onDelete(budget.id)}
@@ -47,7 +47,7 @@ export default function BudgetCard({ budget, onDelete, onEdit }: Props) {
             accessibilityLabel="Delete budget"
             accessibilityRole="button"
           >
-            <Icon name="trash" size={14} color={Colors.danger} />
+            <Icon name="trash" size={14} color={color.clay} />
           </TouchableOpacity>
         </View>
       </View>
@@ -70,10 +70,10 @@ export default function BudgetCard({ budget, onDelete, onEdit }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 16,
     marginBottom: 12,
   },
@@ -93,12 +93,12 @@ const styles = StyleSheet.create({
   icon: { fontSize: 20 },
   info: { flex: 1 },
   catName: {
+    fontFamily: font.bodySemi,
     fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+    color: color.ink,
     marginBottom: 2,
   },
-  meta: { fontSize: 12, color: Colors.textSecondary },
+  meta: { fontFamily: font.body, fontSize: 12, color: color.inkSoft },
   actions: { flexDirection: 'row', gap: 4 },
   actionBtn: { padding: 6 },
   footer: {
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 8,
   },
-  pct: { fontSize: 12, color: Colors.textSecondary },
-  remaining: { fontSize: 12, color: Colors.textSecondary },
-  over: { color: Colors.danger, fontWeight: '600' },
+  pct: { fontFamily: font.body, fontSize: 12, color: color.inkSoft },
+  remaining: { fontFamily: font.body, fontSize: 12, color: color.inkSoft },
+  over: { color: color.clay, fontFamily: font.bodySemi },
 });

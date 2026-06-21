@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 
 interface Props {
   message?: string;
@@ -10,7 +10,7 @@ interface Props {
 export default function LoadingSpinner({ message, fullScreen }: Props) {
   return (
     <View style={[styles.container, fullScreen && styles.fullScreen]}>
-      <ActivityIndicator size="large" color={Colors.primary} />
+      <ActivityIndicator size="large" color={color.forest} />
       {message && <Text style={styles.message}>{message}</Text>}
     </View>
   );
@@ -24,11 +24,12 @@ const styles = StyleSheet.create({
   },
   fullScreen: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: color.cream,
   },
   message: {
     marginTop: 12,
     fontSize: 14,
-    color: Colors.textSecondary,
+    fontFamily: font.body,
+    color: color.inkSoft,
   },
 });

@@ -20,7 +20,7 @@ import DeleteConfirmSheet from '../components/DeleteConfirmSheet';
 import EmptyState from '../components/ui/EmptyState';
 import AnimatedFAB from '../components/ui/AnimatedFAB';
 import Icon from '../components/ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font, type as ftype } from '../theme/tokens';
 import { groupTransactionsByDate } from '../utils/dateHelpers';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useHaptics } from '../hooks/useHaptics';
@@ -110,6 +110,19 @@ export default function TransactionsScreen() {
           <TransactionItem
             transaction={item}
             onDelete={handleDeletePress}
+            onEdit={(t) =>
+              navigation.navigate('AddTransaction', {
+                editTransaction: {
+                  id: t.id,
+                  type: t.type,
+                  amount: t.amount,
+                  category: t.category,
+                  description: t.description,
+                  note: t.note,
+                  date: t.date,
+                },
+              })
+            }
             showDelete
           />
         )}
@@ -122,14 +135,14 @@ export default function TransactionsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={refresh}
-            tintColor={Colors.primary}
-            colors={[Colors.primary]}
+            tintColor={color.forest}
+            colors={[color.forest]}
           />
         }
         ListHeaderComponent={
           <View>
             {/* Header */}
-            <Text style={styles.screenTitle}>Transactions</Text>
+            <Text style={styles.screenTitle}>Trends</Text>
 
             {/* Summary Pills */}
             <View style={styles.pills}>
@@ -145,14 +158,14 @@ export default function TransactionsScreen() {
 
             {/* Search */}
             <View style={styles.searchRow}>
-              <Icon name="search" size={16} color={Colors.textMuted} />
+              <Icon name="search" size={16} color={color.inkFaint} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search transactions..."
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 value={search}
                 onChangeText={setSearch}
-                selectionColor={Colors.primary}
+                selectionColor={color.forest}
                 accessibilityLabel="Search transactions"
               />
               {search.length > 0 && (
@@ -161,7 +174,7 @@ export default function TransactionsScreen() {
                   accessibilityLabel="Clear search"
                   accessibilityRole="button"
                 >
-                  <Icon name="x" size={18} color={Colors.textSecondary} />
+                  <Icon name="x" size={18} color={color.inkSoft} />
                 </TouchableOpacity>
               )}
             </View>
@@ -228,15 +241,14 @@ export default function TransactionsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   listContent: { paddingHorizontal: 20 },
   screenTitle: {
+    fontFamily: font.displayBold,
     fontSize: 26,
-    fontWeight: '800',
-    color: Colors.textPrimary,
+    color: color.ink,
     marginTop: 8,
     marginBottom: 16,
-    letterSpacing: -0.5,
   },
   pills: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   pill: {
@@ -244,43 +256,44 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
+    backgroundColor: color.card,
   },
-  incomePill: { backgroundColor: 'rgba(0,200,150,0.08)' },
-  expensePill: { backgroundColor: 'rgba(255,71,87,0.08)' },
-  pillLabel: { fontSize: 11, color: Colors.textSecondary, marginBottom: 4 },
-  pillIncome: { fontSize: 16, fontWeight: '700', color: Colors.primary },
-  pillExpense: { fontSize: 16, fontWeight: '700', color: Colors.danger },
+  incomePill: {},
+  expensePill: {},
+  pillLabel: { fontFamily: font.body, fontSize: 11, color: color.inkSoft, marginBottom: 4 },
+  pillIncome: { fontFamily: font.bodySemi, fontSize: 16, color: color.forest2 },
+  pillExpense: { fontFamily: font.bodySemi, fontSize: 16, color: color.clay },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     paddingHorizontal: 12,
     marginBottom: 12,
     gap: 8,
   },
   searchIcon: { fontSize: 16 },
-  searchInput: { flex: 1, paddingVertical: 12, fontSize: 14, color: Colors.textPrimary },
+  searchInput: { flex: 1, paddingVertical: 12, fontFamily: font.body, fontSize: ftype.body, color: color.ink },
   filters: { flexDirection: 'row', gap: 8, marginBottom: 20 },
   filterBtn: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
-  filterBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  filterText: { fontSize: 13, color: Colors.textSecondary, fontWeight: '500' },
-  filterTextActive: { color: Colors.background, fontWeight: '600' },
+  filterBtnActive: { backgroundColor: color.forest, borderColor: color.forest },
+  filterText: { fontFamily: font.bodyMed, fontSize: 13, color: color.inkSoft },
+  filterTextActive: { color: color.cream, fontFamily: font.bodySemi },
   dateHeader: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    fontFamily: font.bodySemi,
+    fontSize: 11,
+    color: color.inkFaint,
+    letterSpacing: 0.8,
     marginBottom: 8,
     marginTop: 4,
     textTransform: 'uppercase',

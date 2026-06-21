@@ -12,7 +12,7 @@ import { getPlans, createSubscription, type Plan, type PlanKey } from '../api/bi
 import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import Icon from '../components/ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import { track } from '../lib/analytics';
 
@@ -95,7 +95,7 @@ function WaitlistPlaceholder({ onClose }: { onClose: () => void }) {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onClose} hitSlop={8}>
-          <Icon name="x" size={22} color={Colors.textPrimary} />
+          <Icon name="x" size={22} color={color.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>Premium</Text>
         <View style={{ width: 22 }} />
@@ -112,32 +112,32 @@ function WaitlistPlaceholder({ onClose }: { onClose: () => void }) {
         {submitted ? (
           <View style={styles.planCard}>
             <View style={styles.bulletRow}>
-              <Icon name="check-circle" size={16} color={Colors.primary} />
-              <Text style={[styles.bulletText, { color: Colors.textPrimary }]}>
-                You&apos;re on the list as <Text style={{ fontWeight: '700' }}>{email}</Text>
+              <Icon name="check-circle" size={16} color={color.forest} />
+              <Text style={[styles.bulletText, { color: color.ink }]}>
+                You&apos;re on the list as <Text style={{ fontFamily: font.bodyBold }}>{email}</Text>
               </Text>
             </View>
             <Text style={[styles.fine, { textAlign: 'left', marginTop: 8 }]}>
               Want to update? Tap below.
             </Text>
             <TouchableOpacity onPress={() => setSubmitted(false)} style={{ marginTop: 8 }}>
-              <Text style={{ color: Colors.primary, fontSize: 13 }}>Change email</Text>
+              <Text style={{ color: color.forest, fontSize: 13 }}>Change email</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.planCard}>
-            <Text style={{ color: Colors.textSecondary, fontSize: 12, marginBottom: 6 }}>EMAIL</Text>
+            <Text style={{ color: color.inkSoft, fontSize: 12, marginBottom: 6 }}>EMAIL</Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
               placeholder="you@example.com"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={color.inkFaint}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
               style={{
-                color: Colors.textPrimary, fontSize: 15, paddingVertical: 8,
-                borderBottomWidth: 1, borderBottomColor: Colors.border,
+                color: color.ink, fontSize: 15, paddingVertical: 8,
+                borderBottomWidth: 1, borderBottomColor: color.line,
               }}
             />
             <Button onPress={handleJoin} fullWidth style={{ marginTop: 16 }}>
@@ -217,7 +217,7 @@ function LivePaywallScreen() {
         name: 'Ari',
         description: plan?.name ?? 'Subscription',
         image: 'https://web-production-7c65f.up.railway.app/static/icon.png',
-        theme: { color: Colors.primary },
+        theme: { color: color.forest },
         prefill: {
           name: user.name,
           email: user.email ?? '',
@@ -273,14 +273,14 @@ function LivePaywallScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
-          <Icon name="x" size={22} color={Colors.textPrimary} />
+          <Icon name="x" size={22} color={color.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>Upgrade Ari</Text>
         <View style={{ width: 22 }} />
       </View>
 
       {loading ? (
-        <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
+        <ActivityIndicator color={color.forest} style={{ marginTop: 40 }} />
       ) : (
         <ScrollView contentContainerStyle={styles.scroll}>
           <Text style={styles.subtitle}>
@@ -302,7 +302,7 @@ function LivePaywallScreen() {
                 accessibilityLabel={`${p.name}, ₹${p.price} per month`}
               >
                 <View style={styles.planHeader}>
-                  <Text style={[styles.planName, isSelected && { color: Colors.primary }]}>
+                  <Text style={[styles.planName, isSelected && { color: color.forest }]}>
                     {p.name}
                   </Text>
                   <Text style={styles.planPrice}>
@@ -312,7 +312,7 @@ function LivePaywallScreen() {
                 </View>
                 {PLAN_BULLETS[p.key].map((b, i) => (
                   <View key={i} style={styles.bulletRow}>
-                    <Icon name="check-circle" size={14} color={Colors.primary} />
+                    <Icon name="check-circle" size={14} color={color.forest} />
                     <Text style={styles.bulletText}>{b}</Text>
                   </View>
                 ))}
@@ -350,35 +350,35 @@ export default function PaywallScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    borderBottomWidth: 1, borderColor: color.line,
   },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  title: { fontSize: 17, fontFamily: font.displayBold, color: color.ink },
   scroll: { padding: 20, paddingBottom: 48 },
-  subtitle: { fontSize: 14, color: Colors.textSecondary, marginBottom: 18 },
+  subtitle: { fontSize: 14, color: color.inkSoft, marginBottom: 18 },
   planCard: {
-    backgroundColor: Colors.card,
-    borderRadius: 16, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card,
+    borderRadius: 16, borderWidth: 1, borderColor: color.line,
     padding: 16, marginBottom: 12,
   },
   planCardSelected: {
-    borderColor: Colors.primary,
-    backgroundColor: 'rgba(0,200,150,0.06)',
+    borderColor: color.forest,
+    backgroundColor: color.cream2,
   },
   planHeader: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'flex-end', marginBottom: 10,
   },
-  planName: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
-  planPrice: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
-  planPriceSub: { fontSize: 12, fontWeight: '500', color: Colors.textSecondary },
+  planName: { fontSize: 17, fontFamily: font.displayBold, color: color.ink },
+  planPrice: { fontSize: 20, fontFamily: font.displayBold, color: color.ink },
+  planPriceSub: { fontSize: 12, fontFamily: font.bodyMed, color: color.inkSoft },
   bulletRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 3 },
-  bulletText: { fontSize: 13, color: Colors.textSecondary, flex: 1 },
+  bulletText: { fontSize: 13, color: color.inkSoft, flex: 1 },
   fine: {
-    fontSize: 11, color: Colors.textMuted, textAlign: 'center',
+    fontSize: 11, color: color.inkFaint, textAlign: 'center',
     marginTop: 16, lineHeight: 16,
   },
 });

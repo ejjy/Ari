@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
@@ -35,7 +35,7 @@ export default function AboutScreen({ onBack }: Props) {
         <AnimatedEntry delay={100}>
           <View style={styles.logoSection}>
             <View style={styles.logoRing}>
-              <Icon name="sprout" size={40} color={Colors.primary} />
+              <Icon name="sprout" size={40} color={color.forest} />
             </View>
             <Text style={styles.appName}>Ari</Text>
             <Text style={styles.version}>Version 1.0.0</Text>
@@ -75,7 +75,7 @@ export default function AboutScreen({ onBack }: Props) {
               { icon: 'flag' as IconName, text: 'Built for India' },
             ]).map((f) => (
               <View key={f.text} style={styles.featureRow}>
-                <Icon name={f.icon} size={20} color={Colors.primary} />
+                <Icon name={f.icon} size={20} color={color.forest} />
                 <Text style={styles.featureText}>{f.text}</Text>
               </View>
             ))}
@@ -93,7 +93,7 @@ export default function AboutScreen({ onBack }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -101,19 +101,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
-  backText: { fontSize: 16, color: Colors.textSecondary },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  backText: { fontSize: 16, color: color.inkSoft, fontFamily: font.body },
+  title: { fontSize: 17, fontFamily: font.bodyBold, color: color.ink },
   content: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 40, gap: 20 },
   logoSection: { alignItems: 'center', marginBottom: 8 },
   logoRing: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(0,200,150,0.15)',
+    backgroundColor: color.cream2,
     borderWidth: 2,
-    borderColor: 'rgba(0,200,150,0.4)',
+    borderColor: color.forest,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -121,38 +121,39 @@ const styles = StyleSheet.create({
   logoEmoji: { fontSize: 40 },
   appName: {
     fontSize: 36,
-    fontWeight: '800',
-    color: Colors.primary,
+    fontFamily: font.displayBold,
+    color: color.forest,
     letterSpacing: -1,
     marginBottom: 4,
   },
-  version: { fontSize: 14, color: Colors.textMuted, marginBottom: 8 },
-  tagline: { fontSize: 15, color: Colors.textSecondary },
+  version: { fontSize: 14, color: color.inkFaint, marginBottom: 8, fontFamily: font.body },
+  tagline: { fontSize: 15, color: color.inkSoft, fontFamily: font.body },
   card: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 20,
     gap: 8,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
-  cardText: { fontSize: 14, color: Colors.textSecondary, lineHeight: 20 },
+  cardTitle: { fontSize: 16, fontFamily: font.bodyBold, color: color.ink },
+  cardText: { fontSize: 14, color: color.inkSoft, lineHeight: 20, fontFamily: font.body },
   featuresCard: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 16,
     gap: 12,
   },
   featureRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   featureEmoji: { fontSize: 20, width: 28, textAlign: 'center' },
-  featureText: { fontSize: 14, color: Colors.textSecondary },
+  featureText: { fontSize: 14, color: color.inkSoft, fontFamily: font.body },
   madeWith: {
     fontSize: 13,
-    color: Colors.textMuted,
+    color: color.inkFaint,
     textAlign: 'center',
     marginTop: 8,
+    fontFamily: font.body,
   },
 });

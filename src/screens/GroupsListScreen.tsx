@@ -9,7 +9,7 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import Icon from '../components/ui/Icon';
 import Button from '../components/ui/Button';
 import EmptyState from '../components/ui/EmptyState';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import { listGroups, createGroup, joinByCode, type GroupSummary } from '../api/groups';
 import type { MainStackParamList } from '../navigation/navigationTypes';
@@ -74,7 +74,7 @@ export default function GroupsListScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>Shared expenses</Text>
         <View style={{ width: 22 }} />
@@ -87,7 +87,7 @@ export default function GroupsListScreen() {
             activeOpacity={0.8}
             onPress={() => { haptics.light(); setShowCreate((v) => !v); setShowJoin(false); }}
           >
-            <Icon name="plus" size={20} color={Colors.primary} />
+            <Icon name="plus" size={20} color={color.forest} />
             <Text style={styles.actionLabel}>Create group</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -95,7 +95,7 @@ export default function GroupsListScreen() {
             activeOpacity={0.8}
             onPress={() => { haptics.light(); setShowJoin((v) => !v); setShowCreate(false); }}
           >
-            <Icon name="user" size={20} color={Colors.accent} />
+            <Icon name="user" size={20} color={color.gold} />
             <Text style={styles.actionLabel}>Join by code</Text>
           </TouchableOpacity>
         </View>
@@ -106,7 +106,7 @@ export default function GroupsListScreen() {
             <TextInput
               style={styles.input}
               placeholder="Trip to Goa"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={color.inkFaint}
               value={name}
               onChangeText={setName}
               autoFocus
@@ -119,9 +119,9 @@ export default function GroupsListScreen() {
           <View style={styles.inlineForm}>
             <Text style={styles.inputLabel}>Invite code</Text>
             <TextInput
-              style={[styles.input, { letterSpacing: 4, fontWeight: '700', textAlign: 'center' }]}
+              style={[styles.input, { letterSpacing: 4, fontFamily: font.bodyBold, textAlign: 'center' }]}
               placeholder="XXXXXXXX"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={color.inkFaint}
               value={code}
               onChangeText={(v) => setCode(v.toUpperCase().slice(0, 8))}
               autoCapitalize="characters"
@@ -134,7 +134,7 @@ export default function GroupsListScreen() {
         )}
 
         {loading ? (
-          <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
+          <ActivityIndicator color={color.forest} style={{ marginTop: 40 }} />
         ) : groups.length === 0 ? (
           <View style={{ marginTop: 40 }}>
             <EmptyState
@@ -160,7 +160,7 @@ export default function GroupsListScreen() {
                   {g.memberCount} {g.memberCount === 1 ? 'member' : 'members'}
                 </Text>
               </View>
-              <Icon name="chevron-right" size={18} color={Colors.textMuted} />
+              <Icon name="chevron-right" size={18} color={color.inkFaint} />
             </TouchableOpacity>
           ))
         )}
@@ -170,43 +170,43 @@ export default function GroupsListScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    borderBottomWidth: 1, borderColor: color.line,
   },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  title: { fontSize: 17, fontFamily: font.displayBold, color: color.ink },
   scroll: { padding: 20, paddingBottom: 40 },
   actions: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   actionCard: {
     flex: 1, padding: 16, borderRadius: 12,
-    backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderWidth: 1, borderColor: color.line,
     alignItems: 'center', gap: 6,
   },
-  actionLabel: { fontSize: 13, fontWeight: '600', color: Colors.textPrimary },
+  actionLabel: { fontSize: 13, fontFamily: font.bodySemi, color: color.ink },
   inlineForm: {
-    backgroundColor: Colors.card, borderRadius: 12, padding: 16,
-    borderWidth: 1, borderColor: Colors.border, marginBottom: 16, gap: 8,
+    backgroundColor: color.card, borderRadius: 12, padding: 16,
+    borderWidth: 1, borderColor: color.line, marginBottom: 16, gap: 8,
   },
-  inputLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
+  inputLabel: { fontSize: 12, color: color.inkSoft, fontFamily: font.bodySemi },
   input: {
-    backgroundColor: Colors.input, borderRadius: 10, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2, borderRadius: 10, borderWidth: 1, borderColor: color.line,
     paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 15, color: Colors.textPrimary, marginBottom: 8,
+    fontSize: 15, color: color.ink, marginBottom: 8,
   },
   groupCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     padding: 14, borderRadius: 12,
-    backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderWidth: 1, borderColor: color.line,
     marginBottom: 10,
   },
   groupIcon: {
     width: 44, height: 44, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
   },
   groupEmoji: { fontSize: 22 },
-  groupName: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
-  groupSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  groupName: { fontSize: 15, fontFamily: font.bodySemi, color: color.ink },
+  groupSub: { fontSize: 12, color: color.inkSoft, marginTop: 2 },
 });

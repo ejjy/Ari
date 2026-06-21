@@ -9,14 +9,27 @@ export type AuthStackParamList = {
 export type TabParamList = {
   Dashboard: undefined;
   Transactions: undefined;
-  Budget: undefined;
+  Add: undefined;      // FAB placeholder — button navigates to AddTransaction
   Tomo: undefined;
   Settings: undefined;
 };
 
 export type MainStackParamList = {
   Tabs: NavigatorScreenParams<TabParamList>;
-  AddTransaction: { type?: 'expense' | 'income' } | undefined;
+  AddTransaction:
+    | { type?: 'expense' | 'income' }
+    | {
+        editTransaction: {
+          id: string;
+          type: 'expense' | 'income';
+          amount: number;
+          category: string;
+          description: string;
+          note: string;
+          date: string;
+        };
+      }
+    | undefined;
   // Accountant feature
   Accountant: undefined;
   SmartLedger: undefined;

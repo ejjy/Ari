@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 
 interface Props {
   value: 'expense' | 'income';
@@ -35,11 +35,11 @@ export default function TypeToggle({ value, onChange }: Props) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
     borderRadius: 12,
     padding: 4,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     marginBottom: 20,
   },
   btn: {
@@ -49,20 +49,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   expenseActive: {
-    backgroundColor: Colors.danger,
+    backgroundColor: color.clay,
   },
   incomeActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: color.forest,
   },
   text: {
     fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textSecondary,
+    fontFamily: font.bodySemi,
+    color: color.inkSoft,
   },
   activeText: {
-    color: Colors.white,
+    color: color.cream,
   },
   incomeText: {
-    color: Colors.background,
+    color: color.cream,
   },
 });

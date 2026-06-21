@@ -14,7 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import Icon from '../components/ui/Icon';
@@ -168,7 +168,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={color.forest} />
         </View>
       </SafeAreaView>
     );
@@ -179,11 +179,11 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Manage Categories</Text>
         <TouchableOpacity onPress={handleAdd} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Icon name="plus" size={22} color={Colors.primary} />
+          <Icon name="plus" size={22} color={color.forest} />
         </TouchableOpacity>
       </View>
 
@@ -205,7 +205,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
       <ScrollView
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.forest} />}
       >
         {/* Default categories */}
         <Text style={styles.sectionLabel}>DEFAULT</Text>
@@ -219,7 +219,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
                 <Text style={styles.catName}>{cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}</Text>
                 <Text style={styles.catBadge}>Default</Text>
               </View>
-              <Icon name="edit" size={16} color={Colors.textMuted} />
+              <Icon name="edit" size={16} color={color.inkFaint} />
             </TouchableOpacity>
           </AnimatedEntry>
         ))}
@@ -237,11 +237,11 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
                     </View>
                     <View style={styles.catInfo}>
                       <Text style={styles.catName}>{cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}</Text>
-                      <Text style={[styles.catBadge, { color: Colors.primary }]}>Custom</Text>
+                      <Text style={[styles.catBadge, { color: color.forest }]}>Custom</Text>
                     </View>
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => handleDelete(cat)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                    <Icon name="trash" size={16} color={Colors.danger} />
+                    <Icon name="trash" size={16} color={color.clay} />
                   </TouchableOpacity>
                 </View>
               </AnimatedEntry>
@@ -251,7 +251,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
 
         {/* Add button */}
         <TouchableOpacity style={styles.addBtn} onPress={handleAdd} activeOpacity={0.8}>
-          <Icon name="plus" size={18} color={Colors.primary} />
+          <Icon name="plus" size={18} color={color.forest} />
           <Text style={styles.addBtnText}>Add Custom Category</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -268,7 +268,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
                 {editingCat ? 'Edit Category' : 'New Category'}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                <Icon name="x" size={22} color={Colors.textSecondary} />
+                <Icon name="x" size={22} color={color.inkSoft} />
               </TouchableOpacity>
             </View>
 
@@ -277,7 +277,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
             <TextInput
               style={[styles.input, editingCat?.isDefault && styles.inputDisabled]}
               placeholder="e.g. Groceries, Pet, Gym..."
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={color.inkFaint}
               value={formName}
               onChangeText={setFormName}
               maxLength={30}
@@ -315,7 +315,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
                   style={[styles.colorOption, { backgroundColor: c }, formColor === c && styles.colorSelected]}
                   onPress={() => { haptics.light(); setFormColor(c); }}
                 >
-                  {formColor === c && <Icon name="check-circle" size={16} color={Colors.white} />}
+                  {formColor === c && <Icon name="check-circle" size={16} color={color.cream} />}
                 </TouchableOpacity>
               ))}
             </View>
@@ -338,7 +338,7 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
               activeOpacity={0.8}
             >
               {saving ? (
-                <ActivityIndicator color={Colors.background} size="small" />
+                <ActivityIndicator color={color.cream} size="small" />
               ) : (
                 <Text style={styles.saveBtnText}>
                   {editingCat ? 'Save Changes' : 'Create Category'}
@@ -353,37 +353,37 @@ export default function ManageCategoriesScreen({ onBack }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
   },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
+  headerTitle: { fontSize: 18, fontFamily: font.bodyBold, color: color.ink },
 
   // Tabs
   tabs: {
     flexDirection: 'row', marginHorizontal: 20, marginBottom: 16,
-    backgroundColor: Colors.card, borderRadius: 12, padding: 4,
+    backgroundColor: color.card, borderRadius: 12, padding: 4,
   },
   tab: {
     flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: 'center',
   },
-  tabActive: { backgroundColor: Colors.primary },
-  tabText: { fontSize: 14, fontWeight: '600', color: Colors.textMuted },
-  tabTextActive: { color: Colors.background },
+  tabActive: { backgroundColor: color.forest },
+  tabText: { fontSize: 14, fontFamily: font.bodySemi, color: color.inkFaint },
+  tabTextActive: { color: color.cream },
 
   listContent: { paddingHorizontal: 20, paddingBottom: 40 },
 
   sectionLabel: {
-    fontSize: 12, fontWeight: '700', color: Colors.textMuted,
+    fontSize: 12, fontFamily: font.bodyBold, color: color.inkFaint,
     letterSpacing: 1, marginBottom: 12,
   },
 
   catRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: Colors.card, borderRadius: 14,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 14,
+    borderWidth: 1, borderColor: color.line,
     padding: 14, marginBottom: 8,
   },
   catEmoji: {
@@ -392,23 +392,23 @@ const styles = StyleSheet.create({
   },
   emojiText: { fontSize: 20 },
   catInfo: { flex: 1 },
-  catName: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
-  catBadge: { fontSize: 11, color: Colors.textMuted, marginTop: 2 },
+  catName: { fontSize: 15, fontFamily: font.bodySemi, color: color.ink },
+  catBadge: { fontSize: 11, color: color.inkFaint, marginTop: 2, fontFamily: font.body },
 
   addBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, borderWidth: 1.5, borderColor: Colors.primary,
+    gap: 8, borderWidth: 1.5, borderColor: color.forest,
     borderStyle: 'dashed', borderRadius: 14,
     paddingVertical: 16, marginTop: 16,
   },
-  addBtnText: { fontSize: 15, fontWeight: '600', color: Colors.primary },
+  addBtnText: { fontSize: 15, fontFamily: font.bodySemi, color: color.forest },
 
   // Modal
   modalOverlay: {
-    flex: 1, backgroundColor: Colors.overlay, justifyContent: 'flex-end',
+    flex: 1, backgroundColor: 'rgba(35,41,31,0.55)', justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: Colors.card, borderTopLeftRadius: 24,
+    backgroundColor: color.card, borderTopLeftRadius: 24,
     borderTopRightRadius: 24, padding: 24, paddingBottom: 40,
     maxHeight: '85%',
   },
@@ -416,26 +416,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
+  modalTitle: { fontSize: 20, fontFamily: font.bodyBold, color: color.ink },
 
   fieldLabel: {
-    fontSize: 13, fontWeight: '600', color: Colors.textSecondary, marginBottom: 8,
+    fontSize: 13, fontFamily: font.bodySemi, color: color.inkSoft, marginBottom: 8,
   },
   input: {
-    backgroundColor: Colors.input, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
-    padding: 14, fontSize: 15, color: Colors.textPrimary,
+    backgroundColor: color.cream2, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line,
+    padding: 14, fontSize: 15, color: color.ink, fontFamily: font.body,
   },
   inputDisabled: { opacity: 0.5 },
-  hintText: { fontSize: 12, color: Colors.textMuted, marginTop: 4 },
+  hintText: { fontSize: 12, color: color.inkFaint, marginTop: 4, fontFamily: font.body },
 
   emojiGrid: { gap: 8, paddingVertical: 4 },
   emojiOption: {
     width: 44, height: 44, borderRadius: 12,
-    backgroundColor: Colors.input, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: color.cream2, alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'transparent',
   },
-  emojiSelected: { borderColor: Colors.primary, backgroundColor: Colors.primary + '20' },
+  emojiSelected: { borderColor: color.forest, backgroundColor: color.cream2 },
   emojiOptionText: { fontSize: 22 },
 
   colorGrid: {
@@ -446,17 +446,17 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'transparent',
   },
-  colorSelected: { borderColor: Colors.white, transform: [{ scale: 1.15 }] },
+  colorSelected: { borderColor: color.cream, transform: [{ scale: 1.15 }] },
 
   previewRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: Colors.input, borderRadius: 14, padding: 14, marginBottom: 20,
+    backgroundColor: color.cream2, borderRadius: 14, padding: 14, marginBottom: 20,
   },
-  previewName: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary },
+  previewName: { fontSize: 16, fontFamily: font.bodySemi, color: color.ink },
 
   saveBtn: {
-    backgroundColor: Colors.primary, borderRadius: 14,
+    backgroundColor: color.forest, borderRadius: 14,
     paddingVertical: 16, alignItems: 'center',
   },
-  saveBtnText: { fontSize: 16, fontWeight: '700', color: Colors.background },
+  saveBtnText: { fontSize: 16, fontFamily: font.bodyBold, color: color.cream },
 });

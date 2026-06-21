@@ -14,7 +14,7 @@ import CategoryPicker from '../../components/CategoryPicker';
 import DeleteConfirmSheet from '../../components/DeleteConfirmSheet';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import ProgressBar from '../../components/ui/ProgressBar';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import { useData } from '../../context/DataContext';
@@ -148,28 +148,28 @@ export default function BudgetPlannerScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>Budget Planner</Text>
           <Text style={styles.headerSub}>Monthly targets & tracking</Text>
         </View>
         <TouchableOpacity onPress={openAdd} style={styles.addBtnHeader}>
-          <Icon name="plus" size={18} color={Colors.background} />
+          <Icon name="plus" size={18} color={color.cream} />
         </TouchableOpacity>
       </View>
 
       {/* Month Navigator */}
       <View style={styles.monthNav}>
         <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.monthArrow}>
-          <Icon name="chevron-left" size={22} color={Colors.textPrimary} />
+          <Icon name="chevron-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setMonth(getCurrentMonth())} activeOpacity={0.7}>
           <Text style={styles.monthLabel}>{monthLabel}</Text>
           {!isCurrentMonth && <Text style={styles.monthHint}>Tap to go to current</Text>}
         </TouchableOpacity>
         <TouchableOpacity onPress={() => changeMonth(1)} style={styles.monthArrow}>
-          <Icon name="chevron-right" size={22} color={Colors.textPrimary} />
+          <Icon name="chevron-right" size={22} color={color.ink} />
         </TouchableOpacity>
       </View>
 
@@ -178,7 +178,7 @@ export default function BudgetPlannerScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh}
-            tintColor={Colors.primary} colors={[Colors.primary]} />
+            tintColor={color.forest} colors={[color.forest]} />
         }
       >
         {loading ? <LoadingSpinner /> : (
@@ -195,14 +195,14 @@ export default function BudgetPlannerScreen() {
                     <View style={styles.summaryDivider} />
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Spent</Text>
-                      <Text style={[styles.summaryValue, totalSpent > totalBudget && { color: Colors.danger }]}>
+                      <Text style={[styles.summaryValue, totalSpent > totalBudget && { color: color.clay }]}>
                         {formatAmount(totalSpent)}
                       </Text>
                     </View>
                     <View style={styles.summaryDivider} />
                     <View style={styles.summaryItem}>
                       <Text style={styles.summaryLabel}>Remaining</Text>
-                      <Text style={[styles.summaryValue, { color: totalRemaining >= 0 ? Colors.primary : Colors.danger }]}>
+                      <Text style={[styles.summaryValue, { color: totalRemaining >= 0 ? color.forest : color.clay }]}>
                         {formatAmount(Math.abs(totalRemaining))}
                       </Text>
                     </View>
@@ -213,7 +213,7 @@ export default function BudgetPlannerScreen() {
                     <View style={[
                       styles.overallBarFill,
                       { width: `${Math.min(overallPct, 100)}%` },
-                      overallPct > 100 && { backgroundColor: Colors.danger },
+                      overallPct > 100 && { backgroundColor: color.clay },
                     ]} />
                   </View>
 
@@ -272,9 +272,9 @@ export default function BudgetPlannerScreen() {
                 value={limit}
                 onChangeText={setLimit}
                 placeholder="5000"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 keyboardType="numeric"
-                selectionColor={Colors.primary}
+                selectionColor={color.forest}
                 returnKeyType="done"
                 onSubmitEditing={handleSave}
               />
@@ -304,10 +304,10 @@ export default function BudgetPlannerScreen() {
 // ---------------------------------------------------------------------------
 function BudgetCard({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () => void; onDelete: () => void }) {
   const { formatAmount } = usePrivacy();
-  const catInfo = CATEGORY_ICONS[budget.category] || { icon: 'package' as const, color: Colors.textMuted };
+  const catInfo = CATEGORY_ICONS[budget.category] || { icon: 'package' as const, color: color.inkFaint };
   const isOver = budget.percentage > 100;
   const isWarning = budget.percentage > 80 && budget.percentage <= 100;
-  const barColor = isOver ? Colors.danger : isWarning ? Colors.accent : Colors.primary;
+  const barColor = isOver ? color.clay : isWarning ? color.gold : color.forest;
 
   return (
     <View style={styles.budgetCard}>
@@ -321,10 +321,10 @@ function BudgetCard({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
         </View>
         <View style={styles.budgetActions}>
           <TouchableOpacity onPress={onEdit} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Icon name="edit" size={16} color={Colors.textMuted} />
+            <Icon name="edit" size={16} color={color.inkFaint} />
           </TouchableOpacity>
           <TouchableOpacity onPress={onDelete} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Icon name="trash" size={16} color={Colors.textMuted} />
+            <Icon name="trash" size={16} color={color.inkFaint} />
           </TouchableOpacity>
         </View>
       </View>
@@ -339,7 +339,7 @@ function BudgetCard({ budget, onEdit, onDelete }: { budget: Budget; onEdit: () =
         <View style={[styles.progressFill, { width: `${Math.min(budget.percentage, 100)}%`, backgroundColor: barColor }]} />
       </View>
 
-      <Text style={[styles.budgetRemaining, isOver && { color: Colors.danger }]}>
+      <Text style={[styles.budgetRemaining, isOver && { color: color.clay }]}>
         {isOver
           ? `Over by ${formatAmount(Math.abs(budget.remaining))}`
           : `${formatAmount(budget.remaining)} remaining`}
@@ -366,17 +366,17 @@ function formatMonthLabel(month: string): string {
 // Styles
 // ---------------------------------------------------------------------------
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20,
     paddingVertical: 14, gap: 12, borderBottomWidth: 1,
-    borderColor: Colors.border, backgroundColor: Colors.card,
+    borderColor: color.line, backgroundColor: color.card,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 18, fontFamily: font.bodyBold, color: color.ink },
+  headerSub: { fontSize: 12, color: color.inkSoft, marginTop: 2, fontFamily: font.body },
   addBtnHeader: {
-    backgroundColor: Colors.primary, width: 36, height: 36,
+    backgroundColor: color.forest, width: 36, height: 36,
     borderRadius: 18, alignItems: 'center', justifyContent: 'center',
   },
 
@@ -384,77 +384,77 @@ const styles = StyleSheet.create({
   monthNav: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 12,
-    backgroundColor: Colors.card, borderBottomWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderBottomWidth: 1, borderColor: color.line,
   },
   monthArrow: { padding: 8 },
-  monthLabel: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary, textAlign: 'center' },
-  monthHint: { fontSize: 10, color: Colors.primary, textAlign: 'center', marginTop: 2 },
+  monthLabel: { fontSize: 17, fontFamily: font.bodyBold, color: color.ink, textAlign: 'center' },
+  monthHint: { fontSize: 10, color: color.forest, textAlign: 'center', marginTop: 2, fontFamily: font.body },
 
   container: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
 
   // Summary
   summaryCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 20,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 20,
   },
   summaryRow: { flexDirection: 'row', alignItems: 'center' },
   summaryItem: { flex: 1, alignItems: 'center' },
-  summaryDivider: { width: 1, height: 36, backgroundColor: Colors.border },
-  summaryLabel: { fontSize: 11, color: Colors.textSecondary, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-  summaryValue: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  summaryDivider: { width: 1, height: 36, backgroundColor: color.line },
+  summaryLabel: { fontSize: 11, color: color.inkSoft, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5, fontFamily: font.body },
+  summaryValue: { fontSize: 16, fontFamily: font.bodyBold, color: color.ink },
   overallBarBg: {
-    height: 6, backgroundColor: Colors.input, borderRadius: 3, marginTop: 14, overflow: 'hidden',
+    height: 6, backgroundColor: color.cream2, borderRadius: 3, marginTop: 14, overflow: 'hidden',
   },
-  overallBarFill: { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
+  overallBarFill: { height: '100%', backgroundColor: color.forest, borderRadius: 3 },
   overWarning: {
-    marginTop: 10, backgroundColor: 'rgba(255,71,87,0.1)', borderRadius: 8,
-    padding: 8, borderWidth: 1, borderColor: 'rgba(255,71,87,0.3)',
+    marginTop: 10, backgroundColor: color.clayTint, borderRadius: 8,
+    padding: 8, borderWidth: 1, borderColor: color.clay,
   },
-  overWarningText: { fontSize: 12, color: Colors.danger, textAlign: 'center', fontWeight: '600' },
+  overWarningText: { fontSize: 12, color: color.clay, textAlign: 'center', fontFamily: font.bodySemi },
 
   // Budget Card
   budgetCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 12,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 12,
   },
   budgetTopRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   catIconWrap: {
     width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
   },
-  catName: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary },
-  budgetLimit: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  catName: { fontSize: 15, fontFamily: font.bodyBold, color: color.ink },
+  budgetLimit: { fontSize: 12, color: color.inkSoft, marginTop: 2, fontFamily: font.body },
   budgetActions: { flexDirection: 'row', gap: 14 },
   budgetProgressRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 14,
   },
-  budgetSpent: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  budgetPct: { fontSize: 13, fontWeight: '700' },
+  budgetSpent: { fontSize: 14, fontFamily: font.bodySemi, color: color.ink },
+  budgetPct: { fontSize: 13, fontFamily: font.bodyBold },
   progressBg: {
-    height: 8, backgroundColor: Colors.input, borderRadius: 4, marginTop: 8, overflow: 'hidden',
+    height: 8, backgroundColor: color.cream2, borderRadius: 4, marginTop: 8, overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: 4 },
   budgetRemaining: {
-    fontSize: 12, color: Colors.textSecondary, marginTop: 8,
+    fontSize: 12, color: color.inkSoft, marginTop: 8, fontFamily: font.body,
   },
 
   // Modals
-  modalOverlay: { flex: 1, backgroundColor: Colors.overlay },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(35,41,31,0.55)' },
   modalSheet: {
-    backgroundColor: Colors.card, borderTopLeftRadius: 24,
+    backgroundColor: color.card, borderTopLeftRadius: 24,
     borderTopRightRadius: 24, padding: 24, paddingBottom: 40,
-    borderTopWidth: 1, borderColor: Colors.border,
+    borderTopWidth: 1, borderColor: color.line,
   },
   modalHandle: {
-    width: 40, height: 4, backgroundColor: Colors.border,
+    width: 40, height: 4, backgroundColor: color.line,
     borderRadius: 2, alignSelf: 'center', marginBottom: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
-  fieldLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600', marginBottom: 10 },
+  modalTitle: { fontSize: 20, fontFamily: font.bodyBold, color: color.ink, marginBottom: 20 },
+  fieldLabel: { fontSize: 13, color: color.inkSoft, fontFamily: font.bodySemi, marginBottom: 10 },
   amountRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: Colors.input, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 14,
+    backgroundColor: color.cream2, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line, paddingHorizontal: 14,
   },
-  rupee: { fontSize: 22, fontWeight: '700', color: Colors.textMuted },
-  amountInput: { flex: 1, fontSize: 24, fontWeight: '700', color: Colors.textPrimary, paddingVertical: 12 },
+  rupee: { fontSize: 22, fontFamily: font.bodyBold, color: color.inkFaint },
+  amountInput: { flex: 1, fontSize: 24, fontFamily: font.bodyBold, color: color.ink, paddingVertical: 12 },
 });

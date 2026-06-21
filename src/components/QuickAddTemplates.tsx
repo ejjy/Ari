@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon, { CATEGORY_ICONS } from './ui/Icon';
 import type { Category, TransactionType } from '../types';
 
@@ -75,11 +75,11 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingHorizontal: 12, paddingVertical: 8,
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
     borderRadius: 20,
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: color.line,
   },
   chipText: {
-    fontSize: 13, color: Colors.textPrimary, fontWeight: '600',
+    fontSize: 13, color: color.ink, fontFamily: font.bodySemi,
   },
 });

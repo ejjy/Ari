@@ -142,6 +142,7 @@ export type AnalyticsEvent =
   | 'consent_accepted'
   | 'account_deleted'
   | 'transaction_logged'
+  | 'transaction_edited'
   | 'expense_logged'
   | 'expense_logged_voice'
   | 'expense_parsed_local'

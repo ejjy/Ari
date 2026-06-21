@@ -390,6 +390,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       });
       if (!updated) return; // row disappeared — nothing to do
       setTransactions(await localStore.getAll());
+      track('transaction_edited', {
+        type: patch.type,
+        amount_bucket: patch.amount != null ? bucketAmount(patch.amount) : undefined,
+        category: patch.category,
+      });
 
       // Inline flush: PUT with the pre-edit updatedAt as the LWW baseline.
       // 409 (stale baseline) is handled by the sync engine's conflict pass;

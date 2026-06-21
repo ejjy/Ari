@@ -159,7 +159,9 @@ export function startAutoFlush(onChange: () => void): () => void {
 
     // If work remains, schedule an exponential-backoff retry with jitter so a
     // fleet of clients reconnecting at once doesn't thunder the server.
-    const remaining = (await localStore.getPending()).length;
+    const remaining = (await localStore.getPending()).filter(
+      (r) => !(r.syncStatus === 'failed' && r.retryCount >= GIVE_UP_AFTER)
+    ).length;
     if (remaining > 0) {
       failureStreak = Math.min(failureStreak + 1, 8);
       const base = Math.min(BASE_BACKOFF_MS * 2 ** (failureStreak - 1), MAX_BACKOFF_MS);

@@ -21,7 +21,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import Button from '../components/ui/Button';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { usePrivacy } from '../context/PrivacyContext';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
@@ -112,8 +112,8 @@ export default function BudgetScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={refresh}
-            tintColor={Colors.primary}
-            colors={[Colors.primary]}
+            tintColor={color.forest}
+            colors={[color.forest]}
           />
         }
       >
@@ -218,10 +218,10 @@ export default function BudgetScreen() {
                 value={limit}
                 onChangeText={setLimit}
                 placeholder="5000"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 keyboardType="numeric"
                 returnKeyType="done"
-                selectionColor={Colors.primary}
+                selectionColor={color.forest}
                 onSubmitEditing={handleSave}
               />
             </View>
@@ -246,53 +246,53 @@ export default function BudgetScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   container: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 40 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 20,
   },
-  title: { fontSize: 26, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.5 },
+  title: { fontFamily: font.displayBold, fontSize: 26, color: color.ink },
   addBtn: {
-    backgroundColor: Colors.primary, paddingHorizontal: 16,
+    backgroundColor: color.forest, paddingHorizontal: 16,
     paddingVertical: 8, borderRadius: 20,
   },
-  addBtnText: { fontSize: 14, fontWeight: '700', color: Colors.background },
+  addBtnText: { fontFamily: font.bodySemi, fontSize: 14, color: color.cream },
   summaryCard: {
-    backgroundColor: Colors.card, borderRadius: 16,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 16,
+    borderWidth: 1, borderColor: color.line,
     padding: 16, marginBottom: 20,
   },
   summaryRow: { flexDirection: 'row', alignItems: 'center' },
   summaryItem: { flex: 1, alignItems: 'center' },
-  summaryDivider: { width: 1, height: 40, backgroundColor: Colors.border },
-  summaryLabel: { fontSize: 12, color: Colors.textSecondary, marginBottom: 4 },
-  summaryValue: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
-  danger: { color: Colors.danger },
+  summaryDivider: { width: 1, height: 40, backgroundColor: color.line },
+  summaryLabel: { fontFamily: font.body, fontSize: 12, color: color.inkSoft, marginBottom: 4 },
+  summaryValue: { fontFamily: font.displaySemi, fontSize: 20, color: color.ink },
+  danger: { color: color.clay },
   overWarning: {
-    marginTop: 12, backgroundColor: 'rgba(255,71,87,0.1)',
-    borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(255,71,87,0.3)',
+    marginTop: 12, backgroundColor: color.clayTint,
+    borderRadius: 8, padding: 10, borderWidth: 1, borderColor: color.line,
   },
-  overWarningText: { fontSize: 13, color: Colors.danger, textAlign: 'center' },
-  modalOverlay: { flex: 1, backgroundColor: Colors.overlay },
+  overWarningText: { fontFamily: font.body, fontSize: 13, color: color.clay, textAlign: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(35,41,31,0.55)' },
   modalSheet: {
-    backgroundColor: Colors.card, borderTopLeftRadius: 24,
+    backgroundColor: color.card, borderTopLeftRadius: 24,
     borderTopRightRadius: 24, padding: 24, paddingBottom: 40,
-    borderTopWidth: 1, borderColor: Colors.border,
+    borderTopWidth: 1, borderColor: color.line,
   },
   modalHandle: {
-    width: 40, height: 4, backgroundColor: Colors.border,
+    width: 40, height: 4, backgroundColor: color.line,
     borderRadius: 2, alignSelf: 'center', marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20,
+    fontFamily: font.displaySemi, fontSize: 20, color: color.ink, marginBottom: 20,
   },
-  sectionLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600', marginBottom: 12 },
+  sectionLabel: { fontFamily: font.bodySemi, fontSize: 13, color: color.inkSoft, marginBottom: 12 },
   limitRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: Colors.input, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 14,
+    backgroundColor: color.cream2, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line, paddingHorizontal: 14,
   },
-  rupee: { fontSize: 22, fontWeight: '700', color: Colors.textMuted },
-  limitInput: { flex: 1, fontSize: 24, fontWeight: '700', color: Colors.textPrimary, paddingVertical: 12 },
+  rupee: { fontFamily: font.bodySemi, fontSize: 22, color: color.inkFaint },
+  limitInput: { flex: 1, fontFamily: font.displaySemi, fontSize: 24, color: color.ink, paddingVertical: 12 },
 });

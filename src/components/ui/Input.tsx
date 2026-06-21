@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 import { Layout } from '../../constants/layout';
 import Icon from './Icon';
 
@@ -35,8 +35,8 @@ export default function Input({
       <View style={[styles.inputRow, error ? styles.inputError : null]}>
         <TextInput
           style={[styles.input, style]}
-          placeholderTextColor={Colors.textMuted}
-          selectionColor={Colors.primary}
+          placeholderTextColor={color.inkFaint}
+          selectionColor={color.forest}
           secureTextEntry={showPasswordToggle ? !visible : secureTextEntry}
           {...props}
         />
@@ -47,7 +47,7 @@ export default function Input({
             accessibilityLabel="Toggle password visibility"
             accessibilityRole="button"
           >
-            <Icon name={visible ? 'eye-off' : 'eye'} size={18} color={Colors.textSecondary} />
+            <Icon name={visible ? 'eye-off' : 'eye'} size={18} color={color.inkSoft} />
           </TouchableOpacity>
         )}
         {rightElement && !showPasswordToggle && (
@@ -64,36 +64,38 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
+    fontFamily: font.bodyMed,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     marginBottom: 8,
-    fontWeight: '500',
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
     borderRadius: Layout.inputRadius,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
   inputError: {
-    borderColor: Colors.danger,
+    borderColor: color.clay,
   },
   input: {
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 14,
+    fontFamily: font.body,
     fontSize: 15,
-    color: Colors.textPrimary,
+    color: color.ink,
   },
   toggle: {
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
   errorText: {
+    fontFamily: font.body,
     fontSize: 12,
-    color: Colors.danger,
+    color: color.clay,
     marginTop: 6,
   },
 });

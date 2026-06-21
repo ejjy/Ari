@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useData } from '../context/DataContext';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import Button from '../components/ui/Button';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
@@ -86,7 +86,7 @@ export default function ExportScreen({ onBack }: Props) {
       <View style={styles.content}>
         <AnimatedEntry delay={100}>
           <View style={styles.card}>
-            <Icon name="pie-chart" size={48} color={Colors.primary} />
+            <Icon name="pie-chart" size={48} color={color.forest} />
             <Text style={styles.cardTitle}>Export as CSV</Text>
             <Text style={styles.cardDesc}>
               Share your transaction data via text, email, or save it. Perfect for
@@ -118,7 +118,7 @@ export default function ExportScreen({ onBack }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -126,45 +126,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
-  backText: { fontSize: 16, color: Colors.textSecondary },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  backText: { fontSize: 16, color: color.inkSoft, fontFamily: font.body },
+  title: { fontSize: 17, fontFamily: font.bodyBold, color: color.ink },
   content: { flex: 1, paddingHorizontal: 20, paddingTop: 24, gap: 20 },
   card: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 24,
     alignItems: 'center',
     gap: 12,
   },
   cardEmoji: { fontSize: 48 },
-  cardTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
+  cardTitle: { fontSize: 20, fontFamily: font.bodyBold, color: color.ink },
   cardDesc: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textAlign: 'center',
     lineHeight: 20,
+    fontFamily: font.body,
   },
   txnCount: {
     fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '600',
+    color: color.forest,
+    fontFamily: font.bodySemi,
     marginTop: 4,
   },
   infoBox: {
-    backgroundColor: 'rgba(0,200,150,0.08)',
+    backgroundColor: color.cream2,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(0,200,150,0.2)',
+    borderColor: color.forest,
     padding: 16,
   },
   infoText: {
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textAlign: 'center',
     lineHeight: 18,
+    fontFamily: font.body,
   },
 });

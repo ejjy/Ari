@@ -9,7 +9,7 @@ import Icon from '../../components/ui/Icon';
 import type { IconName } from '../../components/ui/Icon';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import EmptyState from '../../components/ui/EmptyState';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import { CATEGORY_ICONS } from '../../components/ui/Icon';
@@ -195,7 +195,7 @@ export default function SmartLedgerScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>Smart Ledger</Text>
@@ -205,18 +205,18 @@ export default function SmartLedgerScreen() {
           onPress={() => { haptics.light(); setShowFilters(!showFilters); }}
           style={[styles.filterToggle, showFilters && styles.filterToggleActive]}
         >
-          <Icon name="search" size={18} color={showFilters ? Colors.primary : Colors.textMuted} />
+          <Icon name="search" size={18} color={showFilters ? color.forest : color.inkFaint} />
         </TouchableOpacity>
       </View>
 
       {/* Month Navigator */}
       <View style={styles.monthNav}>
         <TouchableOpacity onPress={() => goMonth(-1)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Icon name="chevron-left" size={22} color={Colors.textPrimary} />
+          <Icon name="chevron-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <Text style={styles.monthText}>{formatMonth(month)}</Text>
         <TouchableOpacity onPress={() => goMonth(1)} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-          <Icon name="chevron-right" size={22} color={Colors.textPrimary} />
+          <Icon name="chevron-right" size={22} color={color.ink} />
         </TouchableOpacity>
       </View>
 
@@ -225,18 +225,18 @@ export default function SmartLedgerScreen() {
         <View style={styles.filterPanel}>
           {/* Search */}
           <View style={styles.searchRow}>
-            <Icon name="search" size={16} color={Colors.textMuted} />
+            <Icon name="search" size={16} color={color.inkFaint} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search by name, category, tags..."
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={color.inkFaint}
               value={searchQuery}
               onChangeText={setSearchQuery}
               autoCapitalize="none"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Icon name="x" size={16} color={Colors.textMuted} />
+                <Icon name="x" size={16} color={color.inkFaint} />
               </TouchableOpacity>
             )}
           </View>
@@ -259,7 +259,7 @@ export default function SmartLedgerScreen() {
               style={[styles.chip, showRecurringOnly && styles.chipActive]}
               onPress={() => { haptics.light(); setShowRecurringOnly(!showRecurringOnly); }}
             >
-              <Icon name="refresh-cw" size={12} color={showRecurringOnly ? Colors.background : Colors.textMuted} />
+              <Icon name="refresh-cw" size={12} color={showRecurringOnly ? color.cream : color.inkFaint} />
               <Text style={[styles.chipText, showRecurringOnly && styles.chipTextActive]}>Recurring</Text>
             </TouchableOpacity>
             <View style={styles.chipDivider} />
@@ -287,7 +287,7 @@ export default function SmartLedgerScreen() {
                 return (
                   <TouchableOpacity
                     key={cat}
-                    style={[styles.chip, categoryFilter === cat && { backgroundColor: ci?.color || Colors.primary, borderColor: ci?.color || Colors.primary }]}
+                    style={[styles.chip, categoryFilter === cat && { backgroundColor: ci?.color || color.forest, borderColor: ci?.color || color.forest }]}
                     onPress={() => { haptics.light(); setCategoryFilter(categoryFilter === cat ? null : cat); }}
                   >
                     <Text style={[styles.chipText, categoryFilter === cat && styles.chipTextActive]}>
@@ -307,13 +307,13 @@ export default function SmartLedgerScreen() {
           <Text style={styles.statLabel}>{stats.count} txns</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statVal, { color: Colors.primary }]}>↑ {formatAmount(stats.income)}</Text>
+          <Text style={[styles.statVal, { color: color.forest }]}>↑ {formatAmount(stats.income)}</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statVal, { color: Colors.danger }]}>↓ {formatAmount(stats.expense)}</Text>
+          <Text style={[styles.statVal, { color: color.clay }]}>↓ {formatAmount(stats.expense)}</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statVal, { color: stats.net >= 0 ? Colors.primary : Colors.danger, fontWeight: '700' }]}>
+          <Text style={[styles.statVal, { color: stats.net >= 0 ? color.forest : color.clay, fontFamily: font.bodyBold }]}>
             = {formatAmount(stats.net)}
           </Text>
         </View>
@@ -322,7 +322,7 @@ export default function SmartLedgerScreen() {
       {/* Transaction list */}
       {loading ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={color.forest} />
         </View>
       ) : filteredTxns.length === 0 ? (
         <EmptyState
@@ -336,7 +336,7 @@ export default function SmartLedgerScreen() {
           keyExtractor={(t) => t.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.forest} />}
           renderItem={({ item: txn, index }) => {
             const ci = CATEGORY_ICONS[txn.category];
             const isIncome = txn.type === 'income';
@@ -349,8 +349,8 @@ export default function SmartLedgerScreen() {
                   delayLongPress={500}
                 >
                   {/* Left icon */}
-                  <View style={[styles.txnIcon, { backgroundColor: (ci?.color || Colors.textMuted) + '20' }]}>
-                    <Icon name={(ci?.icon || 'package') as IconName} size={18} color={ci?.color || Colors.textMuted} />
+                  <View style={[styles.txnIcon, { backgroundColor: (ci?.color || color.inkFaint) + '20' }]}>
+                    <Icon name={(ci?.icon || 'package') as IconName} size={18} color={ci?.color || color.inkFaint} />
                   </View>
 
                   {/* Middle */}
@@ -359,7 +359,7 @@ export default function SmartLedgerScreen() {
                       <Text style={styles.txnDesc} numberOfLines={1}>{txn.description}</Text>
                       {txn.isRecurring && (
                         <View style={styles.recurBadge}>
-                          <Icon name="refresh-cw" size={10} color={Colors.accent} />
+                          <Icon name="refresh-cw" size={10} color={color.gold} />
                         </View>
                       )}
                     </View>
@@ -396,7 +396,7 @@ export default function SmartLedgerScreen() {
                   </View>
 
                   {/* Right amount */}
-                  <Text style={[styles.txnAmount, { color: isIncome ? Colors.primary : Colors.danger }]}>
+                  <Text style={[styles.txnAmount, { color: isIncome ? color.forest : color.clay }]}>
                     {isIncome ? '+' : '-'}{formatAmount(txn.amount)}
                   </Text>
                 </TouchableOpacity>
@@ -412,62 +412,62 @@ export default function SmartLedgerScreen() {
 // ── Styles ────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20,
     paddingVertical: 14, gap: 12, borderBottomWidth: 1,
-    borderColor: Colors.border, backgroundColor: Colors.card,
+    borderColor: color.line, backgroundColor: color.card,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 18, fontFamily: font.bodyBold, color: color.ink },
+  headerSub: { fontSize: 12, color: color.inkSoft, marginTop: 2, fontFamily: font.body },
   filterToggle: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: Colors.input, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: color.cream2, alignItems: 'center', justifyContent: 'center',
   },
-  filterToggleActive: { backgroundColor: Colors.primary + '20' },
+  filterToggleActive: { backgroundColor: color.cream2 },
 
   // Month nav
   monthNav: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 20, paddingVertical: 12, backgroundColor: Colors.card,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    gap: 20, paddingVertical: 12, backgroundColor: color.card,
+    borderBottomWidth: 1, borderColor: color.line,
   },
-  monthText: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, minWidth: 140, textAlign: 'center' },
+  monthText: { fontSize: 16, fontFamily: font.bodyBold, color: color.ink, minWidth: 140, textAlign: 'center' },
 
   // Filter panel
   filterPanel: {
-    backgroundColor: Colors.card, paddingHorizontal: 16, paddingBottom: 12,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, paddingHorizontal: 16, paddingBottom: 12,
+    borderBottomWidth: 1, borderColor: color.line,
   },
   searchRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: Colors.input, borderRadius: 10, paddingHorizontal: 12,
+    backgroundColor: color.cream2, borderRadius: 10, paddingHorizontal: 12,
     marginBottom: 10,
   },
-  searchInput: { flex: 1, paddingVertical: 10, fontSize: 14, color: Colors.textPrimary },
+  searchInput: { flex: 1, paddingVertical: 10, fontSize: 14, color: color.ink, fontFamily: font.body },
 
   chipRow: { flexDirection: 'row', gap: 8, paddingBottom: 8 },
   chip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20,
-    backgroundColor: Colors.input, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2, borderWidth: 1, borderColor: color.line,
   },
-  chipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  chipText: { fontSize: 12, fontWeight: '600', color: Colors.textMuted },
-  chipTextActive: { color: Colors.background },
-  chipDivider: { width: 1, height: 24, backgroundColor: Colors.border, marginHorizontal: 2 },
+  chipActive: { backgroundColor: color.forest, borderColor: color.forest },
+  chipText: { fontSize: 12, fontFamily: font.bodySemi, color: color.inkFaint },
+  chipTextActive: { color: color.cream },
+  chipDivider: { width: 1, height: 24, backgroundColor: color.line, marginHorizontal: 2 },
 
   // Stats bar
   statsBar: {
     flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10,
-    backgroundColor: Colors.card, borderBottomWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderBottomWidth: 1, borderColor: color.line,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statLabel: { fontSize: 12, color: Colors.textMuted, fontWeight: '600' },
-  statVal: { fontSize: 12, fontWeight: '700' },
+  statLabel: { fontSize: 12, color: color.inkFaint, fontFamily: font.bodySemi },
+  statVal: { fontSize: 12, fontFamily: font.bodyBold },
 
   // List
   listContent: { padding: 16, paddingBottom: 40 },
@@ -475,8 +475,8 @@ const styles = StyleSheet.create({
   // Transaction card
   txnCard: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
-    backgroundColor: Colors.card, borderRadius: 14,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 14,
+    borderWidth: 1, borderColor: color.line,
     padding: 14, marginBottom: 8,
   },
   txnIcon: {
@@ -485,27 +485,27 @@ const styles = StyleSheet.create({
   },
   txnInfo: { flex: 1 },
   txnTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  txnDesc: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary, flex: 1 },
+  txnDesc: { fontSize: 15, fontFamily: font.bodySemi, color: color.ink, flex: 1 },
   recurBadge: {
     width: 20, height: 20, borderRadius: 10,
-    backgroundColor: Colors.accent + '20',
+    backgroundColor: color.gold + '20',
     alignItems: 'center', justifyContent: 'center',
   },
   txnMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
-  txnCategory: { fontSize: 12, color: Colors.textSecondary },
-  txnDot: { fontSize: 12, color: Colors.textMuted },
-  txnDate: { fontSize: 12, color: Colors.textMuted },
-  txnSource: { fontSize: 12, color: Colors.accent, fontWeight: '500' },
+  txnCategory: { fontSize: 12, color: color.inkSoft, fontFamily: font.body },
+  txnDot: { fontSize: 12, color: color.inkFaint },
+  txnDate: { fontSize: 12, color: color.inkFaint, fontFamily: font.body },
+  txnSource: { fontSize: 12, color: color.gold, fontFamily: font.bodyMed },
 
   tagsRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   tagPill: {
-    backgroundColor: Colors.primary + '15', borderRadius: 6,
+    backgroundColor: color.cream2, borderRadius: 6,
     paddingHorizontal: 8, paddingVertical: 2,
   },
-  tagText: { fontSize: 10, fontWeight: '600', color: Colors.primary },
-  tagMore: { fontSize: 10, color: Colors.textMuted, marginLeft: 2 },
+  tagText: { fontSize: 10, fontFamily: font.bodySemi, color: color.forest },
+  tagMore: { fontSize: 10, color: color.inkFaint, marginLeft: 2, fontFamily: font.body },
 
-  txnNote: { fontSize: 12, color: Colors.textMuted, marginTop: 4, fontStyle: 'italic' },
+  txnNote: { fontSize: 12, color: color.inkFaint, marginTop: 4, fontStyle: 'italic', fontFamily: font.body },
 
-  txnAmount: { fontSize: 15, fontWeight: '800', marginTop: 2 },
+  txnAmount: { fontSize: 15, fontFamily: font.displayBold, marginTop: 2 },
 });

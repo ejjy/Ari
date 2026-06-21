@@ -7,7 +7,7 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon from './ui/Icon';
 import Button from './ui/Button';
 import type { Category, TransactionType } from '../types';
@@ -56,7 +56,7 @@ export default function ConfidenceConfirmSheet({
         <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 24) + 16 }]}>
           <View style={styles.handle} />
           <View style={styles.iconContainer}>
-            <Icon name="help-circle" size={40} color={Colors.primary} />
+            <Icon name="help-circle" size={40} color={color.forest} />
           </View>
           <Text style={styles.title}>Confirm this category?</Text>
           <Text style={styles.message}>
@@ -92,7 +92,7 @@ export default function ConfidenceConfirmSheet({
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: Colors.overlay,
+    backgroundColor: 'rgba(35,41,31,0.55)',
   },
   sheetWrapper: {
     position: 'absolute',
@@ -101,37 +101,37 @@ const styles = StyleSheet.create({
     right: 0,
   },
   sheet: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 40,
     alignItems: 'center',
     borderTopWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
   handle: {
     width: 40,
     height: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: color.line,
     borderRadius: 2,
     marginBottom: 20,
   },
   iconContainer: { marginBottom: 12 },
   title: {
     fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontFamily: font.displayBold,
+    color: color.ink,
     marginBottom: 8,
   },
   message: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
   },
-  bold: { fontWeight: '700', color: Colors.textPrimary },
+  bold: { fontFamily: font.bodyBold, color: color.ink },
   buttons: { flexDirection: 'row', gap: 12, width: '100%' },
   btn: { flex: 1 },
 });

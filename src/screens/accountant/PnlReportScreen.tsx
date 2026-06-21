@@ -8,7 +8,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import Icon from '../../components/ui/Icon';
 import AnimatedEntry from '../../components/ui/AnimatedEntry';
 import EmptyState from '../../components/ui/EmptyState';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 import { usePrivacy } from '../../context/PrivacyContext';
 import { useHaptics } from '../../hooks/useHaptics';
 import * as reportsApi from '../../api/reports';
@@ -66,7 +66,7 @@ export default function PnlReportScreen() {
       <SafeAreaView style={styles.safe} edges={['top']}>
         <Header onBack={() => navigation.goBack()} />
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={color.forest} />
           <Text style={styles.loadingText}>Generating report...</Text>
         </View>
       </SafeAreaView>
@@ -121,20 +121,20 @@ export default function PnlReportScreen() {
         {/* ── Summary Cards ───────────────────────────────────────── */}
         <AnimatedEntry delay={60}>
           <View style={styles.summaryRow}>
-            <SummaryCard label="Total Income" amount={totals.income} color={Colors.primary} />
-            <SummaryCard label="Total Expenses" amount={totals.expenses} color={Colors.danger} />
+            <SummaryCard label="Total Income" amount={totals.income} cardColor={color.forest} />
+            <SummaryCard label="Total Expenses" amount={totals.expenses} cardColor={color.clay} />
           </View>
           <View style={styles.summaryRow}>
             <SummaryCard
               label="Net Savings"
               amount={totals.net}
-              color={totals.net >= 0 ? Colors.primary : Colors.danger}
+              cardColor={totals.net >= 0 ? color.forest : color.clay}
             />
             <SummaryCard
               label="Avg Savings Rate"
               amount={totals.avgSavingsRate}
               isSuffix="%"
-              color={totals.avgSavingsRate >= 20 ? Colors.primary : Colors.accent}
+              cardColor={totals.avgSavingsRate >= 20 ? color.forest : color.gold}
             />
           </View>
         </AnimatedEntry>
@@ -191,11 +191,11 @@ export default function PnlReportScreen() {
             </View>
             <View style={styles.chartLegend}>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: Colors.primary }]} />
+                <View style={[styles.legendDot, { backgroundColor: color.forest }]} />
                 <Text style={styles.legendText}>Income</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendDot, { backgroundColor: Colors.danger }]} />
+                <View style={[styles.legendDot, { backgroundColor: color.clay }]} />
                 <Text style={styles.legendText}>Expenses</Text>
               </View>
             </View>
@@ -216,11 +216,11 @@ export default function PnlReportScreen() {
                     <View
                       style={[styles.savingsBar, {
                         height: h,
-                        backgroundColor: isPos ? Colors.primary : Colors.danger,
+                        backgroundColor: isPos ? color.forest : color.clay,
                       }]}
                     />
                     <Text style={styles.barLabel}>{monthLabel(m.month)}</Text>
-                    <Text style={[styles.savingsVal, { color: isPos ? Colors.primary : Colors.danger }]}>
+                    <Text style={[styles.savingsVal, { color: isPos ? color.forest : color.clay }]}>
                       {isPos ? '+' : ''}{Math.round(m.net / 1000)}k
                     </Text>
                   </View>
@@ -240,14 +240,14 @@ export default function PnlReportScreen() {
                 const catInfo = CATEGORY_ICONS[cat];
                 return (
                   <View key={cat} style={styles.breakdownRow}>
-                    <View style={[styles.catDot, { backgroundColor: catInfo?.color || Colors.textMuted }]} />
+                    <View style={[styles.catDot, { backgroundColor: catInfo?.color || color.inkFaint }]} />
                     <Text style={styles.catName} numberOfLines={1}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </Text>
                     <View style={styles.catBarWrap}>
                       <View style={[styles.catBar, {
                         width: `${pct}%`,
-                        backgroundColor: catInfo?.color || Colors.textMuted,
+                        backgroundColor: catInfo?.color || color.inkFaint,
                       }]} />
                     </View>
                     <Text style={styles.catPct}>{pct}%</Text>
@@ -269,14 +269,14 @@ export default function PnlReportScreen() {
                 const catInfo = CATEGORY_ICONS[src];
                 return (
                   <View key={src} style={styles.breakdownRow}>
-                    <View style={[styles.catDot, { backgroundColor: catInfo?.color || Colors.primary }]} />
+                    <View style={[styles.catDot, { backgroundColor: catInfo?.color || color.forest }]} />
                     <Text style={styles.catName} numberOfLines={1}>
                       {src.charAt(0).toUpperCase() + src.slice(1)}
                     </Text>
                     <View style={styles.catBarWrap}>
                       <View style={[styles.catBar, {
                         width: `${pct}%`,
-                        backgroundColor: catInfo?.color || Colors.primary,
+                        backgroundColor: catInfo?.color || color.forest,
                       }]} />
                     </View>
                     <Text style={styles.catPct}>{pct}%</Text>
@@ -300,10 +300,10 @@ export default function PnlReportScreen() {
             </View>
             {pnlMonths.map((m, i) => (
               <View key={m.month} style={[styles.tableRow, i % 2 === 0 && styles.tableRowAlt]}>
-                <Text style={[styles.tableCell, { flex: 1.2, fontWeight: '600' }]}>{monthLabel(m.month)}</Text>
-                <Text style={[styles.tableCell, { color: Colors.primary }]}>{formatAmount(m.income)}</Text>
-                <Text style={[styles.tableCell, { color: Colors.danger }]}>{formatAmount(m.expenses)}</Text>
-                <Text style={[styles.tableCell, { color: m.net >= 0 ? Colors.primary : Colors.danger, fontWeight: '700' }]}>
+                <Text style={[styles.tableCell, { flex: 1.2, fontFamily: font.bodySemi }]}>{monthLabel(m.month)}</Text>
+                <Text style={[styles.tableCell, { color: color.forest }]}>{formatAmount(m.income)}</Text>
+                <Text style={[styles.tableCell, { color: color.clay }]}>{formatAmount(m.expenses)}</Text>
+                <Text style={[styles.tableCell, { color: m.net >= 0 ? color.forest : color.clay, fontFamily: font.bodyBold }]}>
                   {m.net >= 0 ? '+' : ''}{formatAmount(m.net)}
                 </Text>
               </View>
@@ -321,7 +321,7 @@ function Header({ onBack }: { onBack: () => void }) {
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-        <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+        <Icon name="arrow-left" size={22} color={color.ink} />
       </TouchableOpacity>
       <View>
         <Text style={styles.headerTitle}>P&L Reports</Text>
@@ -332,15 +332,15 @@ function Header({ onBack }: { onBack: () => void }) {
 }
 
 function SummaryCard({
-  label, amount, color, isSuffix,
+  label, amount, cardColor, isSuffix,
 }: {
-  label: string; amount: number; color: string; isSuffix?: string;
+  label: string; amount: number; cardColor: string; isSuffix?: string;
 }) {
   const { formatAmount } = usePrivacy();
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={[styles.summaryAmount, { color }]}>
+      <Text style={[styles.summaryAmount, { color: cardColor }]}>
         {isSuffix ? `${Math.round(amount)}${isSuffix}` : formatAmount(amount)}
       </Text>
     </View>
@@ -355,12 +355,12 @@ function TrendBadge({
   const isUp = change > 0;
   // For expenses, up is bad. For income, up is good.
   const isGood = invertColor ? !isUp : isUp;
-  const color = isGood ? Colors.primary : Colors.danger;
+  const badgeColor = isGood ? color.forest : color.clay;
 
   return (
-    <View style={[styles.trendBadge, { borderColor: color + '40' }]}>
-      <Icon name={isUp ? 'trending-up' : 'trending-down'} size={14} color={color} />
-      <Text style={[styles.trendText, { color }]}>
+    <View style={[styles.trendBadge, { borderColor: badgeColor + '40' }]}>
+      <Icon name={isUp ? 'trending-up' : 'trending-down'} size={14} color={badgeColor} />
+      <Text style={[styles.trendText, { color: badgeColor }]}>
         {label} {isUp ? '+' : ''}{Math.round(change)}%
       </Text>
     </View>
@@ -370,18 +370,18 @@ function TrendBadge({
 // ── Styles ────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  loadingText: { fontSize: 14, color: Colors.textSecondary },
+  loadingText: { fontSize: 14, color: color.inkSoft, fontFamily: font.body },
 
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20,
     paddingVertical: 16, gap: 12, borderBottomWidth: 1,
-    borderColor: Colors.border, backgroundColor: Colors.card,
+    borderColor: color.line, backgroundColor: color.card,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 18, fontFamily: font.bodyBold, color: color.ink },
+  headerSub: { fontSize: 12, color: color.inkSoft, marginTop: 2, fontFamily: font.body },
 
   scrollContent: { padding: 20, paddingBottom: 60 },
 
@@ -391,38 +391,38 @@ const styles = StyleSheet.create({
   },
   periodBtn: {
     paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10,
-    backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderWidth: 1, borderColor: color.line,
   },
-  periodBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  periodText: { fontSize: 14, fontWeight: '700', color: Colors.textMuted },
-  periodTextActive: { color: Colors.background },
+  periodBtnActive: { backgroundColor: color.forest, borderColor: color.forest },
+  periodText: { fontSize: 14, fontFamily: font.bodyBold, color: color.inkFaint },
+  periodTextActive: { color: color.cream },
 
   // Summary
   summaryRow: { flexDirection: 'row', gap: 10, marginBottom: 10 },
   summaryCard: {
-    flex: 1, backgroundColor: Colors.card, borderRadius: 14,
-    borderWidth: 1, borderColor: Colors.border, padding: 14,
+    flex: 1, backgroundColor: color.card, borderRadius: 14,
+    borderWidth: 1, borderColor: color.line, padding: 14,
   },
-  summaryLabel: { fontSize: 12, color: Colors.textSecondary, marginBottom: 4 },
-  summaryAmount: { fontSize: 18, fontWeight: '800' },
+  summaryLabel: { fontSize: 12, color: color.inkSoft, marginBottom: 4, fontFamily: font.body },
+  summaryAmount: { fontSize: 18, fontFamily: font.displayBold },
 
   // Trends
   trendsCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 16,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 16,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontFamily: font.bodyBold, color: color.ink, marginBottom: 12 },
   trendRow: { flexDirection: 'row', gap: 12 },
   trendBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8,
   },
-  trendText: { fontSize: 13, fontWeight: '600' },
+  trendText: { fontSize: 13, fontFamily: font.bodySemi },
 
   // Chart
   chartCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 16,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 16,
   },
   chart: {
     flexDirection: 'row', justifyContent: 'space-around',
@@ -431,13 +431,13 @@ const styles = StyleSheet.create({
   barGroup: { alignItems: 'center', gap: 6 },
   barPair: { flexDirection: 'row', alignItems: 'flex-end', gap: 3 },
   bar: { width: 10, borderRadius: 4, minHeight: 2 },
-  barIncome: { backgroundColor: Colors.primary },
-  barExpense: { backgroundColor: Colors.danger },
-  barLabel: { fontSize: 10, color: Colors.textMuted },
+  barIncome: { backgroundColor: color.forest },
+  barExpense: { backgroundColor: color.clay },
+  barLabel: { fontSize: 10, color: color.inkFaint, fontFamily: font.body },
   chartLegend: { flexDirection: 'row', justifyContent: 'center', gap: 24 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { fontSize: 12, color: Colors.textSecondary },
+  legendText: { fontSize: 12, color: color.inkSoft, fontFamily: font.body },
 
   // Savings chart
   savingsChart: {
@@ -446,36 +446,36 @@ const styles = StyleSheet.create({
   },
   savingsBarWrap: { alignItems: 'center', gap: 4, flex: 1 },
   savingsBar: { width: 16, borderRadius: 4, minHeight: 4 },
-  savingsVal: { fontSize: 10, fontWeight: '600' },
+  savingsVal: { fontSize: 10, fontFamily: font.bodySemi },
 
   // Breakdown
   breakdownCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 16,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 16,
   },
   breakdownRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10,
   },
   catDot: { width: 8, height: 8, borderRadius: 4 },
-  catName: { width: 70, fontSize: 13, color: Colors.textPrimary },
+  catName: { width: 70, fontSize: 13, color: color.ink, fontFamily: font.body },
   catBarWrap: {
-    flex: 1, height: 8, backgroundColor: Colors.border, borderRadius: 4, overflow: 'hidden',
+    flex: 1, height: 8, backgroundColor: color.line, borderRadius: 4, overflow: 'hidden',
   },
   catBar: { height: 8, borderRadius: 4 },
-  catPct: { width: 32, fontSize: 12, color: Colors.textMuted, textAlign: 'right' },
-  catAmount: { width: 70, fontSize: 12, fontWeight: '600', color: Colors.textPrimary, textAlign: 'right' },
+  catPct: { width: 32, fontSize: 12, color: color.inkFaint, textAlign: 'right', fontFamily: font.body },
+  catAmount: { width: 70, fontSize: 12, fontFamily: font.bodySemi, color: color.ink, textAlign: 'right' },
 
   // Table
   tableCard: {
-    backgroundColor: Colors.card, borderRadius: 16, borderWidth: 1,
-    borderColor: Colors.border, padding: 16, marginBottom: 16,
+    backgroundColor: color.card, borderRadius: 16, borderWidth: 1,
+    borderColor: color.line, padding: 16, marginBottom: 16,
   },
   tableHeader: {
     flexDirection: 'row', paddingBottom: 8,
-    borderBottomWidth: 1, borderColor: Colors.border, marginBottom: 4,
+    borderBottomWidth: 1, borderColor: color.line, marginBottom: 4,
   },
-  tableHeadText: { fontSize: 12, fontWeight: '700', color: Colors.textMuted, textTransform: 'uppercase' },
+  tableHeadText: { fontSize: 12, fontFamily: font.bodyBold, color: color.inkFaint, textTransform: 'uppercase' },
   tableRow: { flexDirection: 'row', paddingVertical: 8 },
-  tableRowAlt: { backgroundColor: Colors.input + '30' },
-  tableCell: { flex: 1, fontSize: 13, color: Colors.textPrimary },
+  tableRowAlt: { backgroundColor: color.cream2 },
+  tableCell: { flex: 1, fontSize: 13, color: color.ink, fontFamily: font.body },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { formatCurrency } from '../utils/formatCurrency';
 
 const AMOUNTS = [100, 200, 500, 1000, 2000, 5000];
@@ -36,16 +36,16 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   pill: {
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
   },
   text: {
     fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: '500',
+    fontFamily: font.bodyMed,
+    color: color.inkSoft,
   },
 });

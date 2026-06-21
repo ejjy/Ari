@@ -17,7 +17,7 @@ import { ApiError } from '../api/client';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon from '../components/ui/Icon';
 
 type Props = StackScreenProps<AuthStackParamList, 'Register'>;
@@ -210,7 +210,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     accessibilityLabel={`Age group: ${opt.label}`}
                     accessibilityRole="button"
                   >
-                    <Icon name={opt.icon} size={22} color={Colors.primary} />
+                    <Icon name={opt.icon} size={22} color={color.forest} />
                     <Text
                       style={[
                         styles.optionLabel,
@@ -278,7 +278,7 @@ export default function RegisterScreen({ navigation }: Props) {
                     accessibilityLabel={`Goal: ${opt.label}`}
                     accessibilityRole="button"
                   >
-                    <Icon name={opt.icon} size={24} color={Colors.primary} />
+                    <Icon name={opt.icon} size={24} color={color.forest} />
                     <Text
                       style={[
                         styles.goalLabel,
@@ -313,14 +313,14 @@ export default function RegisterScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   progressTrack: {
     height: 3,
-    backgroundColor: Colors.border,
+    backgroundColor: color.line,
   },
   progressFill: {
     height: 3,
-    backgroundColor: Colors.primary,
+    backgroundColor: color.forest,
     borderRadius: 2,
   },
   container: {
@@ -330,26 +330,25 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   back: { marginBottom: 20, alignSelf: 'flex-start' },
-  backText: { fontSize: 16, color: Colors.textSecondary },
-  stepLabel: { fontSize: 12, color: Colors.primary, fontWeight: '600', marginBottom: 8, letterSpacing: 0.5 },
-  title: { fontSize: 26, fontWeight: '800', color: Colors.textPrimary, marginBottom: 8, letterSpacing: -0.5 },
-  subtitle: { fontSize: 14, color: Colors.textSecondary, marginBottom: 28, lineHeight: 20 },
-  sectionLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600', marginBottom: 12, marginTop: 4 },
+  backText: { fontSize: 16, color: color.inkSoft, fontFamily: font.body },
+  stepLabel: { fontSize: 12, color: color.forest, fontFamily: font.bodySemi, marginBottom: 8, letterSpacing: 0.5 },
+  title: { fontSize: 26, fontFamily: font.displayBold, color: color.ink, marginBottom: 8, letterSpacing: -0.5 },
+  subtitle: { fontSize: 14, color: color.inkSoft, fontFamily: font.body, marginBottom: 28, lineHeight: 20 },
+  sectionLabel: { fontSize: 13, color: color.inkSoft, fontFamily: font.bodySemi, marginBottom: 12, marginTop: 4 },
   grid2: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
   optionTile: {
     width: '47%',
     padding: 16,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.input,
+    borderColor: color.line,
+    backgroundColor: color.cream2,
     alignItems: 'center',
     gap: 6,
   },
-  optionSelected: { borderColor: Colors.primary, backgroundColor: 'rgba(0,200,150,0.1)' },
-  // optionEmoji style replaced by Icon component
-  optionLabel: { fontSize: 13, color: Colors.textSecondary, fontWeight: '500' },
-  optionLabelSelected: { color: Colors.primary, fontWeight: '600' },
+  optionSelected: { borderColor: color.forest, backgroundColor: color.cream2 },
+  optionLabel: { fontSize: 13, color: color.inkSoft, fontFamily: font.bodyMed },
+  optionLabelSelected: { color: color.forest, fontFamily: font.bodySemi },
   incomeList: { gap: 8, marginBottom: 24 },
   incomeRow: {
     flexDirection: 'row',
@@ -358,28 +357,27 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.input,
+    borderColor: color.line,
+    backgroundColor: color.cream2,
   },
-  incomeRowSelected: { borderColor: Colors.primary, backgroundColor: 'rgba(0,200,150,0.1)' },
-  incomeLabel: { fontSize: 14, color: Colors.textSecondary, fontWeight: '500' },
-  incomeLabelSelected: { color: Colors.primary, fontWeight: '600' },
-  checkmark: { fontSize: 16, color: Colors.primary },
+  incomeRowSelected: { borderColor: color.forest, backgroundColor: color.cream2 },
+  incomeLabel: { fontSize: 14, color: color.inkSoft, fontFamily: font.bodyMed },
+  incomeLabelSelected: { color: color.forest, fontFamily: font.bodySemi },
+  checkmark: { fontSize: 16, color: color.forest, fontFamily: font.body },
   goalTile: {
     width: '47%',
     padding: 16,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: Colors.border,
-    backgroundColor: Colors.input,
+    borderColor: color.line,
+    backgroundColor: color.cream2,
     alignItems: 'center',
     gap: 6,
   },
-  goalSelected: { borderColor: Colors.primary, backgroundColor: 'rgba(0,200,150,0.1)' },
-  // goalEmoji style replaced by Icon component
-  goalLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '500', textAlign: 'center' },
-  goalLabelSelected: { color: Colors.primary, fontWeight: '600' },
+  goalSelected: { borderColor: color.forest, backgroundColor: color.cream2 },
+  goalLabel: { fontSize: 12, color: color.inkSoft, fontFamily: font.bodyMed, textAlign: 'center' },
+  goalLabelSelected: { color: color.forest, fontFamily: font.bodySemi },
   loginLink: { alignItems: 'center', marginTop: 28 },
-  loginLinkText: { fontSize: 14, color: Colors.textSecondary },
-  loginLinkHighlight: { color: Colors.primary, fontWeight: '600' },
+  loginLinkText: { fontSize: 14, color: color.inkSoft, fontFamily: font.body },
+  loginLinkHighlight: { color: color.forest, fontFamily: font.bodySemi },
 });

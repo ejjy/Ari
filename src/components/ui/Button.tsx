@@ -7,7 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 import { Layout } from '../../constants/layout';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -27,24 +27,24 @@ interface ButtonProps {
 
 const variantStyles: Record<Variant, { container: ViewStyle; text: TextStyle }> = {
   primary: {
-    container: { backgroundColor: Colors.primary },
-    text: { color: Colors.background },
+    container: { backgroundColor: color.forest },
+    text: { color: color.cream },
   },
   secondary: {
     container: {
       backgroundColor: 'transparent',
       borderWidth: 1,
-      borderColor: Colors.primary,
+      borderColor: color.forest,
     },
-    text: { color: Colors.primary },
+    text: { color: color.forest },
   },
   ghost: {
     container: { backgroundColor: 'transparent' },
-    text: { color: Colors.textSecondary },
+    text: { color: color.inkSoft },
   },
   danger: {
-    container: { backgroundColor: Colors.danger },
-    text: { color: Colors.white },
+    container: { backgroundColor: color.clay },
+    text: { color: color.cream },
   },
 };
 
@@ -81,7 +81,7 @@ export default function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'primary' ? Colors.background : Colors.primary}
+          color={variant === 'primary' ? color.cream : color.forest}
         />
       ) : (
         <Text style={[styles.text, vStyle.text, textStyle]}>{children}</Text>
@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   text: {
+    fontFamily: font.bodySemi,
     fontSize: 15,
-    fontWeight: '600',
     letterSpacing: 0.3,
   },
 });

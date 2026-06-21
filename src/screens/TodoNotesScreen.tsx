@@ -10,7 +10,7 @@ import Icon from '../components/ui/Icon';
 import type { IconName } from '../components/ui/Icon';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
 import EmptyState from '../components/ui/EmptyState';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import * as todosApi from '../api/todos';
 import type { TodoNote } from '../api/todos';
@@ -18,9 +18,9 @@ import type { TodoNote } from '../api/todos';
 // ── Constants ────────────────────────────────────────────────────────
 
 const PRIORITY_CONFIG = {
-  high:   { label: 'High',   emoji: '🔴', color: Colors.danger },
-  medium: { label: 'Medium', emoji: '🟡', color: Colors.accent },
-  low:    { label: 'Low',    emoji: '🟢', color: Colors.primary },
+  high:   { label: 'High',   emoji: '🔴', color: color.clay },
+  medium: { label: 'Medium', emoji: '🟡', color: color.gold },
+  low:    { label: 'Low',    emoji: '🟢', color: color.forest },
 } as const;
 
 const NOTE_COLORS = [
@@ -230,7 +230,7 @@ export default function TodoNotesScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.headerTitle}>Notes & To-Do</Text>
@@ -239,7 +239,7 @@ export default function TodoNotesScreen() {
           </Text>
         </View>
         <TouchableOpacity onPress={handleAdd} style={styles.addHeaderBtn}>
-          <Icon name="plus" size={20} color={Colors.primary} />
+          <Icon name="plus" size={20} color={color.forest} />
         </TouchableOpacity>
       </View>
 
@@ -266,7 +266,7 @@ export default function TodoNotesScreen() {
       {/* Content */}
       {loading ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={color.forest} />
         </View>
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -281,7 +281,7 @@ export default function TodoNotesScreen() {
           contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchTodos(); }} tintColor={Colors.primary} />
+            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchTodos(); }} tintColor={color.forest} />
           }
         >
           {filtered.map((todo, i) => {
@@ -294,7 +294,7 @@ export default function TodoNotesScreen() {
                 <TouchableOpacity
                   style={[
                     styles.todoCard,
-                    { borderLeftColor: todo.color || Colors.primary, borderLeftWidth: 4 },
+                    { borderLeftColor: todo.color || color.forest, borderLeftWidth: 4 },
                     todo.isDone && styles.todoCardDone,
                   ]}
                   onPress={() => handleEdit(todo)}
@@ -309,7 +309,7 @@ export default function TodoNotesScreen() {
                       style={[styles.checkbox, todo.isDone && styles.checkboxDone]}
                       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     >
-                      {todo.isDone && <Icon name="check-circle" size={18} color={Colors.primary} />}
+                      {todo.isDone && <Icon name="check-circle" size={18} color={color.forest} />}
                     </TouchableOpacity>
 
                     <View style={styles.todoContent}>
@@ -350,7 +350,7 @@ export default function TodoNotesScreen() {
                       <Icon
                         name="flag"
                         size={16}
-                        color={todo.pinned ? Colors.accent : Colors.textMuted}
+                        color={todo.pinned ? color.gold : color.inkFaint}
                       />
                     </TouchableOpacity>
                   </View>
@@ -367,7 +367,7 @@ export default function TodoNotesScreen() {
         onPress={handleAdd}
         activeOpacity={0.85}
       >
-        <Icon name="plus" size={24} color={Colors.background} />
+        <Icon name="plus" size={24} color={color.cream} />
       </TouchableOpacity>
 
       {/* ── Add/Edit Modal ───────────────────────────────────────── */}
@@ -382,7 +382,7 @@ export default function TodoNotesScreen() {
                 {editTodo ? 'Edit Note' : 'New Note'}
               </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon name="x" size={22} color={Colors.textSecondary} />
+                <Icon name="x" size={22} color={color.inkSoft} />
               </TouchableOpacity>
             </View>
 
@@ -394,7 +394,7 @@ export default function TodoNotesScreen() {
                 value={title}
                 onChangeText={setTitle}
                 placeholder="What needs to be done?"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 maxLength={200}
                 autoFocus={!editTodo}
               />
@@ -406,7 +406,7 @@ export default function TodoNotesScreen() {
                 value={body}
                 onChangeText={setBody}
                 placeholder="Add details..."
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 multiline
                 maxLength={2000}
               />
@@ -437,7 +437,7 @@ export default function TodoNotesScreen() {
                 value={dueDate}
                 onChangeText={setDueDate}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 maxLength={10}
                 keyboardType="numbers-and-punctuation"
               />
@@ -449,7 +449,7 @@ export default function TodoNotesScreen() {
                 value={dueTime}
                 onChangeText={setDueTime}
                 placeholder="HH:MM (e.g. 14:30)"
-                placeholderTextColor={Colors.textMuted}
+                placeholderTextColor={color.inkFaint}
                 maxLength={5}
                 keyboardType="numbers-and-punctuation"
               />
@@ -463,7 +463,7 @@ export default function TodoNotesScreen() {
                     style={[styles.colorDot, { backgroundColor: c }, noteColor === c && styles.colorDotActive]}
                     onPress={() => { haptics.light(); setNoteColor(c); }}
                   >
-                    {noteColor === c && <Icon name="check-circle" size={14} color={Colors.white} />}
+                    {noteColor === c && <Icon name="check-circle" size={14} color={color.cream} />}
                   </TouchableOpacity>
                 ))}
               </View>
@@ -474,8 +474,8 @@ export default function TodoNotesScreen() {
                 <Switch
                   value={pinned}
                   onValueChange={setPinned}
-                  trackColor={{ false: Colors.border, true: Colors.primaryDark }}
-                  thumbColor={pinned ? Colors.primary : Colors.textMuted}
+                  trackColor={{ false: color.line, true: color.forest2 }}
+                  thumbColor={pinned ? color.forest : color.inkFaint}
                 />
               </View>
             </ScrollView>
@@ -488,7 +488,7 @@ export default function TodoNotesScreen() {
               activeOpacity={0.8}
             >
               {saving ? (
-                <ActivityIndicator color={Colors.background} size="small" />
+                <ActivityIndicator color={color.cream} size="small" />
               ) : (
                 <Text style={styles.saveBtnText}>
                   {editTodo ? 'Save Changes' : 'Create Note'}
@@ -505,44 +505,44 @@ export default function TodoNotesScreen() {
 // ── Styles ────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
   header: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20,
     paddingVertical: 14, gap: 12, borderBottomWidth: 1,
-    borderColor: Colors.border, backgroundColor: Colors.card,
+    borderColor: color.line, backgroundColor: color.card,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 18, fontFamily: font.bodyBold, color: color.ink },
+  headerSub: { fontSize: 12, color: color.inkSoft, marginTop: 2, fontFamily: font.body },
   addHeaderBtn: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: Colors.primary + '20',
+    backgroundColor: color.cream2,
     alignItems: 'center', justifyContent: 'center',
   },
 
   // Filters
   filterRow: {
     flexDirection: 'row', gap: 8, paddingHorizontal: 20,
-    paddingVertical: 12, backgroundColor: Colors.card,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    paddingVertical: 12, backgroundColor: color.card,
+    borderBottomWidth: 1, borderColor: color.line,
   },
   filterChip: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-    backgroundColor: Colors.input, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2, borderWidth: 1, borderColor: color.line,
   },
-  filterChipActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  filterText: { fontSize: 13, fontWeight: '600', color: Colors.textMuted },
-  filterTextActive: { color: Colors.background },
+  filterChipActive: { backgroundColor: color.forest, borderColor: color.forest },
+  filterText: { fontSize: 13, fontFamily: font.bodySemi, color: color.inkFaint },
+  filterTextActive: { color: color.cream },
 
   // List
   listContent: { padding: 16, paddingBottom: 100 },
 
   // Todo card
   todoCard: {
-    backgroundColor: Colors.card, borderRadius: 14,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 14,
+    borderWidth: 1, borderColor: color.line,
     padding: 14, marginBottom: 10, borderLeftWidth: 4,
   },
   todoCardDone: { opacity: 0.6 },
@@ -550,22 +550,22 @@ const styles = StyleSheet.create({
 
   checkbox: {
     width: 24, height: 24, borderRadius: 12,
-    borderWidth: 2, borderColor: Colors.textMuted,
+    borderWidth: 2, borderColor: color.inkFaint,
     alignItems: 'center', justifyContent: 'center', marginTop: 2,
   },
-  checkboxDone: { borderColor: Colors.primary, backgroundColor: Colors.primary + '15' },
+  checkboxDone: { borderColor: color.forest, backgroundColor: color.cream2 },
 
   todoContent: { flex: 1 },
   todoTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  todoTitle: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary, flex: 1 },
-  todoTitleDone: { textDecorationLine: 'line-through', color: Colors.textMuted },
+  todoTitle: { fontSize: 15, fontFamily: font.bodySemi, color: color.ink, flex: 1 },
+  todoTitleDone: { textDecorationLine: 'line-through', color: color.inkFaint },
   pinEmoji: { fontSize: 14 },
-  todoBody: { fontSize: 13, color: Colors.textSecondary, marginTop: 4, lineHeight: 18 },
+  todoBody: { fontSize: 13, color: color.inkSoft, marginTop: 4, lineHeight: 18, fontFamily: font.body },
 
   todoMeta: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
-  priorityBadge: { fontSize: 11, color: Colors.textMuted },
-  dueBadge: { fontSize: 11, color: Colors.textSecondary },
-  dueOverdue: { color: Colors.danger, fontWeight: '600' },
+  priorityBadge: { fontSize: 11, color: color.inkFaint, fontFamily: font.body },
+  dueBadge: { fontSize: 11, color: color.inkSoft, fontFamily: font.body },
+  dueOverdue: { color: color.clay, fontFamily: font.bodySemi },
 
   pinBtn: { padding: 4, marginTop: 2 },
 
@@ -573,17 +573,17 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute', right: 20,
     width: 56, height: 56, borderRadius: 28,
-    backgroundColor: Colors.primary,
+    backgroundColor: color.forest,
     alignItems: 'center', justifyContent: 'center',
     elevation: 6,
-    shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 },
+    shadowColor: color.forest, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3, shadowRadius: 8,
   },
 
   // Modal
-  modalOverlay: { flex: 1, backgroundColor: Colors.overlay, justifyContent: 'flex-end' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(35,41,31,0.55)', justifyContent: 'flex-end' },
   modalContent: {
-    backgroundColor: Colors.card, borderTopLeftRadius: 24,
+    backgroundColor: color.card, borderTopLeftRadius: 24,
     borderTopRightRadius: 24, padding: 24, paddingBottom: 40,
     maxHeight: '90%',
   },
@@ -591,23 +591,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between',
     alignItems: 'center', marginBottom: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
+  modalTitle: { fontSize: 20, fontFamily: font.bodyBold, color: color.ink },
 
-  fieldLabel: { fontSize: 13, fontWeight: '600', color: Colors.textSecondary, marginBottom: 6 },
+  fieldLabel: { fontSize: 13, fontFamily: font.bodySemi, color: color.inkSoft, marginBottom: 6 },
   input: {
-    backgroundColor: Colors.input, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
-    padding: 14, fontSize: 15, color: Colors.textPrimary,
+    backgroundColor: color.cream2, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line,
+    padding: 14, fontSize: 15, color: color.ink, fontFamily: font.body,
   },
 
   priorityRow: { flexDirection: 'row', gap: 10 },
   priorityChip: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, paddingVertical: 10, borderRadius: 10,
-    backgroundColor: Colors.input, borderWidth: 1.5, borderColor: Colors.border,
+    backgroundColor: color.cream2, borderWidth: 1.5, borderColor: color.line,
   },
   priorityEmoji: { fontSize: 14 },
-  priorityLabel: { fontSize: 13, fontWeight: '600', color: Colors.textMuted },
+  priorityLabel: { fontSize: 13, fontFamily: font.bodySemi, color: color.inkFaint },
 
   colorRow: {
     flexDirection: 'row', gap: 10, marginBottom: 16,
@@ -617,17 +617,17 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: 'transparent',
   },
-  colorDotActive: { borderColor: Colors.white, transform: [{ scale: 1.15 }] },
+  colorDotActive: { borderColor: color.cream, transform: [{ scale: 1.15 }] },
 
   switchRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     marginBottom: 16,
   },
-  switchLabel: { fontSize: 14, color: Colors.textSecondary },
+  switchLabel: { fontSize: 14, color: color.inkSoft, fontFamily: font.body },
 
   saveBtn: {
-    backgroundColor: Colors.primary, borderRadius: 14,
+    backgroundColor: color.forest, borderRadius: 14,
     paddingVertical: 16, alignItems: 'center', marginTop: 8,
   },
-  saveBtnText: { fontSize: 16, fontWeight: '700', color: Colors.background },
+  saveBtnText: { fontSize: 16, fontFamily: font.bodyBold, color: color.cream },
 });

@@ -8,7 +8,7 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import type { RouteProp } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import Icon from '../components/ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import { usePrivacy } from '../context/PrivacyContext';
 import { useAuth } from '../context/AuthContext';
@@ -133,7 +133,7 @@ export default function GroupDetailScreen() {
   if (loading || !group) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
+        <ActivityIndicator color={color.forest} style={{ marginTop: 40 }} />
       </SafeAreaView>
     );
   }
@@ -147,11 +147,11 @@ export default function GroupDetailScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
-          <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+          <Icon name="arrow-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>{group.name}</Text>
         <TouchableOpacity onPress={handleInvite} hitSlop={8}>
-          <Icon name="share" size={20} color={Colors.primary} />
+          <Icon name="share" size={20} color={color.forest} />
         </TouchableOpacity>
       </View>
 
@@ -199,7 +199,7 @@ export default function GroupDetailScreen() {
           style={styles.addExpenseBtn}
           onPress={() => navigation.navigate('AddSharedExpense', { groupId: params.groupId })}
         >
-          <Icon name="plus" size={16} color="#fff" />
+          <Icon name="plus" size={16} color={color.cream} />
           <Text style={styles.addExpenseText}>Add shared expense</Text>
         </TouchableOpacity>
 
@@ -251,60 +251,60 @@ export default function GroupDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    borderBottomWidth: 1, borderColor: color.line,
   },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary, flex: 1, textAlign: 'center' },
+  title: { fontSize: 17, fontFamily: font.displayBold, color: color.ink, flex: 1, textAlign: 'center' },
   scroll: { padding: 20, paddingBottom: 40 },
   summaryCard: {
     padding: 18, borderRadius: 14, alignItems: 'center',
-    backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderWidth: 1, borderColor: color.line,
     marginBottom: 16,
   },
-  summaryPositive: { borderColor: Colors.primary, backgroundColor: 'rgba(0,200,150,0.06)' },
-  summaryNegative: { borderColor: Colors.danger, backgroundColor: 'rgba(255,59,48,0.06)' },
-  summaryLabel: { fontSize: 12, color: Colors.textSecondary, marginBottom: 4 },
-  summaryAmount: { fontSize: 28, fontWeight: '800', color: Colors.textPrimary },
-  summarySub: { fontSize: 12, color: Colors.textSecondary, marginTop: 4 },
+  summaryPositive: { borderColor: color.forest, backgroundColor: color.cream2 },
+  summaryNegative: { borderColor: color.clay, backgroundColor: color.clayTint },
+  summaryLabel: { fontSize: 12, color: color.inkSoft, marginBottom: 4 },
+  summaryAmount: { fontSize: 28, fontFamily: font.displayBold, color: color.ink },
+  summarySub: { fontSize: 12, color: color.inkSoft, marginTop: 4 },
   section: { marginBottom: 16 },
   sectionLabel: {
-    fontSize: 11, color: Colors.textMuted, fontWeight: '600',
+    fontSize: 11, color: color.inkFaint, fontFamily: font.bodySemi,
     letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 8, marginTop: 8,
   },
   pairRow: {
     paddingVertical: 8, paddingHorizontal: 12,
-    backgroundColor: Colors.card, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border, marginBottom: 6,
+    backgroundColor: color.card, borderRadius: 10,
+    borderWidth: 1, borderColor: color.line, marginBottom: 6,
   },
-  pairText: { fontSize: 13, color: Colors.textPrimary, fontWeight: '500' },
+  pairText: { fontSize: 13, color: color.ink, fontFamily: font.bodyMed },
   addExpenseBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: Colors.primary, paddingVertical: 14, borderRadius: 12,
+    backgroundColor: color.forest, paddingVertical: 14, borderRadius: 12,
     marginBottom: 20, marginTop: 6,
   },
-  addExpenseText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  addExpenseText: { color: color.cream, fontSize: 14, fontFamily: font.bodySemi },
   expenseCard: {
-    backgroundColor: Colors.card, borderRadius: 12,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderRadius: 12,
+    borderWidth: 1, borderColor: color.line,
     padding: 14, marginBottom: 10,
   },
   expenseTop: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  expenseDesc: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  expenseSub: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  expenseAmount: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  expenseDesc: { fontSize: 14, fontFamily: font.bodySemi, color: color.ink },
+  expenseSub: { fontSize: 12, color: color.inkSoft, marginTop: 2 },
+  expenseAmount: { fontSize: 16, fontFamily: font.displayBold, color: color.ink },
   settleRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     marginTop: 12, paddingTop: 10,
-    borderTopWidth: 1, borderTopColor: Colors.border,
+    borderTopWidth: 1, borderTopColor: color.line,
   },
-  youOwe: { fontSize: 12, color: Colors.danger, fontWeight: '600' },
+  youOwe: { fontSize: 12, color: color.clay, fontFamily: font.bodySemi },
   settleBtn: {
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8,
-    backgroundColor: 'rgba(0,200,150,0.15)', borderWidth: 1, borderColor: Colors.primary,
+    backgroundColor: color.cream2, borderWidth: 1, borderColor: color.forest,
   },
-  settleText: { fontSize: 12, fontWeight: '600', color: Colors.primary },
-  empty: { fontSize: 13, color: Colors.textMuted, textAlign: 'center', marginTop: 16 },
+  settleText: { fontSize: 12, fontFamily: font.bodySemi, color: color.forest },
+  empty: { fontSize: 13, color: color.inkFaint, textAlign: 'center', marginTop: 16 },
 });

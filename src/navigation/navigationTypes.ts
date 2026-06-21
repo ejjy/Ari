@@ -9,7 +9,7 @@ export type AuthStackParamList = {
 export type TabParamList = {
   Dashboard: undefined;
   Transactions: undefined;
-  Budget: undefined;
+  Add: undefined;      // FAB placeholder — button navigates to AddTransaction
   Tomo: undefined;
   Settings: undefined;
 };

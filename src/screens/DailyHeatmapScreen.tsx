@@ -5,7 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Icon from '../components/ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { usePrivacy } from '../context/PrivacyContext';
 import { getDailyHeatmap, type DailyHeatmap } from '../api/analytics';
 
@@ -77,7 +77,7 @@ export default function DailyHeatmapScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={8}>
-          <Icon name="chevron-left" size={22} color={Colors.textPrimary} />
+          <Icon name="chevron-left" size={22} color={color.ink} />
         </TouchableOpacity>
         <Text style={styles.title}>Daily heatmap</Text>
         <View style={{ width: 22 }} />
@@ -85,7 +85,7 @@ export default function DailyHeatmapScreen() {
 
       <View style={styles.monthRow}>
         <TouchableOpacity onPress={() => setMonth(offsetMonth(month, -1))} hitSlop={8}>
-          <Icon name="chevron-left" size={18} color={Colors.textSecondary} />
+          <Icon name="chevron-left" size={18} color={color.inkSoft} />
         </TouchableOpacity>
         <Text style={styles.monthLabel}>{monthLabel(month)}</Text>
         <TouchableOpacity
@@ -96,14 +96,14 @@ export default function DailyHeatmapScreen() {
           <Icon
             name="chevron-right"
             size={18}
-            color={month >= todayIso().slice(0, 7) ? Colors.textMuted : Colors.textSecondary}
+            color={month >= todayIso().slice(0, 7) ? color.inkFaint : color.inkSoft}
           />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {loading ? (
-          <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
+          <ActivityIndicator color={color.forest} style={{ marginTop: 40 }} />
         ) : data ? (
           <>
             <View style={styles.summary}>
@@ -150,11 +150,11 @@ export default function DailyHeatmapScreen() {
                       isToday && styles.cellToday,
                     ]}
                   >
-                    <Text style={[styles.cellDay, intensity > 0.5 && { color: '#FFF' }]}>
+                    <Text style={[styles.cellDay, intensity > 0.5 && { color: color.cream }]}>
                       {day}
                     </Text>
                     {amount > 0 && (
-                      <Text style={[styles.cellAmount, intensity > 0.5 && { color: '#FFF' }]}>
+                      <Text style={[styles.cellAmount, intensity > 0.5 && { color: color.cream }]}>
                         {amount >= 1000 ? `${Math.round(amount / 1000)}k` : amount}
                       </Text>
                     )}
@@ -172,42 +172,42 @@ export default function DailyHeatmapScreen() {
 }
 
 function intensityColor(i: number): string {
-  // Green ramp matching brand — light bg for zero days, primary at peak.
-  if (i === 0) return 'rgba(0,200,150,0.05)';
-  if (i < 0.2) return 'rgba(0,200,150,0.2)';
-  if (i < 0.5) return 'rgba(0,200,150,0.4)';
-  if (i < 0.8) return 'rgba(0,200,150,0.65)';
-  return Colors.primary;
+  // Green ramp matching forest brand — light bg for zero days, forest at peak.
+  if (i === 0) return color.cream2;
+  if (i < 0.2) return 'rgba(44,78,49,0.2)';
+  if (i < 0.5) return 'rgba(44,78,49,0.4)';
+  if (i < 0.8) return 'rgba(44,78,49,0.65)';
+  return color.forest;
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    borderBottomWidth: 1, borderColor: color.line,
   },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  title: { fontSize: 17, fontFamily: font.displayBold, color: color.ink },
   monthRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     paddingVertical: 14, gap: 24,
   },
-  monthLabel: { fontSize: 15, fontWeight: '600', color: Colors.textPrimary },
+  monthLabel: { fontSize: 15, fontFamily: font.bodySemi, color: color.ink },
   scroll: { paddingHorizontal: 20, paddingBottom: 40 },
   summary: {
     flexDirection: 'row', gap: 12, marginBottom: 20,
   },
   summaryCell: {
     flex: 1, padding: 14, borderRadius: 12,
-    backgroundColor: Colors.card, borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.card, borderWidth: 1, borderColor: color.line,
   },
-  summaryLabel: { fontSize: 11, color: Colors.textSecondary, marginBottom: 4 },
-  summaryAmount: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
-  summarySub: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
+  summaryLabel: { fontSize: 11, color: color.inkSoft, marginBottom: 4 },
+  summaryAmount: { fontSize: 18, fontFamily: font.displayBold, color: color.ink },
+  summarySub: { fontSize: 11, color: color.inkSoft, marginTop: 2 },
   dowRow: { flexDirection: 'row', marginBottom: 6 },
   dow: {
-    flex: 1, textAlign: 'center', fontSize: 11, color: Colors.textMuted,
-    fontWeight: '600',
+    flex: 1, textAlign: 'center', fontSize: 11, color: color.inkFaint,
+    fontFamily: font.bodySemi,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   cell: {
@@ -222,8 +222,8 @@ const styles = StyleSheet.create({
     margin: 2,
     width: '12.5%',
   },
-  cellToday: { borderWidth: 2, borderColor: Colors.accent },
-  cellDay: { fontSize: 10, fontWeight: '600', color: Colors.textPrimary },
-  cellAmount: { fontSize: 9, color: Colors.textSecondary, marginTop: 2 },
-  error: { textAlign: 'center', marginTop: 40, color: Colors.textMuted },
+  cellToday: { borderWidth: 2, borderColor: color.gold },
+  cellDay: { fontSize: 10, fontFamily: font.bodySemi, color: color.ink },
+  cellAmount: { fontSize: 9, color: color.inkSoft, marginTop: 2 },
+  error: { textAlign: 'center', marginTop: 40, color: color.inkFaint },
 });

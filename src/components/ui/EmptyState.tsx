@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { color, font } from '../../theme/tokens';
 import Button from './Button';
 
 interface Props {
@@ -44,15 +44,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
+    fontFamily: font.bodySemi,
     fontSize: 18,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+    color: color.ink,
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
+    fontFamily: font.body,
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: color.inkSoft,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,

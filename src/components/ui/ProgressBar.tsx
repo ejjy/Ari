@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { color } from '../../theme/tokens';
 
 interface Props {
   percentage: number;
@@ -10,7 +10,7 @@ interface Props {
 
 export default function ProgressBar({
   percentage,
-  color = Colors.primary,
+  color: barColorProp = color.forest,
   height = 6,
 }: Props) {
   const anim = useRef(new Animated.Value(0)).current;
@@ -26,10 +26,10 @@ export default function ProgressBar({
 
   const barColor =
     percentage > 100
-      ? Colors.danger
+      ? color.clay
       : percentage > 80
-      ? Colors.accent
-      : color;
+      ? color.gold
+      : barColorProp;
 
   return (
     <View style={[styles.track, { height }]}>
@@ -53,7 +53,7 @@ export default function ProgressBar({
 
 const styles = StyleSheet.create({
   track: {
-    backgroundColor: Colors.border,
+    backgroundColor: color.line,
     borderRadius: 99,
     overflow: 'hidden',
     width: '100%',

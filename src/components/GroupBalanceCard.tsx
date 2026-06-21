@@ -6,7 +6,7 @@ import { listGroups, getBalances, type GroupSummary } from '../api/groups';
 import { useAuth } from '../context/AuthContext';
 import { usePrivacy } from '../context/PrivacyContext';
 import Icon from './ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import type { MainStackParamList } from '../navigation/navigationTypes';
 
 /**
@@ -84,18 +84,18 @@ export default function GroupBalanceCard() {
       accessibilityLabel="Open shared expenses"
     >
       <View style={styles.row}>
-        <View style={[styles.iconWrap, { backgroundColor: 'rgba(78,205,196,0.15)' }]}>
-          <Icon name="user" size={16} color={Colors.teal} />
+        <View style={[styles.iconWrap, { backgroundColor: color.cream2 }]}>
+          <Icon name="user" size={16} color={color.forest2} />
         </View>
         <Text style={styles.kicker}>Shared expenses</Text>
-        <Icon name="chevron-right" size={14} color={Colors.textMuted} />
+        <Icon name="chevron-right" size={14} color={color.inkFaint} />
       </View>
 
       <View style={styles.amounts}>
         {summary.owed_to_me > 0 && (
           <View style={styles.amountBlock}>
             <Text style={styles.label}>Owed to you</Text>
-            <Text style={[styles.amount, { color: Colors.primary }]}>
+            <Text style={[styles.amount, { color: color.forest }]}>
               +{formatAmount(summary.owed_to_me)}
             </Text>
           </View>
@@ -103,7 +103,7 @@ export default function GroupBalanceCard() {
         {summary.i_owe > 0 && (
           <View style={styles.amountBlock}>
             <Text style={styles.label}>You owe</Text>
-            <Text style={[styles.amount, { color: Colors.danger }]}>
+            <Text style={[styles.amount, { color: color.clay }]}>
               -{formatAmount(summary.i_owe)}
             </Text>
           </View>
@@ -120,25 +120,25 @@ export default function GroupBalanceCard() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 14,
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: color.line,
     padding: 14, marginBottom: 16,
   },
   row: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   iconWrap: {
     width: 28, height: 28, borderRadius: 14,
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: 'rgba(78,205,196,0.3)',
+    borderWidth: 1, borderColor: color.line,
   },
   kicker: {
     flex: 1,
     fontSize: 11, letterSpacing: 1,
-    color: Colors.teal, fontWeight: '700', textTransform: 'uppercase',
+    color: color.forest2, fontFamily: font.bodyBold, textTransform: 'uppercase',
   },
   amounts: { flexDirection: 'row', gap: 16 },
   amountBlock: { flex: 1 },
-  label: { fontSize: 11, color: Colors.textSecondary, marginBottom: 2 },
-  amount: { fontSize: 18, fontWeight: '800' },
-  footer: { fontSize: 11, color: Colors.textMuted, marginTop: 10, textAlign: 'right' },
+  label: { fontSize: 11, color: color.inkSoft, marginBottom: 2 },
+  amount: { fontSize: 18, fontFamily: font.displayBold },
+  footer: { fontSize: 11, color: color.inkFaint, marginTop: 10, textAlign: 'right' },
 });

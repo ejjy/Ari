@@ -3,6 +3,7 @@ import React, {
   useContext,
   useState,
   useCallback,
+  useEffect,
 } from 'react';
 import { ApiError } from '../api/client';
 import * as txnApi from '../api/transactions';
@@ -13,6 +14,8 @@ import * as catApi from '../api/categories';
 import type { UserCategoryData } from '../api/categories';
 import { getCurrentMonth } from '../utils/dateHelpers';
 import { useOfflineCache } from '../hooks/useOfflineCache';
+import { localStore } from '../lib/localStore';
+import { flushPending as engineFlush, startAutoFlush } from '../lib/syncEngine';
 import { track, bucketAmount } from '../lib/analytics';
 import { addBreadcrumb } from '../config/sentry';
 import type {
@@ -59,6 +62,17 @@ interface DataContextValue {
     entryType?: 'manual' | 'voice' | 'aa_sync';
   }) => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
+  updateTransaction: (
+    id: string,
+    patch: {
+      type?: string;
+      amount?: number;
+      category?: string;
+      description?: string;
+      note?: string;
+      date?: string;
+    }
+  ) => Promise<void>;
   saveBudget: (data: { category: string; limit: number; month: string }) => Promise<void>;
   deleteBudget: (id: string) => Promise<void>;
   createSavingsGoal: (data: {
@@ -115,17 +129,44 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
+  const refreshFromLocal = useCallback(async () => {
+    setTransactions(await localStore.getAll());
+  }, []);
+
+  // Backlog flush is owned by the sync engine (Commit 4): single-flight, with
+  // AppState/interval/backoff triggers, OTA-safe (no NetInfo — D8). Backlog
+  // rows go up with suppressAlerts so reconnecting doesn't fire stale budget
+  // pushes (G7). Refresh the list only when something actually synced.
+  const syncTransactions = useCallback(async () => {
+    const { changed } = await engineFlush();
+    if (changed) await refreshFromLocal();
+  }, [refreshFromLocal]);
+
   const fetchTransactions = useCallback(async () => {
     try {
-      const month = getCurrentMonth();
-      const data = await fetchWithCache(`txns_${month}`, () =>
-        txnApi.getTransactions(month)
-      );
-      setTransactions(data);
+      // First run on this device: seed the local store from the server's full
+      // history (no month filter — G6). Merges, so offline-born rows survive.
+      // Offline first-run just stays empty and seeds on a later online open.
+      if (!(await localStore.isSeeded())) {
+        try {
+          const server = await txnApi.getTransactions();
+          await localStore.seed(server);
+        } catch (err) {
+          handleError(err);
+        }
+      }
+      await refreshFromLocal();
+      void syncTransactions();
     } catch (err) {
       handleError(err);
     }
-  }, [handleError, fetchWithCache]);
+  }, [handleError, refreshFromLocal, syncTransactions]);
+
+  // Start the recurring background flush once for the provider's lifetime.
+  useEffect(
+    () => startAutoFlush(() => void refreshFromLocal()),
+    [refreshFromLocal]
+  );
 
   const fetchSummary = useCallback(async () => {
     try {
@@ -235,12 +276,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       rawInput?: string;
       entryType?: 'manual' | 'voice' | 'aa_sync';
     }) => {
-      const txn = await txnApi.addTransaction(data);
-      setTransactions((prev) => [txn, ...prev]);
+      // Offline-first: write to the local store first so the UI updates
+      // instantly and the entry survives an app kill, with no network in the
+      // path of the user's Save tap.
+      const record = await localStore.create({
+        type: data.type as Transaction['type'],
+        amount: data.amount,
+        category: data.category,
+        description: data.description,
+        note: data.note,
+        date: data.date,
+        merchant: data.merchant ?? null,
+        entryType: data.entryType === 'voice' ? 'voice' : 'manual',
+        rawInput: data.rawInput ?? null,
+        parseSource: data.parseSource ?? 'local',
+        confidence: data.confidence ?? null,
+      });
+      setTransactions(await localStore.getAll());
 
-      // Habit-loop event — fire BEFORE the summary fetch so a slow network
-      // never delays it. Properties are chosen for D1/D7/D30 cohort math:
-      // amount is bucketed (DPDPA-minimal), source/entry tags split funnels
+      // Habit-loop event — fire BEFORE the network round-trip so a slow or
+      // absent network never delays it. Properties chosen for D1/D7/D30 cohort
+      // math: amount bucketed (DPDPA-minimal), source/entry tags split funnels
       // by parsing path, day_of_week reveals weekday-vs-weekend habits.
       track('transaction_logged', {
         type: data.type,
@@ -254,37 +310,114 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         has_note: !!data.note?.trim(),
       });
 
-      await fetchSummary();
+      // Opportunistic flush of this one live create (alerts ON — it's a
+      // foreground spend). Offline: it stays pending and the engine flushes it
+      // later. The backend upserts on the client id, so a retry never dupes.
+      try {
+        const server = await txnApi.addTransaction({ ...data, id: record.id });
+        await localStore.markSynced(record.id, {
+          updatedAt: (server as { updatedAt?: string }).updatedAt,
+          userId: server.userId,
+        });
+        setTransactions(await localStore.getAll());
+        await fetchSummary();
+      } catch (err) {
+        // 401 → handleError deals with session expiry. 4xx (validation / auth)
+        // → mark the row failed so the UI shows a failed tag and stops retrying.
+        // Network / 5xx → row stays pending for engine retry; no UI noise yet.
+        handleError(err);
+        if (err instanceof ApiError && err.status !== 401 && err.status >= 400 && err.status < 500) {
+          await localStore.markFailed(
+            record.id,
+            err.message ?? 'Validation error — tap to retry'
+          );
+          setTransactions(await localStore.getAll());
+        }
+        // Do NOT rethrow: the local write succeeded (offline-first contract).
+        // The caller's success-toast is correct — the entry is durably saved.
+      }
     },
-    [fetchSummary]
+    [fetchSummary, handleError]
   );
 
   const deleteTransaction = useCallback(
     async (id: string) => {
-      // Snapshot the pre-delete list in local closure scope so concurrent
-      // deletes each keep their own rollback state. (Previously this lived on
-      // (deleteTransaction as any).__rollback, a single shared slot that a
-      // second in-flight delete would overwrite — corrupting the first's
-      // rollback.) Capturing inside the functional updater also avoids a
-      // stale closure over `transactions`.
-      let snapshot: Transaction[] | null = null;
+      // Offline-first delete: drop it locally first (a pending create vanishes
+      // outright; a synced row becomes a pending-delete tombstone the flush
+      // will propagate). getAll() already hides it, so the UI updates at once.
+      await localStore.softDelete(id);
+      setTransactions(await localStore.getAll());
 
-      // Optimistic delete: remove from UI immediately.
-      setTransactions((prev) => {
-        snapshot = prev;
-        return prev.filter((t) => t.id !== id);
-      });
-
+      // Opportunistic flush. DELETE is idempotent server-side (G3), so a row
+      // we never synced or a retried delete both just return 200. Offline: the
+      // tombstone stays pending and the engine retries; the UI never blocks.
       try {
         await txnApi.deleteTransaction(id);
+        await localStore.removeRow(id);
         await fetchSummary();
       } catch (err) {
-        // Rollback to this invocation's own snapshot.
-        if (snapshot) setTransactions(snapshot);
-        throw err;
+        handleError(err);
       }
     },
-    [fetchSummary]
+    [fetchSummary, handleError]
+  );
+
+  const updateTransaction = useCallback(
+    async (
+      id: string,
+      patch: {
+        type?: string;
+        amount?: number;
+        category?: string;
+        description?: string;
+        note?: string;
+        date?: string;
+      }
+    ) => {
+      // Read the current updatedAt BEFORE patching — it's the LWW baseline we
+      // send to the server. After localStore.update() the field is nowISO().
+      const existing = transactions.find((t) => t.id === id);
+      const lwwBaseline = existing?.updatedAt;
+
+      // Optimistic local update — instant UI, survives app kill.
+      const updated = await localStore.update(id, {
+        type: patch.type as Transaction['type'] | undefined,
+        amount: patch.amount,
+        category: patch.category ?? null,
+        description: patch.description,
+        note: patch.note,
+        date: patch.date,
+      });
+      if (!updated) return; // row disappeared — nothing to do
+      setTransactions(await localStore.getAll());
+
+      // Inline flush: PUT with the pre-edit updatedAt as the LWW baseline.
+      // 409 (stale baseline) is handled by the sync engine's conflict pass;
+      // here we just mark the row failed so the tag surfaces.
+      try {
+        const server = await txnApi.updateTransaction(id, {
+          ...patch,
+          updatedAt: lwwBaseline,
+        });
+        await localStore.markSynced(id, {
+          updatedAt: (server as Transaction & { updatedAt?: string }).updatedAt,
+          userId: server.userId,
+        });
+        setTransactions(await localStore.getAll());
+        await fetchSummary();
+      } catch (err) {
+        handleError(err);
+        if (err instanceof ApiError && err.status !== 401) {
+          await localStore.markFailed(
+            id,
+            err.message ?? 'Update failed'
+          );
+          setTransactions(await localStore.getAll());
+        }
+        // Do NOT rethrow — the local edit is durable; engine will reconcile.
+      }
+    },
+    [fetchSummary, handleError, transactions]
   );
 
   const saveBudget = useCallback(
@@ -442,6 +575,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         fetchUserCategories,
         addTransaction,
         deleteTransaction,
+        updateTransaction,
         saveBudget,
         deleteBudget,
         createSavingsGoal,

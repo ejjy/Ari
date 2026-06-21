@@ -1,84 +1,132 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors } from '../constants/colors';
+import { color, onForest, font, type } from '../theme/tokens';
 import { usePrivacy } from '../context/PrivacyContext';
 
 interface Props {
-  income: number;
-  expenses: number;
-  /** Kept for caller compatibility; no longer rendered. */
-  balance?: number;
-  savingsRate?: number;
+  /** Total spent today (money out). The hero number. */
+  spentToday: number;
+  /** Income received today. */
+  moneyIn: number;
+  /** Expenses today (same as spentToday; named for the pill). */
+  moneyOut: number;
+  /** moneyIn - moneyOut. Signed. */
+  netToday: number;
 }
 
 /**
- * Income + Expenses side-by-side. The "Total Balance" hero number was
- * removed because it conflated saved-up money with month-to-date net,
- * which most users misread. The two flows tell a clearer story on their
- * own.
+ * "Spent today" hero — flat forest block, no gradient (design rule #1).
+ * Reframed from the old monthly balance card to a daily-spend focus, which
+ * matches how the target user (daily house-budget logging) reads the app.
+ * Mirrors `.hero` in docs/ari-v2-forest.html.
  */
-export default function BalanceCard({ income, expenses }: Props) {
-  const { formatAmount } = usePrivacy();
+export default function BalanceCard({ spentToday, moneyIn, moneyOut, netToday }: Props) {
+  const { isPrivate } = usePrivacy();
+
+  const amt = (n: number) => (isPrivate ? '••••' : n.toLocaleString('en-IN'));
+  const signed = (n: number) =>
+    isPrivate ? '••••' : `${n >= 0 ? '+' : '−'}₹${Math.abs(n).toLocaleString('en-IN')}`;
+
   return (
-    <LinearGradient
-      colors={['#1A3A3A', '#0D2B2B', '#0A1E1E']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.card}
-    >
-      <View style={styles.row}>
-        <View style={styles.col}>
-          <Text style={styles.label}>Income</Text>
-          <Text style={[styles.amount, { color: Colors.primary }]}>
-            {formatAmount(income)}
-          </Text>
+    <View style={styles.hero}>
+      {/* Faint concentric-circle ornaments, clipped by overflow:hidden. */}
+      <View style={[styles.ring, styles.ringOuter]} pointerEvents="none" />
+      <View style={[styles.ring, styles.ringInner]} pointerEvents="none" />
+
+      <Text style={styles.label}>Spent today</Text>
+      <Text style={styles.amount}>
+        <Text style={styles.rupee}>₹</Text>
+        {amt(spentToday)}
+      </Text>
+
+      <View style={styles.pills}>
+        <View style={styles.pill}>
+          <Text style={styles.pillKey}>Money out</Text>
+          <Text style={[styles.pillVal, styles.pillValClay]}>₹{amt(moneyOut)}</Text>
         </View>
-        <View style={styles.divider} />
-        <View style={styles.col}>
-          <Text style={styles.label}>Expenses</Text>
-          <Text style={[styles.amount, { color: Colors.danger }]}>
-            {formatAmount(expenses)}
-          </Text>
+        <View style={styles.pill}>
+          <Text style={styles.pillKey}>Money in</Text>
+          <Text style={styles.pillVal}>₹{amt(moneyIn)}</Text>
+        </View>
+        <View style={styles.pill}>
+          <Text style={styles.pillKey}>Net today</Text>
+          <Text style={styles.pillVal}>{signed(netToday)}</Text>
         </View>
       </View>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 20,
-    padding: 22,
+  hero: {
+    marginTop: 20,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(0,200,150,0.2)',
+    backgroundColor: color.forest,
+    borderRadius: 26,
+    paddingVertical: 26,
+    paddingHorizontal: 24,
+    overflow: 'hidden',
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  ring: {
+    position: 'absolute',
+    borderWidth: 1.5,
+    borderRadius: 999,
   },
-  col: {
-    flex: 1,
-    alignItems: 'center',
+  ringOuter: {
+    right: -30,
+    bottom: -50,
+    width: 160,
+    height: 160,
+    borderColor: 'rgba(239,234,217,0.10)',
   },
-  divider: {
-    width: 1,
-    height: 56,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    marginHorizontal: 16,
+  ringInner: {
+    right: 6,
+    bottom: -20,
+    width: 100,
+    height: 100,
+    borderColor: 'rgba(239,234,217,0.08)',
   },
   label: {
-    fontSize: 12,
-    color: 'rgba(232,232,240,0.55)',
-    marginBottom: 6,
-    letterSpacing: 0.4,
+    fontFamily: font.bodySemi,
+    fontSize: type.caption,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    fontWeight: '600',
+    color: onForest.muted,
   },
   amount: {
-    fontSize: 22,
-    fontWeight: '700',
-    letterSpacing: -0.5,
+    fontFamily: font.display,
+    fontSize: type.heroAmount,
+    lineHeight: type.heroAmount,
+    letterSpacing: -1,
+    marginTop: 12,
+    color: onForest.textBright,
+  },
+  rupee: {
+    fontFamily: font.display,
+    fontSize: 30,
+    color: onForest.label,
+  },
+  pills: {
+    flexDirection: 'row',
+    gap: 22,
+    marginTop: 20,
+  },
+  pill: {
+    gap: 2,
+  },
+  pillKey: {
+    fontFamily: font.bodySemi,
+    fontSize: 10.5,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    color: onForest.label,
+  },
+  pillVal: {
+    fontFamily: font.display,
+    fontSize: 17,
+    color: onForest.text,
+  },
+  pillValClay: {
+    color: onForest.clay,
   },
 });

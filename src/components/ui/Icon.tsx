@@ -1,6 +1,6 @@
 import React from 'react';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../constants/colors';
+import { color } from '../../theme/tokens';
 
 export type IconName =
   // Navigation
@@ -105,33 +105,33 @@ const ICON_MAP: Record<IconName, { lib: 'feather' | 'mci' | 'ion'; icon: string 
   'mic-off': { lib: 'feather', icon: 'mic-off' },
 };
 
-export default function Icon({ name, size = 20, color = Colors.textPrimary }: IconProps) {
+export default function Icon({ name, size = 20, color: iconColor = color.ink }: IconProps) {
   const mapping = ICON_MAP[name];
   if (!mapping) return null;
 
   switch (mapping.lib) {
     case 'feather':
-      return <Feather name={mapping.icon as any} size={size} color={color} />;
+      return <Feather name={mapping.icon as any} size={size} color={iconColor} />;
     case 'mci':
-      return <MaterialCommunityIcons name={mapping.icon as any} size={size} color={color} />;
+      return <MaterialCommunityIcons name={mapping.icon as any} size={size} color={iconColor} />;
     case 'ion':
-      return <Ionicons name={mapping.icon as any} size={size} color={color} />;
+      return <Ionicons name={mapping.icon as any} size={size} color={iconColor} />;
   }
 }
 
 // Category icon mapping for consistent use across the app
 export const CATEGORY_ICONS: Record<string, { icon: IconName; color: string }> = {
-  food: { icon: 'coffee', color: Colors.orange },
-  transport: { icon: 'truck', color: Colors.accent },
-  shopping: { icon: 'shopping-bag', color: Colors.danger },
-  entertainment: { icon: 'film', color: Colors.purple },
-  health: { icon: 'heart', color: Colors.primary },
-  housing: { icon: 'home-cat', color: Colors.teal },
-  education: { icon: 'book-open', color: Colors.teal },
-  other: { icon: 'package', color: Colors.textMuted },
-  salary: { icon: 'briefcase', color: Colors.primary },
-  freelance: { icon: 'code', color: Colors.accent },
-  investment: { icon: 'trending-up', color: Colors.purple },
+  food: { icon: 'coffee', color: color.clay },
+  transport: { icon: 'truck', color: color.gold },
+  shopping: { icon: 'shopping-bag', color: color.clay },
+  entertainment: { icon: 'film', color: '#7C5CBF' },
+  health: { icon: 'heart', color: color.forest },
+  housing: { icon: 'home-cat', color: '#4ECDC4' },
+  education: { icon: 'book-open', color: '#4ECDC4' },
+  other: { icon: 'package', color: color.inkFaint },
+  salary: { icon: 'briefcase', color: color.forest },
+  freelance: { icon: 'code', color: color.gold },
+  investment: { icon: 'trending-up', color: '#7C5CBF' },
   gift: { icon: 'gift', color: '#FF6B9D' },
-  savings: { icon: 'target', color: Colors.primary },
+  savings: { icon: 'target', color: color.forest },
 };

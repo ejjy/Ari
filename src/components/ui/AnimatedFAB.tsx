@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from './Icon';
-import { Colors } from '../../constants/colors';
+import { color } from '../../theme/tokens';
 
 interface Props {
   onPress: () => void;
@@ -42,7 +42,7 @@ export default function AnimatedFAB({ onPress }: Props) {
         accessibilityLabel="Add new transaction"
         accessibilityRole="button"
       >
-        <Icon name="plus" size={26} color={Colors.background} />
+        <Icon name="plus" size={26} color={color.cream} />
       </TouchableOpacity>
     </Animated.View>
   );
@@ -55,12 +55,12 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.primary,
-    elevation: 8,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
+    backgroundColor: color.clay,
+    elevation: 6,
+    shadowColor: color.clay,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
   },
   touchable: {
     width: '100%',

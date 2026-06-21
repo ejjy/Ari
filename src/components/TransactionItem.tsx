@@ -2,34 +2,43 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { getCategoryDef } from '../constants/categories';
 import { usePrivacy } from '../context/PrivacyContext';
-import { formatDateShort } from '../utils/dateHelpers';
-import { Colors } from '../constants/colors';
-import Icon, { CATEGORY_ICONS } from './ui/Icon';
+import { formatSectionDate } from '../utils/dateHelpers';
+import { color, font } from '../theme/tokens';
+import Icon from './ui/Icon';
 import type { Transaction } from '../types';
 
 interface Props {
   transaction: Transaction;
   onDelete?: (id: string) => void;
+  onEdit?: (transaction: Transaction) => void;
   showDelete?: boolean;
 }
 
-export default function TransactionItem({ transaction, onDelete, showDelete }: Props) {
+/**
+ * Recent/ledger row in the forest-on-cream system. Hairline-divided list row
+ * (not a card), warm emoji tile, Fraunces signed amount. Mirrors `.row` in
+ * docs/ari-v2-forest.html. Subline uses inkSoft, not inkFaint, for legibility.
+ */
+export default function TransactionItem({ transaction, onDelete, onEdit, showDelete }: Props) {
   const cat = getCategoryDef(transaction.category);
   const isExpense = transaction.type === 'expense';
   const { formatAmount } = usePrivacy();
+  const sync = transaction.syncStatus;
+  const showSyncTag = sync === 'pending' || sync === 'failed';
+
+  const handleLongPress = () => {
+    if (onEdit) onEdit(transaction);
+  };
 
   return (
-    <View style={styles.row}>
-      <View style={[styles.iconBox, { backgroundColor: cat.color + '20' }]}>
-        {CATEGORY_ICONS[transaction.category] ? (
-          <Icon
-            name={CATEGORY_ICONS[transaction.category].icon}
-            size={20}
-            color={CATEGORY_ICONS[transaction.category].color}
-          />
-        ) : (
-          <Text style={styles.icon}>{cat.emoji}</Text>
-        )}
+    <TouchableOpacity
+      style={styles.row}
+      onLongPress={handleLongPress}
+      delayLongPress={400}
+      activeOpacity={onEdit ? 0.7 : 1}
+    >
+      <View style={styles.iconBox}>
+        <Text style={styles.icon}>{cat.emoji}</Text>
       </View>
 
       <View style={styles.info}>
@@ -37,13 +46,19 @@ export default function TransactionItem({ transaction, onDelete, showDelete }: P
           {transaction.description || cat.label}
         </Text>
         <Text style={styles.meta}>
-          {cat.label} · {formatDateShort(transaction.date)}
+          {cat.label} · {formatSectionDate(transaction.date)}
+          {showSyncTag && (
+            <Text style={sync === 'failed' ? styles.syncFailed : styles.syncPending}>
+              {sync === 'failed' ? '  · ✗ not synced' : '  · ↑ syncing…'}
+            </Text>
+          )}
         </Text>
       </View>
 
       <View style={styles.right}>
         <Text style={[styles.amount, isExpense ? styles.expenseColor : styles.incomeColor]}>
-          {isExpense ? '-' : '+'}{formatAmount(transaction.amount)}
+          {isExpense ? '−' : '+'}
+          {formatAmount(transaction.amount)}
         </Text>
         {showDelete && onDelete && (
           <TouchableOpacity
@@ -52,11 +67,11 @@ export default function TransactionItem({ transaction, onDelete, showDelete }: P
             accessibilityLabel="Delete transaction"
             accessibilityRole="button"
           >
-            <Icon name="trash" size={16} color={Colors.danger} />
+            <Icon name="trash" size={16} color={color.clay} />
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -64,51 +79,60 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: Colors.card,
-    borderRadius: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    gap: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: color.line,
   },
   iconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 42,
+    height: 42,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
+    backgroundColor: color.cream2,
   },
   icon: {
-    fontSize: 20,
+    fontSize: 18,
   },
   info: {
     flex: 1,
-    marginRight: 8,
+    minWidth: 0,
   },
   desc: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: 3,
+    fontFamily: font.bodySemi,
+    fontSize: 14.5,
+    color: color.ink,
   },
   meta: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontFamily: font.body,
+    fontSize: 11.5,
+    color: color.inkSoft,
+    marginTop: 2,
   },
   right: {
     alignItems: 'flex-end',
-    gap: 4,
+    gap: 6,
   },
   amount: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontFamily: font.display,
+    fontSize: 16,
   },
   expenseColor: {
-    color: Colors.danger,
+    color: color.ink,
   },
   incomeColor: {
-    color: Colors.primary,
+    color: color.forest2,
+  },
+  syncPending: {
+    fontFamily: font.body,
+    fontSize: 11,
+    color: color.clay,
+  },
+  syncFailed: {
+    fontFamily: font.body,
+    fontSize: 11,
+    color: color.clay,
   },
 });

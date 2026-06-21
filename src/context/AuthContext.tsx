@@ -13,6 +13,7 @@ import { getExpoPushToken } from '../lib/push';
 import { identifyUser, resetAnalytics, track } from '../lib/analytics';
 import { signOutGoogle } from '../lib/socialAuth';
 import { secureStorage } from '../lib/secureStorage';
+import { localStore } from '../lib/localStore';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { addBreadcrumb, captureError } from '../config/sentry';
 import type { User, RegisterPayload } from '../types';
@@ -267,6 +268,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await signOutGoogle();
     await secureStorage.removeItem('ari_token');
     await cacheUser(null);
+    // Wipe the offline transaction store so the next account that signs in on
+    // this device starts clean instead of inheriting these rows.
+    try {
+      await localStore.clear();
+    } catch {
+      /* noop */
+    }
     setUser(null);
     resetAnalytics();
     addBreadcrumb('auth', 'logout: complete');

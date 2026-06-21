@@ -1,4 +1,3 @@
-import { Colors } from './colors';
 import type { UserCategoryData } from '../api/categories';
 
 export interface CategoryDef {
@@ -9,23 +8,23 @@ export interface CategoryDef {
 }
 
 export const EXPENSE_CATEGORIES: CategoryDef[] = [
-  { value: 'food',          emoji: '🍜', label: 'Food',          color: Colors.orange },
-  { value: 'transport',     emoji: '🚗', label: 'Transport',     color: Colors.accent },
-  { value: 'shopping',      emoji: '🛍️', label: 'Shopping',      color: Colors.danger },
-  { value: 'entertainment', emoji: '🎬', label: 'Fun',           color: Colors.purple },
-  { value: 'health',        emoji: '💊', label: 'Health',        color: Colors.primary },
-  { value: 'housing',       emoji: '🏠', label: 'Housing',       color: '#2D7D7D' },
-  { value: 'education',     emoji: '📚', label: 'Education',     color: Colors.teal },
-  { value: 'savings',       emoji: '🎯', label: 'Savings',       color: Colors.primary },
-  { value: 'other',         emoji: '📦', label: 'Other',         color: Colors.textSecondary },
+  { value: 'food',          emoji: '🍜', label: 'Food',          color: '#B4612F' },
+  { value: 'transport',     emoji: '🚗', label: 'Transport',     color: '#A8862C' },
+  { value: 'shopping',      emoji: '🛍️', label: 'Shopping',      color: '#B4612F' },
+  { value: 'entertainment', emoji: '🎬', label: 'Fun',           color: '#5C7A63' },
+  { value: 'health',        emoji: '💊', label: 'Health',        color: '#1F3D2B' },
+  { value: 'housing',       emoji: '🏠', label: 'Housing',       color: '#2E5239' },
+  { value: 'education',     emoji: '📚', label: 'Education',     color: '#2E5239' },
+  { value: 'savings',       emoji: '🎯', label: 'Savings',       color: '#1F3D2B' },
+  { value: 'other',         emoji: '📦', label: 'Other',         color: '#6E6B5C' },
 ];
 
 export const INCOME_CATEGORIES: CategoryDef[] = [
-  { value: 'salary',     emoji: '💰', label: 'Salary',    color: Colors.primary },
-  { value: 'freelance',  emoji: '💻', label: 'Freelance', color: Colors.accent },
-  { value: 'investment', emoji: '📈', label: 'Returns',   color: Colors.purple },
-  { value: 'gift',       emoji: '🎁', label: 'Gift',      color: '#FF69B4' },
-  { value: 'other',      emoji: '📦', label: 'Other',     color: Colors.textSecondary },
+  { value: 'salary',     emoji: '💰', label: 'Salary',    color: '#1F3D2B' },
+  { value: 'freelance',  emoji: '💻', label: 'Freelance', color: '#A8862C' },
+  { value: 'investment', emoji: '📈', label: 'Returns',   color: '#5C7A63' },
+  { value: 'gift',       emoji: '🎁', label: 'Gift',      color: '#B4612F' },
+  { value: 'other',      emoji: '📦', label: 'Other',     color: '#6E6B5C' },
 ];
 
 export const ALL_CATEGORIES: CategoryDef[] = [
@@ -39,7 +38,7 @@ export const getCategoryDef = (value: string, custom?: CategoryDef[]): CategoryD
     value,
     emoji: '📦',
     label: value.charAt(0).toUpperCase() + value.slice(1),
-    color: Colors.textSecondary,
+    color: '#6E6B5C',
   };
 };
 
@@ -86,7 +85,7 @@ export function buildCategoryList(
         value: sc.name,
         emoji: sc.emoji || '📦',
         label: sc.name.charAt(0).toUpperCase() + sc.name.slice(1),
-        color: sc.color || Colors.textSecondary,
+        color: sc.color || '#6E6B5C',
       });
     }
   }

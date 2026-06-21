@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ViewStyle, StyleSheet } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { color } from '../../theme/tokens';
 import { Layout } from '../../constants/layout';
 
 interface CardProps {
@@ -14,10 +14,10 @@ export default function Card({ children, style }: CardProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: Layout.cardRadius,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     padding: 16,
   },
 });

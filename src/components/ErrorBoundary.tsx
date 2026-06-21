@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { captureError } from '../config/sentry';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon from './ui/Icon';
 
 interface Props {
@@ -38,7 +38,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
-          <Icon name="alert-triangle" size={64} color={Colors.danger} />
+          <Icon name="alert-triangle" size={64} color={color.clay} />
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
             Don&apos;t worry, your data is safe. The error has been reported and we&apos;ll fix it soon.
@@ -64,7 +64,7 @@ export default class ErrorBoundary extends React.Component<Props, State> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: color.cream,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 32,
@@ -73,40 +73,41 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 64, marginBottom: 8 },
   title: {
     fontSize: 22,
-    fontWeight: '800',
-    color: Colors.textPrimary,
+    fontFamily: font.displayBold,
+    color: color.ink,
     textAlign: 'center',
   },
   message: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    fontFamily: font.body,
+    color: color.inkSoft,
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 16,
   },
   debugBox: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.danger,
+    borderColor: color.clay,
     padding: 12,
     width: '100%',
     marginBottom: 16,
   },
   debugText: {
     fontSize: 11,
-    color: Colors.danger,
+    color: color.clay,
     fontFamily: 'monospace',
   },
   btn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: color.forest,
     paddingHorizontal: 32,
     paddingVertical: 14,
     borderRadius: 14,
   },
   btnText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: Colors.background,
+    fontFamily: font.bodyBold,
+    color: color.cream,
   },
 });

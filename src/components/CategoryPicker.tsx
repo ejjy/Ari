@@ -6,7 +6,7 @@ import {
   buildCategoryList,
   CategoryDef,
 } from '../constants/categories';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import type { UserCategoryData } from '../api/categories';
 
 interface Props {
@@ -35,7 +35,7 @@ export default function CategoryPicker({ selected, type, onSelect, customCategor
             activeOpacity={0.75}
             style={[
               styles.tile,
-              { borderColor: isSelected ? cat.color : Colors.border },
+              { borderColor: isSelected ? cat.color : color.line },
               isSelected && { backgroundColor: cat.color + '20' },
             ]}
           >
@@ -43,7 +43,7 @@ export default function CategoryPicker({ selected, type, onSelect, customCategor
             <Text
               style={[
                 styles.label,
-                { color: isSelected ? cat.color : Colors.textSecondary },
+                { color: isSelected ? cat.color : color.inkSoft },
               ]}
               numberOfLines={1}
             >
@@ -70,8 +70,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
   },
   emoji: { fontSize: 20 },
-  label: { fontSize: 10, fontWeight: '500', textAlign: 'center' },
+  label: { fontSize: 10, fontFamily: font.bodyMed, textAlign: 'center' },
 });

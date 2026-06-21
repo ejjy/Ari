@@ -16,16 +16,12 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import BalanceCard from '../components/BalanceCard';
 import CoachingBriefCard from '../components/CoachingBriefCard';
-import GroupBalanceCard from '../components/GroupBalanceCard';
-import NudgeCard from '../components/NudgeCard';
 import TransactionItem from '../components/TransactionItem';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmptyState from '../components/ui/EmptyState';
 import AnimatedEntry from '../components/ui/AnimatedEntry';
-// AnimatedFAB removed — Quick Actions row already covers add-expense/income flows.
-import Icon from '../components/ui/Icon';
-import type { IconName } from '../components/ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font, type } from '../theme/tokens';
+import { todayISO } from '../utils/dateHelpers';
 import { useHaptics } from '../hooks/useHaptics';
 import type { TabParamList, MainStackParamList } from '../navigation/navigationTypes';
 
@@ -41,79 +37,60 @@ function getGreeting(): string {
   return 'Good evening';
 }
 
-const QUICK_ACTIONS: {
-  icon: IconName;
-  iconColor: string;
-  label: string;
-  type?: 'expense' | 'income';
-  tab?: string;
-}[] = [
-  { icon: 'trending-down', iconColor: Colors.danger, label: 'Add Expense', type: 'expense' },
-  { icon: 'trending-up', iconColor: Colors.primary, label: 'Add Income', type: 'income' },
-  { icon: 'target', iconColor: Colors.accent, label: 'Budgets', tab: 'Budget' },
-  { icon: 'bot', iconColor: Colors.teal, label: 'Ask Tomo', tab: 'Tomo' },
-];
-
-const INSIGHT_COLORS: Record<string, string> = {
-  warning: Colors.danger,
-  tip: Colors.accent,
-  positive: Colors.primary,
-};
-
+/**
+ * Home — forest-on-cream, stripped to the prototype (docs/ari-v2-forest.html):
+ * date eyebrow, greeting, "Spent today" hero, one Add-entry CTA, Tomo brief,
+ * Recent list. Quick Actions grid, banners, group balance, nudge and insights
+ * were removed from Home this sprint; they remain reachable via the existing
+ * bottom tabs until the nav/FAB restructure (Commit 6).
+ */
 export default function DashboardScreen() {
   const navigation = useNavigation<Nav>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const {
-    transactions,
-    summary,
-    nudge,
-    insights,
-    loadingData,
-    refreshing,
-    fetchAll,
-    fetchNudge,
-    fetchInsights,
-    refresh,
-  } = useData();
+  const { transactions, loadingData, refreshing, fetchAll, refresh } = useData();
   const haptics = useHaptics();
 
   useFocusEffect(
     useCallback(() => {
       fetchAll();
-      fetchNudge();
-      fetchInsights();
-    }, [fetchAll, fetchNudge, fetchInsights])
+    }, [fetchAll])
   );
 
-  const income = summary?.income ?? 0;
-  const expenses = summary?.expenses ?? 0;
-  const balance = summary?.balance ?? income - expenses;
-  const savingsRate = income > 0 ? Math.round(((income - expenses) / income) * 100) : 0;
+  const today = todayISO();
+  const { moneyIn, moneyOut } = useMemo(() => {
+    let mi = 0;
+    let mo = 0;
+    for (const t of transactions) {
+      if (t.date !== today) continue;
+      if (t.type === 'income') mi += t.amount;
+      else mo += t.amount;
+    }
+    return { moneyIn: mi, moneyOut: mo };
+  }, [transactions, today]);
+  const netToday = moneyIn - moneyOut;
+
   const recentTxns = useMemo(() => transactions.slice(0, 5), [transactions]);
 
-  const handleQuickAction = useCallback(
-    (action: typeof QUICK_ACTIONS[0]) => {
-      haptics.light();
-      if (action.type) {
-        navigation.navigate('AddTransaction', { type: action.type });
-      } else if (action.tab) {
-        navigation.navigate('Tabs', { screen: action.tab as keyof TabParamList });
-      }
-    },
-    [haptics, navigation]
+  const dateLabel = useMemo(
+    () =>
+      new Date().toLocaleDateString('en-IN', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }),
+    []
   );
+
+  const handleAddEntry = useCallback(() => {
+    haptics.medium();
+    navigation.navigate('AddTransaction', { type: 'expense' });
+  }, [haptics, navigation]);
 
   const handleSeeAll = useCallback(() => {
     navigation.navigate('Tabs', { screen: 'Transactions' });
   }, [navigation]);
 
-  const handleAddFirst = useCallback(() => {
-    haptics.light();
-    navigation.navigate('AddTransaction', { type: 'expense' });
-  }, [haptics, navigation]);
-
-  // Ensure content doesn't hide behind tab bar
   const bottomPad = 60 + insets.bottom + 80;
 
   return (
@@ -125,180 +102,91 @@ export default function DashboardScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={refresh}
-            tintColor={Colors.primary}
-            colors={[Colors.primary]}
+            tintColor={color.forest}
+            colors={[color.forest]}
           />
         }
       >
-        {/* Header — initial-letter avatar removed for visual cleanliness */}
         <AnimatedEntry delay={0}>
-          <View style={styles.header}>
-            <View>
-              <Text style={styles.greeting}>{getGreeting()},</Text>
-              <Text style={styles.userName}>
-                {user?.name?.split(' ')[0] || 'there'}
-              </Text>
-            </View>
-          </View>
+          <Text style={styles.eyebrow}>{dateLabel}</Text>
+          <Text style={styles.greet}>
+            {getGreeting()}, {user?.name?.split(' ')[0] || 'there'}
+          </Text>
         </AnimatedEntry>
 
-        {/* Balance Card */}
         <AnimatedEntry delay={80}>
           <BalanceCard
-            income={income}
-            expenses={expenses}
-            balance={balance}
-            savingsRate={savingsRate}
+            spentToday={moneyOut}
+            moneyIn={moneyIn}
+            moneyOut={moneyOut}
+            netToday={netToday}
           />
         </AnimatedEntry>
 
-        {/* Quick Actions */}
-        <AnimatedEntry delay={160}>
-          <View style={styles.quickActions}>
-            {QUICK_ACTIONS.map((action) => (
-              <TouchableOpacity
-                key={action.label}
-                style={styles.quickBtn}
-                activeOpacity={0.75}
-                onPress={() => handleQuickAction(action)}
-                accessibilityLabel={action.label}
-                accessibilityRole="button"
-              >
-                <View style={[styles.quickIconWrap, { backgroundColor: `${action.iconColor}18` }]}>
-                  <Icon name={action.icon} size={20} color={action.iconColor} />
-                </View>
-                <Text style={styles.quickLabel}>{action.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        <AnimatedEntry delay={140}>
+          <TouchableOpacity
+            style={styles.addCta}
+            activeOpacity={0.9}
+            onPress={handleAddEntry}
+            accessibilityRole="button"
+            accessibilityLabel="Add an entry"
+          >
+            <View style={styles.plus}>
+              <Text style={styles.plusText}>+</Text>
+            </View>
+            <Text style={styles.addCtaText}>Add an entry</Text>
+          </TouchableOpacity>
         </AnimatedEntry>
 
-        {/* Weekly / monthly coaching brief — self-hides when cache is empty */}
-        <AnimatedEntry delay={220}>
+        <AnimatedEntry delay={200}>
           <CoachingBriefCard />
         </AnimatedEntry>
 
-        {/* Shared-expense net balance — self-hides when no groups / zero net */}
-        <AnimatedEntry delay={230}>
-          <GroupBalanceCard />
-        </AnimatedEntry>
-
-        {/* Nudge */}
-        {nudge && (
-          <AnimatedEntry delay={240}>
-            <NudgeCard nudge={nudge} />
-          </AnimatedEntry>
-        )}
-
-        {/* Accountant Banner */}
-        <AnimatedEntry delay={280}>
-          <TouchableOpacity
-            style={styles.accountantBanner}
-            activeOpacity={0.75}
-            onPress={() => {
-              haptics.light();
-              navigation.navigate('Accountant');
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Open Ari Accountant"
-          >
-            <View style={styles.accountantIcon}>
-              <Icon name="briefcase" size={22} color={Colors.purple} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.accountantTitle}>Ari Accountant</Text>
-              <Text style={styles.accountantSub}>
-                Ledger, goals, tax estimator & reports
-              </Text>
-            </View>
-            <Icon name="chevron-right" size={18} color={Colors.textMuted} />
-          </TouchableOpacity>
-        </AnimatedEntry>
-
-        {/* To-Do Notes Banner */}
-        <AnimatedEntry delay={300}>
-          <TouchableOpacity
-            style={styles.todoBanner}
-            activeOpacity={0.75}
-            onPress={() => {
-              haptics.light();
-              navigation.navigate('TodoNotes');
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Open Notes and To-Do"
-          >
-            <View style={[styles.accountantIcon, { backgroundColor: Colors.accent + '20' }]}>
-              <Icon name="check-circle" size={22} color={Colors.accent} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.accountantTitle}>Notes & To-Do</Text>
-              <Text style={styles.accountantSub}>
-                Tasks, reminders & quick notes
-              </Text>
-            </View>
-            <Icon name="chevron-right" size={18} color={Colors.textMuted} />
-          </TouchableOpacity>
-        </AnimatedEntry>
-
-        {/* Insights */}
-        {insights.length > 0 && (
-          <AnimatedEntry delay={340}>
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Icon name="lightbulb" size={16} color={Colors.accent} />
-                <Text style={styles.sectionTitle}> Monthly Insights</Text>
-              </View>
-              <View style={styles.insightsList}>
-                {insights.slice(0, 3).map((insight, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.insightRow,
-                      { borderLeftColor: INSIGHT_COLORS[insight.type] ?? Colors.primary },
-                    ]}
-                    accessible
-                    accessibilityLabel={`${insight.type} insight: ${insight.text}`}
-                  >
-                    <Text style={styles.insightText}>{insight.text}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          </AnimatedEntry>
-        )}
-
-        {/* Recent Transactions */}
-        <AnimatedEntry delay={400}>
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent Transactions</Text>
-              <TouchableOpacity
-                onPress={handleSeeAll}
-                accessibilityLabel="See all transactions"
-                accessibilityRole="link"
-              >
-                <Text style={styles.seeAll}>See all</Text>
-              </TouchableOpacity>
-            </View>
-
-            {loadingData ? (
-              <LoadingSpinner />
-            ) : recentTxns.length === 0 ? (
-              <EmptyState
-                emoji="💳"
-                title="No transactions yet"
-                subtitle="Add your first expense or income"
-                actionLabel="Add Transaction"
-                onAction={handleAddFirst}
-              />
-            ) : (
-              recentTxns.map((txn, i) => (
-                <AnimatedEntry key={txn.id} delay={420 + i * 60}>
-                  <TransactionItem transaction={txn} showDelete={false} />
-                </AnimatedEntry>
-              ))
-            )}
+        <AnimatedEntry delay={260}>
+          <View style={styles.secHead}>
+            <Text style={styles.secTitle}>Recent</Text>
+            <TouchableOpacity
+              onPress={handleSeeAll}
+              accessibilityLabel="See all transactions"
+              accessibilityRole="link"
+            >
+              <Text style={styles.seeAll}>See all</Text>
+            </TouchableOpacity>
           </View>
+
+          {loadingData ? (
+            <LoadingSpinner />
+          ) : recentTxns.length === 0 ? (
+            <EmptyState
+              emoji="💳"
+              title="No entries yet"
+              subtitle="Add your first spend or income"
+              actionLabel="Add an entry"
+              onAction={handleAddEntry}
+            />
+          ) : (
+            recentTxns.map((txn, i) => (
+              <AnimatedEntry key={txn.id} delay={300 + i * 60}>
+                <TransactionItem
+                  transaction={txn}
+                  showDelete={false}
+                  onEdit={(t) =>
+                    navigation.navigate('AddTransaction', {
+                      editTransaction: {
+                        id: t.id,
+                        type: t.type,
+                        amount: t.amount,
+                        category: t.category,
+                        description: t.description,
+                        note: t.note,
+                        date: t.date,
+                      },
+                    })
+                  }
+                />
+              </AnimatedEntry>
+            ))
+          )}
         </AnimatedEntry>
       </ScrollView>
     </SafeAreaView>
@@ -306,99 +194,67 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
-  container: { paddingHorizontal: 20, paddingTop: 8 },
-  header: {
+  safe: { flex: 1, backgroundColor: color.cream },
+  container: { paddingHorizontal: 22, paddingTop: 8 },
+  eyebrow: {
+    fontFamily: font.bodyBold,
+    fontSize: type.eyebrow,
+    letterSpacing: 1.8,
+    textTransform: 'uppercase',
+    color: color.moss,
+  },
+  greet: {
+    fontFamily: font.display,
+    fontSize: type.greeting,
+    letterSpacing: -0.3,
+    marginTop: 5,
+    color: color.forestDeep,
+  },
+  addCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    backgroundColor: color.forest2,
+    borderRadius: 20,
+    paddingVertical: 19,
+  },
+  plus: {
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    borderWidth: 1.5,
+    borderColor: 'rgba(244,239,227,0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plusText: {
+    fontFamily: font.body,
+    fontSize: 16,
+    lineHeight: 19,
+    color: color.cream,
+  },
+  addCtaText: {
+    fontFamily: font.bodySemi,
+    fontSize: type.screenTitle,
+    color: color.cream,
+  },
+  secHead: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    alignItems: 'baseline',
+    marginTop: 26,
+    marginBottom: 10,
+    marginHorizontal: 2,
   },
-  greeting: { fontSize: 14, color: Colors.textSecondary, marginBottom: 2 },
-  userName: { fontSize: 22, fontWeight: '800', color: Colors.textPrimary, letterSpacing: -0.3 },
-  avatarCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  secTitle: {
+    fontFamily: font.displaySemi,
+    fontSize: type.sectionHead,
+    color: color.forestDeep,
   },
-  avatarText: { fontSize: 18, fontWeight: '700', color: Colors.background },
-  quickActions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 20,
-  },
-  quickBtn: {
-    width: '47%',
-    backgroundColor: Colors.card,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 14,
-    padding: 14,
-    alignItems: 'center',
-    gap: 8,
-  },
-  quickIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  quickLabel: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600' },
-  section: { marginBottom: 20 },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
-  seeAll: { fontSize: 13, color: Colors.primary, fontWeight: '600' },
-  insightsList: { gap: 8 },
-  insightRow: {
-    backgroundColor: Colors.card,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderLeftWidth: 3,
-    padding: 12,
-  },
-  insightText: { fontSize: 13, color: Colors.textSecondary, lineHeight: 18 },
-  // Accountant banner
-  accountantBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.purple + '40',
-    padding: 14,
-    gap: 12,
-    marginTop: 16,
-  },
-  accountantIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: Colors.purple + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  accountantTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
-  accountantSub: { fontSize: 11, color: Colors.textSecondary, marginTop: 2 },
-  todoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Colors.accent + '40',
-    padding: 14,
-    gap: 12,
-    marginTop: 10,
+  seeAll: {
+    fontFamily: font.bodySemi,
+    fontSize: 12.5,
+    color: color.moss,
   },
 });

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ari v2 — Forest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root{
+    --forest:#1F3D2B;        /* primary ink/brand */
+    --forest-2:#2E5239;      /* lighter forest */
+    --forest-deep:#152A1E;   /* darkest */
+    --moss:#5C7A63;          /* muted secondary */
+    --cream:#F4EFE3;         /* paper */
+    --cream-2:#EDE7D7;       /* sunk panel */
+    --card:#FBF8F0;          /* raised card */
+    --line:#E0D8C4;          /* hairline */
+    --line-strong:#CFC5AC;
+    --ink:#23291F;           /* text on cream */
+    --ink-soft:#6E6B5C;
+    --ink-faint:#9A9683;
+    --clay:#B4612F;          /* warm accent — spending / alerts */
+    --clay-tint:#F0E2D2;
+    --gold:#A8862C;          /* sparing highlight */
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{
+    font-family:'Inter',sans-serif;background:#D9D2C0;color:var(--ink);
+    display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px;
+  }
+
+  .phone{
+    width:380px;height:760px;background:var(--cream);
+    border-radius:44px;position:relative;overflow:hidden;display:flex;flex-direction:column;
+    box-shadow:0 50px 100px -20px rgba(21,42,30,.45),0 0 0 11px #14130f,0 0 0 13px #2c2a22;
+  }
+  .notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:130px;height:30px;background:#14130f;border-radius:0 0 18px 18px;z-index:60}
+  .statusbar{height:52px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;font-size:13px;font-weight:600;color:var(--forest);flex-shrink:0}
+
+  .screens{flex:1;position:relative;overflow:hidden}
+  .screen{position:absolute;inset:0;overflow-y:auto;padding:6px 22px 100px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .3s ease,transform .3s ease}
+  .screen.active{opacity:1;transform:none;pointer-events:auto}
+  .screen::-webkit-scrollbar{display:none}
+
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--moss)}
+  .greet{font-family:'Fraunces';font-size:27px;font-weight:500;letter-spacing:-.01em;margin-top:5px;color:var(--forest-deep)}
+
+  /* HERO — flat forest block, no gradient */
+  .hero{margin-top:20px;background:var(--forest);border-radius:26px;padding:26px 24px;color:#EFEAD9;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-30px;bottom:-50px;width:160px;height:160px;border:1.5px solid rgba(239,234,217,.10);border-radius:50%}
+  .hero::before{content:"";position:absolute;right:6px;bottom:-20px;width:100px;height:100px;border:1.5px solid rgba(239,234,217,.08);border-radius:50%}
+  .hero-label{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#A9BBA8}
+  .hero-amount{font-family:'Fraunces';font-size:54px;font-weight:500;letter-spacing:-.02em;line-height:1;margin-top:12px;color:#FBF8F0}
+  .hero-amount .rupee{font-size:30px;color:#8FAA8E;vertical-align:9px;margin-right:3px}
+  .hero-sub{display:flex;gap:22px;margin-top:20px}
+  .pill{display:flex;flex-direction:column;gap:2px}
+  .pill .k{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#8FAA8E;font-weight:600}
+  .pill .v{font-family:'Fraunces';font-size:17px;font-weight:500;color:#EFEAD9}
+  .pill .v.clay{color:#E8A06B}
+
+  /* BIG ADD — flat clay, no gradient */
+  .add-cta{width:100%;margin-top:16px;border:none;cursor:pointer;background:var(--forest-2);color:#F4EFE3;border-radius:20px;padding:19px;font-family:'Inter';font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:12px;transition:transform .14s,background .14s}
+  .add-cta:active{transform:scale(.975);background:var(--forest)}
+  .add-cta .plus{width:25px;height:25px;border-radius:50%;border:1.5px solid rgba(244,239,227,.5);display:grid;place-items:center;font-size:18px;font-weight:300}
+
+  /* TOMO */
+  .tomo-card{margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;display:flex;gap:14px;align-items:flex-start}
+  .tomo-face{width:38px;height:38px;border-radius:12px;background:var(--forest);flex-shrink:0;display:grid;place-items:center}
+  .tomo-face span{width:5px;height:5px;background:var(--gold);border-radius:50%;box-shadow:9px 0 0 #EFEAD9}
+  .tomo-text{font-size:13.5px;line-height:1.55;color:var(--ink-soft)}
+  .tomo-text b{color:var(--forest);font-weight:600}
+  .tomo-tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:5px;display:block}
+
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;margin:26px 2px 10px}
+  .sec-head h3{font-family:'Fraunces';font-size:17px;font-weight:600;color:var(--forest-deep)}
+  .sec-head a{font-size:12.5px;color:var(--moss);font-weight:600;text-decoration:none}
+  .row{display:flex;align-items:center;gap:14px;padding:13px 2px;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:none}
+  .ricon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:18px;flex-shrink:0;background:var(--cream-2)}
+  .rmeta{flex:1;min-width:0}
+  .rmeta .t{font-size:14.5px;font-weight:600;color:var(--ink)}
+  .rmeta .s{font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+  .ramt{font-family:'Fraunces';font-size:16px;font-weight:500}
+  .ramt.out{color:var(--ink)}.ramt.in{color:var(--forest-2)}
+
+  /* ADD SCREEN */
+  .add-screen{background:var(--cream)}
+  .add-top{display:flex;align-items:center;justify-content:space-between;padding:6px 0 0}
+  .add-close{width:38px;height:38px;border-radius:12px;border:1px solid var(--line-strong);background:var(--card);font-size:17px;color:var(--ink-soft);cursor:pointer;display:grid;place-items:center}
+  .add-title{font-family:'Fraunces';font-size:16px;font-weight:600;color:var(--forest-deep)}
+
+  .toggle{display:flex;background:var(--cream-2);border-radius:16px;padding:5px;margin-top:22px;gap:5px;border:1px solid var(--line)}
+  .toggle button{flex:1;border:none;background:transparent;padding:12px;border-radius:12px;font-size:14.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;transition:all .2s}
+  .toggle button.on.out{background:var(--clay);color:#FBF8F0}
+  .toggle button.on.in{background:var(--forest);color:#FBF8F0}
+
+  .amount-display{text-align:center;padding:30px 0 6px}
+  .amount-display .lbl{font-size:11px;color:var(--ink-faint);font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+  .amount-display .val{font-family:'Fraunces';font-size:60px;font-weight:500;letter-spacing:-.02em;margin-top:8px;color:var(--ink)}
+  .amount-display .val .ru{font-size:32px;color:var(--ink-faint);vertical-align:11px;margin-right:3px}
+  .amount-display .caret{display:inline-block;width:2px;height:44px;background:var(--clay);vertical-align:-6px;margin-left:2px;animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  .optional-row{display:flex;gap:9px;justify-content:center;margin:4px 0;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--ink-soft);cursor:pointer}
+  .chip.auto{background:var(--cream-2);border-color:var(--line-strong);color:var(--forest)}
+  .chip .ai{font-size:11px;color:var(--gold)}
+
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
+  .key{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:17px;font-family:'Fraunces';font-size:23px;font-weight:500;color:var(--ink);cursor:pointer;transition:transform .1s,background .14s}
+  .key:active{transform:scale(.94);background:var(--cream-2)}
+  .key.fn{font-size:18px;color:var(--ink-soft);font-family:'Inter'}
+
+  .save-btn{width:100%;margin-top:14px;border:none;border-radius:18px;padding:18px;font-size:16px;font-weight:600;color:#F4EFE3;cursor:pointer;background:var(--forest);transition:transform .14s,background .2s}
+  .save-btn:active{transform:scale(.98)}
+  .save-btn.saved{background:var(--forest-2)}
+
+  /* COACH */
+  .coach-hero{margin-top:18px;display:flex;align-items:center;gap:14px}
+  .coach-avatar{width:52px;height:52px;border-radius:16px;background:var(--forest);display:grid;place-items:center}
+  .coach-avatar span{width:6px;height:6px;background:var(--gold);border-radius:50%;box-shadow:11px 0 0 #EFEAD9}
+  .coach-hero h2{font-family:'Fraunces';font-size:24px;font-weight:500;color:var(--forest-deep)}
+  .coach-hero p{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+
+  .streak{display:flex;gap:7px;margin-top:18px}
+  .seg{flex:1;height:6px;border-radius:3px;background:var(--cream-2);border:1px solid var(--line)}
+  .seg.on{background:var(--forest-2);border-color:var(--forest-2)}
+  .streak-note{font-size:11.5px;color:var(--ink-faint);margin-top:9px;font-weight:600}
+
+  .insight{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:16px}
+  .insight .tag{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:6px}
+  .insight h4{font-family:'Fraunces';font-size:18px;font-weight:600;margin-top:9px;color:var(--forest-deep)}
+  .insight p{font-size:13px;line-height:1.55;color:var(--ink-soft);margin-top:7px}
+  .insight .bar{height:9px;background:var(--cream-2);border-radius:5px;margin-top:14px;overflow:hidden;display:flex;border:1px solid var(--line)}
+  .insight .bar i{height:100%;display:block}
+
+  .nav{position:absolute;bottom:0;left:0;right:0;height:78px;background:rgba(244,239,227,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;padding-bottom:10px;z-index:50}
+  .nav button{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-faint);font-size:10px;font-weight:700;letter-spacing:.03em;width:56px}
+  .nav button.on{color:var(--forest)}
+  .nav .ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .nav .fab{width:54px;height:54px;border-radius:18px;background:var(--clay);margin-top:-24px;color:#FBF8F0;display:grid;place-items:center;font-size:25px;font-weight:300}
+
+  .toast{position:absolute;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--forest-deep);color:#F4EFE3;padding:13px 22px;border-radius:13px;font-size:13.5px;font-weight:600;opacity:0;transition:all .3s;z-index:70}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="statusbar"><span>9:41</span><span>civil&nbsp;&nbsp;5G&nbsp;&nbsp;100%</span></div>
+
+  <div class="screens">
+
+    <!-- HOME -->
+    <div class="screen active" id="home">
+      <div class="eyebrow">Wednesday, 17 June</div>
+      <div class="greet">Good morning, Rex</div>
+
+      <div class="hero">
+        <div class="hero-label">Spent today</div>
+        <div class="hero-amount"><span class="rupee">₹</span>1,240</div>
+        <div class="hero-sub">
+          <div class="pill"><span class="k">Money out</span><span class="v clay">₹1,240</span></div>
+          <div class="pill"><span class="k">Money in</span><span class="v">₹3,500</span></div>
+          <div class="pill"><span class="k">Net today</span><span class="v">+₹2,260</span></div>
+        </div>
+      </div>
+
+      <button class="add-cta" onclick="go('add')"><span class="plus">+</span> Add an entry</button>
+
+      <div class="tomo-card">
+        <div class="tomo-face"><span></span></div>
+        <div class="tomo-text"><span class="tomo-tag">Tomo</span>You're <b>₹900 under</b> your weekday food budget. Three quiet days like this and you'll clear the month early.</div>
+      </div>
+
+      <div class="sec-head"><h3>Recent</h3><a href="#" onclick="return false">See all</a></div>
+      <div class="row"><div class="ricon">🍵</div><div class="rmeta"><div class="t">Tea &amp; snacks</div><div class="s">Food · 8:30 AM</div></div><div class="ramt out">−₹40</div></div>
+      <div class="row"><div class="ricon">💼</div><div class="rmeta"><div class="t">Washmart counter</div><div class="s">Income · 8:05 AM</div></div><div class="ramt in">+₹3,500</div></div>
+      <div class="row"><div class="ricon">⛽</div><div class="rmeta"><div class="t">Fuel</div><div class="s">Transport · Yesterday</div></div><div class="ramt out">−₹1,200</div></div>
+      <div class="row"><div class="ricon">📱</div><div class="rmeta"><div class="t">Recharge</div><div class="s">Bills · Yesterday</div></div><div class="ramt out">−₹299</div></div>
+    </div>
+
+    <!-- ADD -->
+    <div class="screen add-screen" id="add">
+      <div class="add-top">
+        <button class="add-close" onclick="go('home')">✕</button>
+        <div class="add-title">New entry</div>
+        <div style="width:38px"></div>
+      </div>
+
+      <div class="toggle">
+        <button class="out on" id="tOut" onclick="setType('out')">Spent</button>
+        <button class="in" id="tIn" onclick="setType('in')">Received</button>
+      </div>
+
+      <div class="amount-display" id="amtBox">
+        <div class="lbl" id="amtLbl">Amount spent</div>
+        <div class="val"><span class="ru">₹</span><span id="amtVal">0</span><span class="caret"></span></div>
+      </div>
+
+      <div class="optional-row">
+        <div class="chip auto"><span class="ai">✦</span> <span id="catGuess">Food</span></div>
+        <div class="chip">＋ Note</div>
+        <div class="chip">Today</div>
+      </div>
+
+      <div class="keypad">
+        <button class="key" onclick="press('1')">1</button>
+        <button class="key" onclick="press('2')">2</button>
+        <button class="key" onclick="press('3')">3</button>
+        <button class="key" onclick="press('4')">4</button>
+        <button class="key" onclick="press('5')">5</button>
+        <button class="key" onclick="press('6')">6</button>
+        <button class="key" onclick="press('7')">7</button>
+        <button class="key" onclick="press('8')">8</button>
+        <button class="key" onclick="press('9')">9</button>
+        <button class="key fn" onclick="press('.')">.</button>
+        <button class="key" onclick="press('0')">0</button>
+        <button class="key fn" onclick="press('del')">⌫</button>
+      </div>
+
+      <button class="save-btn" id="saveBtn" onclick="save()">Save entry</button>
+    </div>
+
+    <!-- COACH -->
+    <div class="screen" id="coach">
+      <div class="eyebrow">Your coach</div>
+      <div class="coach-hero">
+        <div class="coach-avatar"><span></span></div>
+        <div><h2>Tomo</h2><p>Here's what your money did this week</p></div>
+      </div>
+
+      <div class="streak">
+        <div class="seg on"></div><div class="seg on"></div><div class="seg on"></div>
+        <div class="seg on"></div><div class="seg on"></div><div class="seg on"></div><div class="seg"></div>
+      </div>
+      <div class="streak-note">6-day logging streak — one more for a full week.</div>
+
+      <div class="insight">
+        <div class="tag">✦ This week</div>
+        <h4>Food is your biggest lane</h4>
+        <p>₹2,840 across 14 entries — 38% of everything you spent. Mostly small tea-and-snack stops that add up faster than the big bills.</p>
+        <div class="bar">
+          <i style="width:38%;background:var(--forest)"></i>
+          <i style="width:22%;background:var(--moss)"></i>
+          <i style="width:18%;background:var(--clay)"></i>
+          <i style="width:22%;background:var(--line-strong)"></i>
+        </div>
+      </div>
+
+      <div class="insight">
+        <div class="tag">✦ A nudge</div>
+        <h4>Weekends cost you 2× weekdays</h4>
+        <p>Last Saturday alone was ₹1,900. Not a problem — just worth seeing. Want me to set a gentle weekend cap?</p>
+      </div>
+
+      <div class="tomo-card" style="margin-top:16px">
+        <div class="tomo-face"><span></span></div>
+        <div class="tomo-text"><span class="tomo-tag">Ask Tomo</span>“Can I afford a ₹15k trip next month?” — tap to ask anything about your money.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">✓ Entry saved</div>
+
+  <div class="nav">
+    <button class="on" id="nHome" onclick="go('home')">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M3 10l9-7 9 7v9a2 2 0 0 1-2 2h-3v-6H8v6H5a2 2 0 0 1-2-2z"/></svg>Home
+    </button>
+    <button id="nTrends" onclick="go('coach')">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>Trends
+    </button>
+    <button class="fab" onclick="go('add')">+</button>
+    <button id="nCoach" onclick="go('coach')">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21v-1a7 7 0 0 1 14 0v1"/></svg>Tomo
+    </button>
+    <button id="nProfile" onclick="return false">
+      <svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg>More
+    </button>
+  </div>
+</div>
+
+<script>
+  let type='out', amt='0';
+  function go(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
+    if(id==='home') nHome.classList.add('on');
+    if(id==='coach') nCoach.classList.add('on');
+    if(id==='add'){ amt='0'; render(); }
+  }
+  function setType(t){
+    type=t;
+    tOut.classList.toggle('on',t==='out');
+    tIn.classList.toggle('on',t==='in');
+    amtLbl.textContent = t==='out'?'Amount spent':'Amount received';
+    document.querySelector('#amtBox .val').style.color = t==='out'?'var(--ink)':'var(--forest-2)';
+    catGuess.textContent = t==='out'?'Food':'Income';
+  }
+  function press(k){
+    if(k==='del'){ amt=amt.length>1?amt.slice(0,-1):'0'; }
+    else if(k==='.'){ if(!amt.includes('.')) amt+='.'; }
+    else { amt = amt==='0'?k:amt+k; }
+    render();
+  }
+  function render(){ let v=amt; if(!v.includes('.')) v=Number(v).toLocaleString('en-IN'); amtVal.textContent=v; }
+  function save(){
+    const b=saveBtn; b.classList.add('saved'); b.textContent='✓ Saved';
+    const t=document.getElementById('toast'); t.classList.add('show');
+    setTimeout(()=>{ b.classList.remove('saved'); b.textContent='Save entry'; t.classList.remove('show'); go('home'); },950);
+  }
+</script>
+</body>
+</html>

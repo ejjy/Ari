@@ -10,7 +10,7 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import Button from '../components/ui/Button';
 import Icon from '../components/ui/Icon';
 import ErrorBanner from '../components/ui/ErrorBanner';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 import { useAuth } from '../context/AuthContext';
 import { getGroupDetail, logSharedExpense, type GroupDetail } from '../api/groups';
@@ -101,7 +101,7 @@ export default function AddSharedExpenseScreen() {
   if (!group) {
     return (
       <SafeAreaView style={styles.safe} edges={['top']}>
-        <ActivityIndicator color={Colors.primary} style={{ marginTop: 40 }} />
+        <ActivityIndicator color={color.forest} style={{ marginTop: 40 }} />
       </SafeAreaView>
     );
   }
@@ -130,7 +130,7 @@ export default function AddSharedExpenseScreen() {
               value={amount}
               onChangeText={setAmount}
               placeholder="0"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor={color.inkFaint}
               keyboardType="numeric"
               returnKeyType="next"
             />
@@ -142,7 +142,7 @@ export default function AddSharedExpenseScreen() {
             value={description}
             onChangeText={setDescription}
             placeholder="Hotel, dinner, cab…"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={color.inkFaint}
           />
 
           <Text style={styles.label}>Split equally between</Text>
@@ -157,7 +157,7 @@ export default function AddSharedExpenseScreen() {
                 onPress={() => toggleIncluded(m.id)}
               >
                 <View style={[styles.checkbox, checked && styles.checkboxOn]}>
-                  {checked && <Icon name="check-circle" size={14} color="#fff" />}
+                  {checked && <Icon name="check-circle" size={14} color={color.cream} />}
                 </View>
                 <Text style={styles.memberName}>
                   {m.name}{isYou ? ' (you)' : ''}
@@ -181,46 +181,46 @@ export default function AddSharedExpenseScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    borderBottomWidth: 1, borderColor: color.line,
   },
-  cancel: { fontSize: 15, color: Colors.textSecondary },
-  title: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, flex: 1, textAlign: 'center' },
+  cancel: { fontSize: 15, color: color.inkSoft },
+  title: { fontSize: 16, fontFamily: font.displayBold, color: color.ink, flex: 1, textAlign: 'center' },
   scroll: { padding: 20, paddingBottom: 40 },
   amountRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, marginVertical: 8,
   },
-  rupee: { fontSize: 36, color: Colors.textMuted, fontWeight: '700' },
+  rupee: { fontSize: 36, color: color.inkFaint, fontFamily: font.displayBold },
   amount: {
-    fontSize: 48, fontWeight: '800', color: Colors.textPrimary,
+    fontSize: 48, fontFamily: font.displayBold, color: color.ink,
     minWidth: 100, textAlign: 'center',
   },
   label: {
-    fontSize: 12, color: Colors.textSecondary, fontWeight: '600',
+    fontSize: 12, color: color.inkSoft, fontFamily: font.bodySemi,
     marginTop: 16, marginBottom: 8,
   },
   input: {
-    backgroundColor: Colors.input, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2, borderRadius: 10,
+    borderWidth: 1, borderColor: color.line,
     paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 15, color: Colors.textPrimary,
+    fontSize: 15, color: color.ink,
   },
   memberRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingVertical: 12, paddingHorizontal: 12,
-    backgroundColor: Colors.card, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border, marginBottom: 6,
+    backgroundColor: color.card, borderRadius: 10,
+    borderWidth: 1, borderColor: color.line, marginBottom: 6,
   },
   checkbox: {
     width: 22, height: 22, borderRadius: 6,
-    borderWidth: 2, borderColor: Colors.border,
+    borderWidth: 2, borderColor: color.line,
     alignItems: 'center', justifyContent: 'center',
   },
-  checkboxOn: { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  memberName: { flex: 1, fontSize: 14, color: Colors.textPrimary, fontWeight: '500' },
-  share: { fontSize: 13, color: Colors.textSecondary, fontWeight: '600' },
+  checkboxOn: { backgroundColor: color.forest, borderColor: color.forest },
+  memberName: { flex: 1, fontSize: 14, color: color.ink, fontFamily: font.bodyMed },
+  share: { fontSize: 13, color: color.inkSoft, fontFamily: font.bodySemi },
 });

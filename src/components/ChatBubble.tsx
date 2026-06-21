@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Icon from './ui/Icon';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import type { ChatMessage } from '../types';
 
 interface Props {
@@ -15,7 +15,7 @@ export default function ChatBubble({ message }: Props) {
     <View style={[styles.row, isUser && styles.rowUser]}>
       {!isUser && (
         <View style={styles.avatar}>
-          <Icon name="bot" size={16} color={Colors.primary} />
+          <Icon name="bot" size={16} color={color.forest} />
         </View>
       )}
       <View
@@ -47,11 +47,11 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.card2,
+    backgroundColor: color.cream2,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
   bubble: {
     maxWidth: '75%',
@@ -60,22 +60,23 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   bubbleTomo: {
-    backgroundColor: Colors.card,
+    backgroundColor: color.card,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
     borderBottomLeftRadius: 4,
   },
   bubbleUser: {
-    backgroundColor: Colors.primary,
+    backgroundColor: color.forest,
     borderBottomRightRadius: 4,
   },
   text: {
+    fontFamily: font.body,
     fontSize: 14,
-    color: Colors.textPrimary,
+    color: color.ink,
     lineHeight: 20,
   },
   textUser: {
-    color: Colors.background,
-    fontWeight: '500',
+    color: color.cream,
+    fontFamily: font.bodyMed,
   },
 });

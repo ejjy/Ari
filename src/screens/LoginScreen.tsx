@@ -16,7 +16,7 @@ import { ApiError } from '../api/client';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ErrorBanner from '../components/ui/ErrorBanner';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import Icon from '../components/ui/Icon';
 import { useGoogleSignIn } from '../lib/socialAuth';
 import * as authApi from '../api/auth';
@@ -121,7 +121,7 @@ export default function LoginScreen({ navigation }: Props) {
 
           {/* Header */}
           <View style={styles.header}>
-            <Icon name="user" size={48} color={Colors.primary} />
+            <Icon name="user" size={48} color={color.forest} />
             <Text style={styles.title}>Welcome back!</Text>
             <Text style={styles.subtitle}>Sign in to continue your journey</Text>
           </View>
@@ -172,7 +172,7 @@ export default function LoginScreen({ navigation }: Props) {
               accessibilityRole="button"
               accessibilityLabel="Continue with Google"
             >
-              <Icon name="user" size={16} color={Colors.textPrimary} />
+              <Icon name="user" size={16} color={color.ink} />
               <Text style={styles.socialText}>
                 {socialLoading === 'google' ? 'Signing in…' : 'Continue with Google'}
               </Text>
@@ -198,7 +198,7 @@ export default function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   container: {
     flexGrow: 1,
     paddingHorizontal: 24,
@@ -206,45 +206,43 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   back: { marginBottom: 24, alignSelf: 'flex-start' },
-  backText: { fontSize: 16, color: Colors.textSecondary },
+  backText: { fontFamily: font.body, fontSize: 16, color: color.inkSoft },
   header: { alignItems: 'center', marginBottom: 40 },
-  // emoji style replaced by Icon component
   headerIcon: { marginBottom: 12 },
   title: {
+    fontFamily: font.displayBold,
     fontSize: 28,
-    fontWeight: '800',
-    color: Colors.textPrimary,
+    color: color.ink,
     marginBottom: 8,
-    letterSpacing: -0.5,
   },
-  subtitle: { fontSize: 15, color: Colors.textSecondary, textAlign: 'center' },
+  subtitle: { fontFamily: font.body, fontSize: 15, color: color.inkSoft, textAlign: 'center' },
   form: { flex: 1 },
   divider: {
     flexDirection: 'row', alignItems: 'center',
     marginVertical: 20, gap: 12,
   },
-  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
-  dividerText: { fontSize: 12, color: Colors.textMuted, letterSpacing: 0.5 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: color.line },
+  dividerText: { fontFamily: font.body, fontSize: 12, color: color.inkFaint, letterSpacing: 0.5 },
   socialBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, paddingVertical: 14, borderRadius: 10,
-    backgroundColor: Colors.input,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2,
+    borderWidth: 1, borderColor: color.line,
     marginBottom: 10,
   },
-  socialText: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
+  socialText: { fontFamily: font.bodySemi, fontSize: 14, color: color.ink },
   demoBtn: {
     marginTop: 16,
     alignItems: 'center',
     paddingVertical: 12,
     borderRadius: 10,
-    backgroundColor: Colors.input,
+    backgroundColor: color.cream2,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: color.line,
   },
   demoContent: { flexDirection: 'row' as const, alignItems: 'center' as const },
-  demoText: { fontSize: 14, color: Colors.textSecondary },
+  demoText: { fontFamily: font.body, fontSize: 14, color: color.inkSoft },
   footer: { alignItems: 'center', marginTop: 32 },
-  footerText: { fontSize: 14, color: Colors.textSecondary },
-  footerLink: { color: Colors.primary, fontWeight: '600' },
+  footerText: { fontFamily: font.body, fontSize: 14, color: color.inkSoft },
+  footerLink: { color: color.forest, fontFamily: font.bodySemi },
 });

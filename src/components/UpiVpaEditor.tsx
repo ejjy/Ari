@@ -9,7 +9,7 @@ import { patchMe } from '../api/auth';
 import Button from './ui/Button';
 import Icon from './ui/Icon';
 import ErrorBanner from './ui/ErrorBanner';
-import { Colors } from '../constants/colors';
+import { color, font } from '../theme/tokens';
 import { useHaptics } from '../hooks/useHaptics';
 
 /** Settings sub-screen — set/clear the user's UPI VPA so other group
@@ -47,7 +47,7 @@ export default function UpiVpaEditor({ onBack }: { onBack: () => void }) {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.header}>
           <TouchableOpacity onPress={onBack} hitSlop={8}>
-            <Icon name="arrow-left" size={22} color={Colors.textPrimary} />
+            <Icon name="arrow-left" size={22} color={color.ink} />
           </TouchableOpacity>
           <Text style={styles.title}>UPI for settlements</Text>
           <View style={{ width: 22 }} />
@@ -68,7 +68,7 @@ export default function UpiVpaEditor({ onBack }: { onBack: () => void }) {
             value={vpa}
             onChangeText={setVpa}
             placeholder="9876543210@ybl"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={color.inkFaint}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="email-address"
@@ -99,24 +99,24 @@ export default function UpiVpaEditor({ onBack }: { onBack: () => void }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.background },
+  safe: { flex: 1, backgroundColor: color.cream },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 14,
-    borderBottomWidth: 1, borderColor: Colors.border,
+    borderBottomWidth: 1, borderColor: color.line,
   },
-  title: { fontSize: 17, fontWeight: '700', color: Colors.textPrimary },
+  title: { fontSize: 17, fontFamily: font.displayBold, color: color.ink },
   scroll: { padding: 20 },
-  help: { fontSize: 13, color: Colors.textSecondary, lineHeight: 19, marginBottom: 16 },
-  label: { fontSize: 12, color: Colors.textSecondary, fontWeight: '600', marginBottom: 8 },
+  help: { fontSize: 13, color: color.inkSoft, lineHeight: 19, marginBottom: 16 },
+  label: { fontSize: 12, color: color.inkSoft, fontFamily: font.bodySemi, marginBottom: 8 },
   input: {
-    backgroundColor: Colors.input, borderRadius: 10,
-    borderWidth: 1, borderColor: Colors.border,
+    backgroundColor: color.cream2, borderRadius: 10,
+    borderWidth: 1, borderColor: color.line,
     paddingHorizontal: 14, paddingVertical: 14,
-    fontSize: 15, color: Colors.textPrimary,
+    fontSize: 15, color: color.ink,
   },
-  examples: { fontSize: 12, color: Colors.textMuted, marginTop: 10 },
-  exampleCode: { color: Colors.textPrimary, fontWeight: '600' },
+  examples: { fontSize: 12, color: color.inkFaint, marginTop: 10 },
+  exampleCode: { color: color.ink, fontFamily: font.bodySemi },
   clearBtn: { marginTop: 12, alignItems: 'center', padding: 10 },
-  clearText: { fontSize: 13, color: Colors.danger },
+  clearText: { fontSize: 13, color: color.clay },
 });
